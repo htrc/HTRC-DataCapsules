@@ -98,9 +98,8 @@ public class DBOperations {
 		return instance;
 	}
 
-	public boolean quotaExceedsLimit(String userName,
-			int requestedVolumeSize) throws SQLException,
-			NoItemIsFoundInDBException {
+	public boolean quotaExceedsLimit(String userName, int requestedVolumeSize)
+			throws SQLException, NoItemIsFoundInDBException {
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ").append(DBSchema.UserTable.LEFT_QUOTA)
 				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
@@ -231,7 +230,8 @@ public class DBOperations {
 	}
 
 	public void addVM(String userName, String vmid, String imageName,
-			VMPorts host, String workDir) throws SQLException {
+			String vmLoginName, String vmLoginPasswd, VMPorts host,
+			String workDir) throws SQLException {
 		StringBuilder insertvmsql = new StringBuilder();
 		insertvmsql
 				.append("INSERT INTO ")
@@ -250,11 +250,16 @@ public class DBOperations {
 				.append(DBSchema.VmTable.WORKING_DIR)
 				.append(",")
 				.append(DBSchema.VmTable.IMAGE_NAME)
+				.append(",")
+				.append(DBSchema.VmTable.VM_USERNAME)
+				.append(",")
+				.append(DBSchema.VmTable.VM_PASSWORD)
 				.append(") VALUES")
-				.append(String.format(
-						"(\"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\")",
-						vmid, VMState.BUILDING.toString(), host.host,
-						host.sshport, host.vncport, workDir, imageName));
+				.append(String
+						.format("(\"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\")",
+								vmid, VMState.BUILDING.toString(), host.host,
+								host.sshport, host.vncport, workDir, imageName,
+								vmLoginName, vmLoginPasswd));
 
 		StringBuilder insertvmusersql = new StringBuilder();
 		insertvmusersql.append("INSERT INTO ")

@@ -16,9 +16,9 @@ public class RoundRobinScheduler extends Scheduler {
 	private int scheduleIndex = 0;
 
 	private RoundRobinScheduler() {
-		
+
 	}
-	
+
 	@Override
 	protected VmInfoBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
@@ -34,9 +34,10 @@ public class RoundRobinScheduler extends Scheduler {
 			scheduleIndex = (scheduleIndex + 1) % hosts.length;
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),
-						request.getVmId(), request.getImageName(), vmhost,
-						workDir);
-				
+						request.getVmId(), request.getImageName(),
+						request.getVmLoginID(), request.getVmLoginPasswd(),
+						vmhost, workDir);
+
 				return new VmInfoBean(request, vmhost.sshport, vmhost.vncport,
 						workDir);
 			}

@@ -17,9 +17,9 @@ import edu.indiana.d2i.sloan.vm.VMPorts;
 public class RandomScheduler extends Scheduler {
 
 	private RandomScheduler() {
-		
+
 	}
-	
+
 	@Override
 	protected VmInfoBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
@@ -48,8 +48,9 @@ public class RandomScheduler extends Scheduler {
 
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),
-						request.getVmId(), request.getImageName(), vmhost,
-						workDir);
+						request.getVmId(), request.getImageName(),
+						request.getVmLoginID(), request.getVmLoginPasswd(),
+						vmhost, workDir);
 
 				return new VmInfoBean(request, vmhost.sshport, vmhost.vncport,
 						workDir);
