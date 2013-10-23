@@ -1,0 +1,13 @@
+package edu.indiana.d2i.sloan.vm;
+
+public enum VMState {
+	BUILDING,
+	LAUNCHING,
+	RUNNING,
+	SWITCHING_TO_MAINTENANCE,
+	SWITCHING_TO_SECURITY,
+	SHUTTINGDOWN,
+	SHUTDOWN,
+	DELETING,
+	ERROR
+}
