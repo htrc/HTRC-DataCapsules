@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.CreateVmResponseBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.hyper.CreateVMCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -65,28 +65,24 @@ public class CreateVM {
 					.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB,
 							Constants.DEFAULT_VOLUME_SIZE_IN_GB));
 
+			// vm parameters
+			String vmid = UUID.randomUUID().toString();
+			CreateVmRequestBean request = new CreateVmRequestBean(userName,
+					imageName, vmid, loginusername, loginpassword, memory,
+					vcpu, volumeSizeInGB);
+			
 			// check quota
-			if (DBOperations.getInstance().quotaExceedsLimit(userName,
-					volumeSizeInGB)) {
+			if (DBOperations.getInstance().quotaExceedsLimit(request, volumeSizeInGB)) {
 				return Response.status(400)
 						.entity(new ErrorBean(400, "Quota exceeds limit!"))
 						.build();
 			}
 
-			// vm parameters
-			String vmid = UUID.randomUUID().toString();
-
-			CreateVmRequestBean request = new CreateVmRequestBean(userName,
-					imageName, vmid, loginusername, loginpassword, memory,
-					vcpu, volumeSizeInGB);
-
 			// schedule & update db
-			VmInfoBean vminfo = SchedulerFactory.getInstance()
-					.schedule(request);
+			VmRequestBean vmreq = SchedulerFactory.getInstance().schedule(request);
 
 			// nonblocking call to hypervisor
-			HypervisorProxy.getInstance().addCommand(
-					new CreateVMCommand(vminfo));
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vmreq));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid))
 					.build();

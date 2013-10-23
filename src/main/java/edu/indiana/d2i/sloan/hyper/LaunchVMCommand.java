@@ -1,11 +1,11 @@
 package edu.indiana.d2i.sloan.hyper;
 
-public class LaunchVMCommand extends HypervisorCommand {
-	private final String vmid;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 
-	public LaunchVMCommand(String vmid) {
-		super();
-		this.vmid = vmid;
+public class LaunchVMCommand extends HypervisorCommand {
+
+	public LaunchVMCommand(VmInfoBean vminfo) {
+		super(vminfo);
 	}
 	
 	@Override

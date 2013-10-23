@@ -50,15 +50,15 @@
     </init-param>
     <init-param>
       <param-name>sloan.ws.db.jdbcurl</param-name>
-      <param-value>XXX</param-value>
+      <param-value>jdbc:mysql://localhost:3306/vmdb</param-value>
     </init-param>
     <init-param>
       <param-name>sloan.ws.db.user</param-name>
-      <param-value>XXX</param-value>
+      <param-value>root</param-value>
     </init-param>
     <init-param>
       <param-name>sloan.ws.db.pwd</param-name>
-      <param-value>XXX</param-value>
+      <param-value>root</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

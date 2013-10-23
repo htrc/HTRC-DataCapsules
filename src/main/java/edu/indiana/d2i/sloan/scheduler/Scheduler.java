@@ -4,7 +4,7 @@ import java.sql.SQLException;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 
 public abstract class Scheduler {
@@ -21,11 +21,11 @@ public abstract class Scheduler {
 		return instance;
 	}
 
-	public synchronized final VmInfoBean schedule(CreateVmRequestBean request)
+	public synchronized final VmRequestBean schedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
 		return doSchedule(request);
 	}
 
-	abstract protected VmInfoBean doSchedule(CreateVmRequestBean request)
+	abstract protected VmRequestBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException;
 }

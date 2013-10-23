@@ -8,7 +8,7 @@ import org.apache.commons.io.FilenameUtils;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.vm.PortsPool;
@@ -16,12 +16,12 @@ import edu.indiana.d2i.sloan.vm.VMPorts;
 
 public class RandomScheduler extends Scheduler {
 
-	private RandomScheduler() {
+	public RandomScheduler() {
 
 	}
 
 	@Override
-	protected VmInfoBean doSchedule(CreateVmRequestBean request)
+	protected VmRequestBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
 		PortsPool portsPool = new PortsPool();
 		boolean success = false;
@@ -52,7 +52,7 @@ public class RandomScheduler extends Scheduler {
 						request.getVmLoginID(), request.getVmLoginPasswd(),
 						vmhost, workDir);
 
-				return new VmInfoBean(request, vmhost.sshport, vmhost.vncport,
+				return new VmRequestBean(request, vmhost.publicip, vmhost.sshport, vmhost.vncport,
 						workDir);
 			}
 		}

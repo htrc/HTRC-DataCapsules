@@ -1,5 +1,6 @@
 package edu.indiana.d2i.sloan;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.QueryVmResponseBean;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmStatusBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
@@ -33,7 +35,7 @@ public class QueryVM {
 	public Response getResourcePost(@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
-		String userName = null;
+		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		
 		// read from db and return first
 		// at the same time, send query to hypervisor async
@@ -41,15 +43,23 @@ public class QueryVM {
 		// ws periodically updates VM status??
 		
 		try {		
-			List<VmStatusBean> status = null;
+			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
+			List<VmInfoBean> vmInfoList = null;
 			if (vmid == null) {
-				status = DBOperations.getInstance().getVmStatus(userName);
+				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
+				for (VmInfoBean vminfo : vmInfoList) {
+					status.add(new VmStatusBean(vmid, vminfo.getVmmode().toString(), 
+						vminfo.getVmstate().toString(), vminfo.getPublicip(), 
+						vminfo.getSshport(), vminfo.getVncport()));
+				}
 			} else {
-				status = DBOperations.getInstance().getVmStatus(userName, vmid);
+				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmid);
+				status.add(new VmStatusBean(vmid, vminfo.getVmmode().toString(), 
+						vminfo.getVmstate().toString(), vminfo.getPublicip(), 
+						vminfo.getSshport(), vminfo.getVncport()));
 			}
 			
-			HypervisorProxy.getInstance().addCommand(new QueryVMCommand(
-				userName, vmid /* could be null */));
+			HypervisorProxy.getInstance().addCommand(new QueryVMCommand(vmInfoList));
 			
 			return Response.status(200)
 				.entity(new QueryVmResponseBean(status)).build();

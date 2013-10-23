@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.StopVMCommand;
@@ -30,7 +32,7 @@ public class StopVM {
 	public Response getResourcePost(@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
-		String userName = null;
+		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		
 		if (vmid == null) {
 			return Response
@@ -41,14 +43,15 @@ public class StopVM {
 		}
 		
 		try {
-			if (!VMStateManager.getInstance().transitTo(userName, vmid, VMState.SHUTTINGDOWN)) {
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
+			if (!VMStateManager.getInstance().transitTo(userName, vmid, vmInfo.getVmstate(), VMState.SHUTTINGDOWN)) {
 				return Response
 					.status(400)
-					.entity(new ErrorBean(400, "Cannot stop " + vmid))
+					.entity(new ErrorBean(400, "Cannot stop VM " + vmid + " when it is " + vmInfo.getVmstate()))
 					.build();
 			}
 			
-			HypervisorProxy.getInstance().addCommand(new StopVMCommand(userName, vmid));	
+			HypervisorProxy.getInstance().addCommand(new StopVMCommand(vmInfo));	
 			
 			return Response.status(200).build();			
 		} catch (NoItemIsFoundInDBException e) {

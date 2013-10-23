@@ -144,7 +144,6 @@ public class TestScheduler {
 			SchedulerFactory.getInstance().schedule(request);
 		}
 
-		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmStatus()
-				.size());
+		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmInfo().size());
 	}
 }

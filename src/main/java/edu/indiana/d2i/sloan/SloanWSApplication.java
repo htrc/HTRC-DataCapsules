@@ -21,8 +21,12 @@ public class SloanWSApplication extends Application {
 
 	@Override
 	public Set<Class<?>> getClasses() {
+		// TODO: get rid of the hard code loading!
 		Set<Class<?>> s = new HashSet<Class<?>>();
 		s.add(CreateVM.class);
+		s.add(QueryVM.class);
+//		s.add(CreateVM.class);
+//		s.add(CreateVM.class);
 		s.add(HelloWorld.class);
 		return s;
 	}
