@@ -52,7 +52,7 @@
 			<version>5.1.26</version>
 		</dependency>
 
-		<!-- ssh utils -->
+		<!-- ssh lib -->
 		<dependency>
 			<groupId>com.jcraft</groupId>
 			<artifactId>jsch</artifactId>
