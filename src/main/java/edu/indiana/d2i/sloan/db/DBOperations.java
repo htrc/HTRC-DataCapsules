@@ -76,7 +76,9 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.VM_ID), rs.getString(DBSchema.VmTable.PUBLIC_IP),
 						rs.getString(DBSchema.VmTable.WORKING_DIR), null, null,
 						rs.getInt(DBSchema.VmTable.SSH_PORT), rs.getInt(DBSchema.VmTable.VNC_PORT),
-						VMMode.valueOf(rs.getString(DBSchema.VmTable.VM_MODE)), VMState.valueOf(rs.getString(DBSchema.VmTable.STATE)) 
+						VMMode.valueOf(rs.getString(DBSchema.VmTable.VM_MODE)), 
+						VMState.valueOf(rs.getString(DBSchema.VmTable.STATE)),
+						rs.getString(DBSchema.VmTable.VM_USERNAME), rs.getString(DBSchema.VmTable.VM_PASSWORD)
 						);
 				res.add(vminfo);
 			}
@@ -190,7 +192,8 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
 				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
 				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
-				+ DBSchema.VmTable.WORKING_DIR
+				+ DBSchema.VmTable.WORKING_DIR + ","
+				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME
 //				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.VmTable.TABLE_NAME;
@@ -203,7 +206,8 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
 				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
 				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
-				+ DBSchema.VmTable.WORKING_DIR
+				+ DBSchema.VmTable.WORKING_DIR + ","
+				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME
 //				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.UserVmTable.TABLE_NAME + ","
@@ -221,8 +225,9 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
 				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
 				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
-				+ DBSchema.VmTable.WORKING_DIR
-//				+ image path & policy path
+				+ DBSchema.VmTable.WORKING_DIR + ","
+				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME
+//				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.UserVmTable.TABLE_NAME + ","
 				+ DBSchema.VmTable.TABLE_NAME 

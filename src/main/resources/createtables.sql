@@ -2,7 +2,7 @@ DROP DATABASE IF EXISTS vmdb;
 CREATE DATABASE vmdb;
 USE vmdb;
 
-DROP TABLE IF EXISTS vms, users, uservm;
+DROP TABLE IF EXISTS vms, users, uservm, images;
 
 CREATE TABLE IF NOT EXISTS vms(
 	vmid VARCHAR(128) PRIMARY KEY, 
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS vms(
 	publicip VARCHAR(64), 
 	sshport INT, 
 	vncport INT, 
-	workingdir VARCHAR(128),
+	workingdir VARCHAR(512),
 	imagename VARCHAR(128),
 	vmusername VARCHAR(128),
 	vmpassword VARCHAR(128)) ENGINE=InnoDB;
@@ -29,3 +29,8 @@ CREATE TABLE IF NOT EXISTS uservm(
 	CONSTRAINT fk_vms FOREIGN KEY (vmid)
 		REFERENCES vms(vmid) ON DELETE CASCADE,
 	PRIMARY KEY(username, vmid)) ENGINE=InnoDB;
+	
+CREATE TABLE IF NOT EXISTS images(
+	imagename VARCHAR(128) PRIMARY KEY,
+	imagepath VARCHAR(512)
+	) ENGINE=InnoDB;

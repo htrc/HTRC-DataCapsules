@@ -36,7 +36,7 @@ public class CreateVmRequestBean {
 	public String getVmLoginPasswd() {
 		return vmLoginPasswd;
 	}
-
+	
 	public int getMemory() {
 		return memory;
 	}

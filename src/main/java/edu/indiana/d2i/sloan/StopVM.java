@@ -44,7 +44,7 @@ public class StopVM {
 		
 		try {
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
-			if (!VMStateManager.getInstance().transitTo(userName, vmid, vmInfo.getVmstate(), VMState.SHUTTINGDOWN)) {
+			if (!VMStateManager.getInstance().transitTo(vmid, vmInfo.getVmstate(), VMState.SHUTTINGDOWN)) {
 				return Response
 					.status(400)
 					.entity(new ErrorBean(400, "Cannot stop VM " + vmid + " when it is " + vmInfo.getVmstate()))

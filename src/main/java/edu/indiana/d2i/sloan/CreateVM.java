@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.CreateVmResponseBean;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.hyper.CreateVMCommand;
@@ -79,10 +80,10 @@ public class CreateVM {
 			}
 
 			// schedule & update db
-			VmRequestBean vmreq = SchedulerFactory.getInstance().schedule(request);
+			VmInfoBean vminfo = SchedulerFactory.getInstance().schedule(request);
 
 			// nonblocking call to hypervisor
-			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vmreq));
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid))
 					.build();

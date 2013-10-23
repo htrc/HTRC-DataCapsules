@@ -48,7 +48,7 @@ public class LaunchVM {
 		// launch can only start from shutdown
 		try {			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
-			if (!VMStateManager.getInstance().transitTo(userName, vmid, 
+			if (!VMStateManager.getInstance().transitTo(vmid, 
 				vmInfo.getVmstate(), VMState.LAUNCHING)) {
 				return Response
 					.status(400)

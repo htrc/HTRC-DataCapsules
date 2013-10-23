@@ -4,14 +4,14 @@ import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class VmInfoBean {
-	private String vmid, publicip, workDir, imagepath, policypath;
+	private String vmid, publicip, workDir, imagepath, policypath, vmloginId, vmloginPwd;
 	private int sshport, vncport;
 	private VMMode vmmode; 
 	private VMState vmstate;
 	
 	public VmInfoBean(String vmid, String publicip, String workDir, 
 		String imagepath, String policypath, int sshport, int vncport,
-		VMMode vmmode, VMState vmstate) {
+		VMMode vmmode, VMState vmstate, String vmloginId, String vmloginPwd) {
 		this.vmid = vmid;
 		this.publicip = publicip;
 		this.workDir = workDir;
@@ -21,6 +21,8 @@ public class VmInfoBean {
 		this.vncport = vncport;
 		this.vmmode = vmmode;
 		this.vmstate = vmstate;
+		this.vmloginId = vmloginId;
+		this.vmloginPwd = vmloginPwd;
 	}
 	
 	public String getVmid() {
@@ -51,5 +53,13 @@ public class VmInfoBean {
 
 	public String getPolicypath() {
 		return policypath;
+	}
+
+	public String getVmloginId() {
+		return vmloginId;
+	}
+
+	public String getVmloginPwd() {
+		return vmloginPwd;
 	}
 }

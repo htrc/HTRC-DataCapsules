@@ -23,7 +23,7 @@ public class VMStateManager {
 		return instance;
 	}
 	
-	public synchronized boolean transitTo(String userName, String vmid, VMState src, VMState target) 
+	public synchronized boolean transitTo(String vmid, VMState src, VMState target) 
 		throws SQLException, NoItemIsFoundInDBException {		
 		if (target == VMState.ERROR) {
 			DBOperations.getInstance().updateVMState(vmid, target);
