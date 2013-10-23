@@ -1,9 +1,11 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
+
 public class StopVMCommand extends HypervisorCommand {
 
-	public StopVMCommand(String userName, String vmid) {
-		
+	public StopVMCommand(VmInfoBean vminfo) {
+		super(vminfo);
 	}
 	
 	@Override

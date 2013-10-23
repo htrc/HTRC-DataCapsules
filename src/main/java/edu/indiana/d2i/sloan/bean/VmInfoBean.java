@@ -1,55 +1,55 @@
 package edu.indiana.d2i.sloan.bean;
 
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMState;
+
 public class VmInfoBean {
+	private String vmid, publicip, workDir, imagepath, policypath;
 	private int sshport, vncport;
-	private String workDir;
-	private CreateVmRequestBean request;
+	private VMMode vmmode; 
+	private VMState vmstate;
 	
-	public VmInfoBean(CreateVmRequestBean request, int sshport, int vncport, String workDir) {
-		this.request = request;
+	public VmInfoBean(String vmid, String publicip, String workDir, 
+		String imagepath, String policypath, int sshport, int vncport,
+		VMMode vmmode, VMState vmstate) {
+		this.vmid = vmid;
+		this.publicip = publicip;
+		this.workDir = workDir;
+		this.imagepath = imagepath;
+		this.policypath = policypath;
 		this.sshport = sshport;
 		this.vncport = vncport;
-		this.workDir = workDir;
+		this.vmmode = vmmode;
+		this.vmstate = vmstate;
 	}
 	
-	public String getUserName() {
-		return request.getUserName();
+	public String getVmid() {
+		return vmid;
 	}
-
-	public String getImageName() {
-		return request.getImageName();
+	public String getPublicip() {
+		return publicip;
 	}
-
-	public String getVmId() {
-		return request.getVmId();
-	}
-	
-	public int getMemory() {
-		return request.getMemory();
-	}
-
-	public int getVcpu() {
-		return request.getVcpu();
-	}
-
-	public int getVolumeSizeInGB() {
-		return request.getVolumeSizeInGB();
-	}
-	
-	public int getSshPort() {
-		return sshport;
-	}
-	
-	public int getVncPort() {
-		return vncport;
-	}
-	
 	public String getWorkDir() {
 		return workDir;
 	}
-	
-	@Override
-	public String toString() {
-		return "";
+	public int getSshport() {
+		return sshport;
+	}
+	public int getVncport() {
+		return vncport;
+	}
+	public VMMode getVmmode() {
+		return vmmode;
+	}
+	public VMState getVmstate() {
+		return vmstate;
+	}
+
+	public String getImagepath() {
+		return imagepath;
+	}
+
+	public String getPolicypath() {
+		return policypath;
 	}
 }

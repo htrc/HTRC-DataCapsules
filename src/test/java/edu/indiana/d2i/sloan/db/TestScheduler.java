@@ -83,7 +83,7 @@ public class TestScheduler {
 		try {
 			for (int i = 0; i < scheduled; i++) {
 				CreateVmRequestBean request = new CreateVmRequestBean("user-"+i,
-					"imagename", "vmid-" + i, 1024, 2, 10);
+					"imagename", "vmid-" + i, "password", 1024, 2, 10);
 				Scheduler.getInstance().schedule(request);
 			}
 		} catch (NoResourceAvailableException e) {
@@ -91,7 +91,7 @@ public class TestScheduler {
 		}
 		
 		CreateVmRequestBean request2 = new CreateVmRequestBean("user-2",
-			"imagename", "vmid-"+scheduled, 1024, 2, 10);
+			"imagename", "vmid-"+scheduled, "password", 1024, 2, 10);
 		Scheduler.getInstance().schedule(request2); // exception		
 	}
 	
@@ -105,7 +105,7 @@ public class TestScheduler {
 		// schedule some
 		for (int i = 0; i < scheduled; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-"+i,
-				"imagename", "vmid-" + i, 1024, 2, 10);
+				"imagename", "vmid-" + i, "password", 1024, 2, 10);
 			Scheduler.getInstance().schedule(request);
 		}
 		
@@ -115,10 +115,10 @@ public class TestScheduler {
 		// schedule some more
 		for (int i = scheduled; i < records; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-"+i,
-				"imagename", "vmid-" + i, 1024, 2, 10);
+				"imagename", "vmid-" + i, "password", 1024, 2, 10);
 			Scheduler.getInstance().schedule(request);
 		}
 		
-		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmStatus().size());
+		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmInfo().size());
 	}
 }

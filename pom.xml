@@ -88,6 +88,9 @@
 						<version>2.12</version>
 					</dependency>
 				</dependencies>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

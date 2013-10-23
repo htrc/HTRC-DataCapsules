@@ -1,32 +1,30 @@
 package edu.indiana.d2i.sloan.hyper;
 
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmRequestBean;
+import edu.indiana.d2i.sloan.vm.VMState;
+import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class CreateVMCommand extends HypervisorCommand {
-	private final VmInfoBean vminfo;
+	private final VmRequestBean vminfo;
 
-	public CreateVMCommand(VmInfoBean vminfo) {
-		super();
+	public CreateVMCommand(VmRequestBean vminfo) {
 		this.vminfo = vminfo;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		// get vnc port and ssh port
-		
-		
-		// round robin scheduling
-		
-		
 		// call hypervisor layer
-		
+		Thread.sleep(2000);
 		
 		// update vm status and login info
+		VMStateManager.getInstance().transitTo(vminfo.getUserName(), 
+			vminfo.getVmId(), VMState.BUILDING, VMState.SHUTDOWN);
 	}
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		
+		VMStateManager.getInstance().transitTo(vminfo.getUserName(), 
+			vminfo.getVmId(), VMState.BUILDING, VMState.ERROR);
 	}
 	
 	@Override

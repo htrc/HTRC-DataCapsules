@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmStatusBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 
@@ -32,8 +33,8 @@ class PortsPool {
 		
 		// load from db
 		try {
-			List<VmStatusBean> vmStatus = DBOperations.getInstance().getVmStatus();
-			for (VmStatusBean status : vmStatus) {
+			List<VmInfoBean> vmStatus = DBOperations.getInstance().getVmInfo();
+			for (VmInfoBean status : vmStatus) {
 				if (!portsUsed.containsKey(status.getPublicip())) {
 					portsUsed.put(status.getPublicip(), new HashSet<Integer>());
 				}
@@ -71,16 +72,16 @@ class PortsPool {
 				throw new IllegalArgumentException("Hostname " + host + " is illegal!");
 			}
 			
-			VMPorts vmhost = new VMPorts(host, -1, -1);
+			VMPorts vmport = new VMPorts(host, -1, -1);
 			for (int port = PORT_RANGE_MIN; port <= PORT_RANGE_MAX; port++) {
 				if (!portsUsed.get(host).contains(port)) {
-					if (vmhost.sshport == -1) {
-						vmhost.sshport = port;
+					if (vmport.sshport == -1) {
+						vmport.sshport = port;
 						portsUsed.get(host).add(port);
 					} else {
-						vmhost.vncport = port;
+						vmport.vncport = port;
 						portsUsed.get(host).add(port);
-						return vmhost;
+						return vmport;
 					}
 				}
 			}

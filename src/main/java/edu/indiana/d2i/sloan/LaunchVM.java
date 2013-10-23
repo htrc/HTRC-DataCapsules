@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -46,27 +47,27 @@ public class LaunchVM {
 		
 		// launch can only start from shutdown
 		try {			
-			// vm has already been launched
-			if (!VMStateManager.getInstance().transitTo(userName, vmid, VMState.LAUNCHING)) {
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
+			if (!VMStateManager.getInstance().transitTo(userName, vmid, 
+				vmInfo.getVmstate(), VMState.LAUNCHING)) {
 				return Response
 					.status(400)
 					.entity(new ErrorBean(400,
-						"VM " + vmid + " has been launched!"))
+						"Cannot launch VM " + vmid + " when it is " + vmInfo.getVmstate()))
 					.build();
 			}
 			
 			// nonblocking call to hypervisor
-			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmid));
+			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
-			response = Response
+			return Response
 					.status(400)
 					.entity(new ErrorBean(400,
 							"VM " + vmid + " is not associated with user " + userName))
 					.build();
-			return response;
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

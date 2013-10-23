@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.DeleteVMCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -41,14 +43,15 @@ public class DeleteVM {
 		}
 		
 		try {		
-			if (!VMStateManager.getInstance().transitTo(userName, vmid, VMState.DELETING)) {
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
+			if (!VMStateManager.getInstance().transitTo(userName, vmid, vmInfo.getVmstate(), VMState.DELETING)) {
 				return Response
 					.status(400)
-					.entity(new ErrorBean(400, "Cannot delete " + vmid))
+					.entity(new ErrorBean(400, "Cannot delete VM " + vmid + " when it is " + vmInfo.getVmstate()))
 					.build();
 			}
 			
-			HypervisorProxy.getInstance().addCommand(new DeleteVMCommand(userName, vmid));			
+			HypervisorProxy.getInstance().addCommand(new DeleteVMCommand(vmInfo));			
 //			DBOperations.getInstance().deleteVMs(vmid);
 			
 			return Response.status(200).build();

@@ -15,28 +15,31 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.indiana.d2i.sloan.Configuration;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmStatusBean;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class TestDBOperations {
 	private int[] portsUsed = null;
-	private void loadDataToTestGetCurrentVms() throws SQLException {
+	private void loadDataToVmTable(int records) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 		
 		try {
 			String insertTableSQL = "INSERT INTO vms"
-					+ "(vmid, vmmode, status, publicip, sshport, vncport, workingdir) VALUES"
+					+ "(vmid, vmmode, vmstate, publicip, sshport, vncport, workingdir) VALUES"
 					+ "(?, ?, ?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
-			int count = 5;
+			int count = records;
 			portsUsed = new int[count * 2];
 			for (int i = 0; i < count; i++) {
 				pst = connection.prepareStatement(insertTableSQL);
 				pst.setString(1, "vmid-" + i);
-				pst.setString(2, "maintenance");
+				pst.setString(2, VMMode.MAINTENANCE.toString());
 				pst.setString(3, VMState.RUNNING.toString());
 				pst.setString(4, "192.168.0." + (i+2));
 				pst.setInt(5, 2000 + i*2);
@@ -54,7 +57,7 @@ public class TestDBOperations {
 		}
 	}
 	
-	private void loadDataToTestAddVM(int records) throws SQLException {
+	private void loadDataToUserTable(int records) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 		
@@ -104,12 +107,12 @@ public class TestDBOperations {
 		connection.close();
 	}
 	
-	@Test
-	public void testAddGetAndDeleteVM() throws SQLException {
+//	@Test
+	public void testAddGetAndDeleteVM() throws SQLException, NoItemIsFoundInDBException {
 		String userName, vmid, workDir;
 		
 		int count = 4;
-		loadDataToTestAddVM(count);	
+		loadDataToUserTable(count);	
 		int[] portsExpected = new int[count * 2];
 		List<String> vmids = new ArrayList<String>();
 		for (int index = 0; index < count; index++) {
@@ -136,19 +139,18 @@ public class TestDBOperations {
 		DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", host, workDir);
 		
 		// read 1 vm back
-		List<VmStatusBean> vmStatus = DBOperations.getInstance().getVmStatus("user-" + 0, "vmid-" + 0);
-		Assert.assertTrue(vmStatus.size() == 1);
-		Assert.assertEquals(VMState.BUILDING.toString(), vmStatus.get(0).getState());
-		Assert.assertEquals(2000, vmStatus.get(0).getSshport());
-		Assert.assertEquals(2001, vmStatus.get(0).getVncport());
-		Assert.assertEquals("192.168.0.2", vmStatus.get(0).getPublicip());
-		Assert.assertEquals("vmid-" + 0, vmStatus.get(0).getVmid());
+		VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo("user-" + 0, "vmid-" + 0);
+		Assert.assertEquals(VMState.BUILDING, vmInfo.getVmstate());
+		Assert.assertEquals(2000, vmInfo.getSshport());
+		Assert.assertEquals(2001, vmInfo.getVncport());
+		Assert.assertEquals("192.168.0.2", vmInfo.getPublicip());
+		Assert.assertEquals("vmid-" + 0, vmInfo.getVmid());
 		
 		// read 2 vm back
-		Assert.assertTrue(DBOperations.getInstance().getVmStatus("user-" + (count-2)).size() == 2);
+		Assert.assertTrue(DBOperations.getInstance().getVmInfo("user-" + (count-2)).size() == 2);
 		
 		// read ports in use
-		vmStatus = DBOperations.getInstance().getVmStatus();
+		List<VmInfoBean> vmStatus = DBOperations.getInstance().getVmInfo();
 		int[] ports = new int[vmStatus.size() * 2];
 		for (int i = 0; i < vmStatus.size(); i++) {
 			ports[i*2] = vmStatus.get(i).getSshport();
@@ -162,6 +164,31 @@ public class TestDBOperations {
 		for (String id : vmids) {
 			DBOperations.getInstance().deleteVMs(id);
 		}		
-		Assert.assertEquals(0, DBOperations.getInstance().getVmStatus().size());		
+		
+		vmStatus = DBOperations.getInstance().getVmInfo();
+		Assert.assertEquals(0, vmStatus.size());		
+	}
+	
+	@Test
+	public void testInsertUserIfNotExists() throws SQLException {
+		DBOperations.getInstance().insertUserIfNotExists("myusername-0");
+		DBOperations.getInstance().insertUserIfNotExists("myusername-0");
+	}
+	
+	@Test
+	public void testUpdateVMStatus() throws SQLException {
+		int count = 3;
+		loadDataToVmTable(count);
+		
+		for (int i = 0; i < count; i++) {
+			String vmid = "vmid-" + i;
+			DBOperations.getInstance().updateVMState(vmid, VMState.SHUTDOWN);
+		}
+		
+		List<VmInfoBean> vmStatus = DBOperations.getInstance().getVmInfo();
+		Assert.assertEquals(count, vmStatus.size());
+		for (int i = 0; i < count; i++) {
+			Assert.assertEquals(VMState.SHUTDOWN, vmStatus.get(i).getVmstate());
+		}
 	}
 }

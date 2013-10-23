@@ -1,13 +1,13 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import java.util.List;
+
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
+
 public class QueryVMCommand extends HypervisorCommand {
-	private final String vmid; 
-	private final String userName;
 	
-	public QueryVMCommand(String userName, String vmid) {
-		super();
-		this.vmid = vmid;
-		this.userName = userName;
+	public QueryVMCommand(List<VmInfoBean> vmInfoList) {
+//		super(vminfo);
 	}
 	
 	@Override

@@ -19,7 +19,7 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.CreateVmResponseBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.hyper.CreateVMCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -49,33 +49,40 @@ public class CreateVM {
 		}
 		
 		if (imageName == null || loginpassword == null) {
+			logger.error(String.format("image:%s, loginpwd:%s", imageName, loginpassword));
 			return Response
 				.status(400)
 				.entity(new ErrorBean(400, "Image name and login password cannot be empty!"))
 				.build();
 		}
-
+		
 		// TODO: check if image name is valid
 		
+		logger.info(String.format("User %s requests image %s with vcpu %d, memory %d, " +
+			"and login password %s", userName, imageName, vcpu, memory, loginpassword));
+		
 		try {
-			// check quota
-			if (DBOperations.getInstance()
-					.quotaExceedsLimit(userName)) {
-				return Response.status(400)
-						.entity(new ErrorBean(400, "Quota exceeds limit!"))
-						.build();
-			}
+			// create a user entry
+			DBOperations.getInstance().insertUserIfNotExists(userName);
 			
 			// vm parameters
 			String vmid = UUID.randomUUID().toString();
 			int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
-					.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB, 
-						Constants.DEFAULT_VOLUME_SIZE_IN_GB));
+				.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB, 
+					Constants.DEFAULT_VOLUME_SIZE_IN_GB));
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
-					imageName, vmid, memory, vcpu, volumeSizeInGB);
+				imageName, vmid, loginpassword, memory, vcpu, volumeSizeInGB);
+			
+			// check quota
+			if (DBOperations.getInstance().quotaExceedsLimit(request)) {
+				logger.error("Quota exceeds limit for request " + request);
+				return Response.status(400)
+					.entity(new ErrorBean(400, "Quota exceeds limit!"))
+					.build();
+			}
 			
 			// schedule & update db
-			VmInfoBean vminfo = Scheduler.getInstance().schedule(request);
+			VmRequestBean vminfo = Scheduler.getInstance().schedule(request);
 			
 			// nonblocking call to hypervisor
 			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));

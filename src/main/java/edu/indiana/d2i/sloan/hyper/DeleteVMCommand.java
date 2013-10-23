@@ -1,9 +1,11 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
+
 public class DeleteVMCommand extends HypervisorCommand {
 	
-	public DeleteVMCommand(String userName, String vmid) {
-		
+	public DeleteVMCommand(VmInfoBean vminfo) {
+		super(vminfo);
 	}
 
 	@Override

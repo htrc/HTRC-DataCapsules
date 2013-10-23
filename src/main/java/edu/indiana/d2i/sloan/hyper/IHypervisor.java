@@ -1,11 +1,12 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import edu.indiana.d2i.sloan.bean.VmRequestBean;
+
 interface IHypervisor {
-	public HypervisorResponse createVM(String pathToCommonImage, String vmWorkingDir,
-		int vcpu, int memory, int vncPort, int sshPort, int volumeSizeInGB);
+	public HypervisorResponse createVM(VmRequestBean vminfo);
 	
-	public HypervisorResponse launchVM(String vmWorkingDir, String mode, String policyFile);
+	public HypervisorResponse launchVM(VmRequestBean vminfo);
 	
-	public HypervisorResponse queryVM(String vmWorkingDir);
+	public HypervisorResponse queryVM(VmRequestBean vminfo);
 	
 }
