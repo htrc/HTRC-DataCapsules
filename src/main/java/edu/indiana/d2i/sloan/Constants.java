@@ -21,6 +21,7 @@ public class Constants {
 
 	/* configuration file name */
 	public static final String CONFIGURATION_FILE_NAME = "sloan-site-conf.properties";
+	public static final String DEFAULT_CONFIGURATION_FILE_NAME = "default-sloan-conf.properties";
 
 	public static final String DEFAULT_VM_WORKINGDIR_PREFIX = "/var/instance/";
 
