@@ -55,7 +55,11 @@ public class VmRequestBean {
 	}
 	
 	public String getLoginPassword() {
-		return request.getLoginPassword();
+		return request.getVmLoginPasswd();
+	}
+	
+	public String getLoginID() {
+		return request.getVmLoginID();
 	}
 	
 	@Override

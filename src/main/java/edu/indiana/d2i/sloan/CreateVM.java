@@ -23,7 +23,7 @@ import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.hyper.CreateVMCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
-import edu.indiana.d2i.sloan.vm.Scheduler;
+import edu.indiana.d2i.sloan.scheduler.SchedulerFactory;
 
 @Path("/createvm")
 public class CreateVM {
@@ -32,8 +32,8 @@ public class CreateVM {
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(
-			@FormParam("imagename") String imageName,
+	public Response getResourcePost(@FormParam("imagename") String imageName,
+			@FormParam("loginusername") String loginusername,
 			@FormParam("loginpassword") String loginpassword,
 			@DefaultValue("1024") @FormParam("memory") int memory,
 			@DefaultValue("1") @FormParam("vcpu") int vcpu,
@@ -44,51 +44,48 @@ public class CreateVM {
 		// check input
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
-			return Response.status(500).entity(new ErrorBean(
-				500, "Username is not present in http header.")).build();
-		}
-		
-		if (imageName == null || loginpassword == null) {
-			logger.error(String.format("image:%s, loginpwd:%s", imageName, loginpassword));
 			return Response
-				.status(400)
-				.entity(new ErrorBean(400, "Image name and login password cannot be empty!"))
-				.build();
+					.status(500)
+					.entity(new ErrorBean(500,
+							"Username is not present in http header.")).build();
 		}
-		
+
+		if (imageName == null || loginusername == null || loginpassword == null) {
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400,
+							"Image name, login username and login password cannot be empty!"))
+					.build();
+		}
+
 		// TODO: check if image name is valid
-		
-		logger.info(String.format("User %s requests image %s with vcpu %d, memory %d, " +
-			"and login password %s", userName, imageName, vcpu, memory, loginpassword));
-		
+
 		try {
-			// create a user entry
-			DBOperations.getInstance().insertUserIfNotExists(userName);
-			
+			int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
+					.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB,
+							Constants.DEFAULT_VOLUME_SIZE_IN_GB));
+
 			// vm parameters
 			String vmid = UUID.randomUUID().toString();
-			int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
-				.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB, 
-					Constants.DEFAULT_VOLUME_SIZE_IN_GB));
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
-				imageName, vmid, loginpassword, memory, vcpu, volumeSizeInGB);
+					imageName, vmid, loginusername, loginpassword, memory,
+					vcpu, volumeSizeInGB);
 			
 			// check quota
 			if (DBOperations.getInstance().quotaExceedsLimit(request)) {
-				logger.error("Quota exceeds limit for request " + request);
 				return Response.status(400)
-					.entity(new ErrorBean(400, "Quota exceeds limit!"))
-					.build();
+						.entity(new ErrorBean(400, "Quota exceeds limit!"))
+						.build();
 			}
-			
+
 			// schedule & update db
-			VmRequestBean vminfo = Scheduler.getInstance().schedule(request);
-			
+			VmRequestBean vmreq = SchedulerFactory.getInstance().schedule(request);
+
 			// nonblocking call to hypervisor
-			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));
-			
-			return Response.status(200)
-					.entity(new CreateVmResponseBean(vmid)).build();
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vmreq));
+
+			return Response.status(200).entity(new CreateVmResponseBean(vmid))
+					.build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

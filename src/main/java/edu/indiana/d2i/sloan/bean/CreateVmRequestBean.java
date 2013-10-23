@@ -1,15 +1,17 @@
 package edu.indiana.d2i.sloan.bean;
 
 public class CreateVmRequestBean {
-	private String userName, imageName, vmid, loginpassword;
+	private String userName, imageName, vmid, vmLoginID, vmLoginPasswd;
 	private int memory, vcpu, volumeSizeInGB;
 
-	public CreateVmRequestBean(String userName, String imageName, 
-		String vmid, String loginpassword, int memory, int vcpu, int volumeSizeInGB) {
+	public CreateVmRequestBean(String userName, String imageName, String vmid,
+			String vmLoginID, String vmLoginPasswd, int memory, int vcpu,
+			int volumeSizeInGB) {
 		this.userName = userName;
 		this.imageName = imageName;
-		this.loginpassword = loginpassword;
 		this.vmid = vmid;
+		this.vmLoginID = vmLoginID;
+		this.vmLoginPasswd = vmLoginPasswd;
 		this.memory = memory;
 		this.vcpu = vcpu;
 		this.volumeSizeInGB = volumeSizeInGB;
@@ -26,7 +28,15 @@ public class CreateVmRequestBean {
 	public String getVmId() {
 		return vmid;
 	}
-	
+
+	public String getVmLoginID() {
+		return vmLoginID;
+	}
+
+	public String getVmLoginPasswd() {
+		return vmLoginPasswd;
+	}
+
 	public int getMemory() {
 		return memory;
 	}
@@ -38,14 +48,13 @@ public class CreateVmRequestBean {
 	public int getVolumeSizeInGB() {
 		return volumeSizeInGB;
 	}
-	
-	public String getLoginPassword() {
-		return loginpassword;
-	}
 
 	@Override
 	public String toString() {
-		return String.format("[username=%s, imagename=%s, vmid=%s, memory=%d, vcpu=%d, volumesize=%dGB]",
-			userName, imageName, vmid, memory, vcpu, volumeSizeInGB);
+		return String
+				.format("[username=%s, imagename=%s, vmid=%s, vmloginID=%s vmloginPasswd=%s memory=%d, vcpu=%d, volumesize=%dGB]",
+						userName, imageName, vmid, vmLoginID, vmLoginPasswd,
+						memory, vcpu, volumeSizeInGB);
 	}
+
 }
