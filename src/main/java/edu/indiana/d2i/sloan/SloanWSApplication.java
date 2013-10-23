@@ -25,6 +25,7 @@ public class SloanWSApplication extends Application {
 		Set<Class<?>> s = new HashSet<Class<?>>();
 		s.add(CreateVM.class);
 		s.add(QueryVM.class);
+		
 //		s.add(CreateVM.class);
 //		s.add(CreateVM.class);
 		s.add(HelloWorld.class);
