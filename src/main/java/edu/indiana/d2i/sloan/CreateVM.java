@@ -72,7 +72,7 @@ public class CreateVM {
 					vcpu, volumeSizeInGB);
 			
 			// check quota
-			if (DBOperations.getInstance().quotaExceedsLimit(request)) {
+			if (DBOperations.getInstance().quotaExceedsLimit(request, volumeSizeInGB)) {
 				return Response.status(400)
 						.entity(new ErrorBean(400, "Quota exceeds limit!"))
 						.build();

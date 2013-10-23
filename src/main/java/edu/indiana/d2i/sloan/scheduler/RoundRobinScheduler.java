@@ -6,7 +6,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
@@ -17,9 +16,9 @@ public class RoundRobinScheduler extends Scheduler {
 	private int scheduleIndex = 0;
 
 	public RoundRobinScheduler() {
-		
+
 	}
-	
+
 	@Override
 	protected VmRequestBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
@@ -35,11 +34,13 @@ public class RoundRobinScheduler extends Scheduler {
 			scheduleIndex = (scheduleIndex + 1) % hosts.length;
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),
-						request.getVmId(), request.getImageName(), vmhost,
-						workDir);
-				
-				return new VmRequestBean(request, vmhost.publicip, vmhost.sshport, vmhost.vncport,
-						workDir);
+
+				request.getVmId(), request.getImageName(),
+						request.getVmLoginID(), request.getVmLoginPasswd(),
+						vmhost, workDir);
+
+				return new VmRequestBean(request, vmhost.publicip,
+						vmhost.sshport, vmhost.vncport, workDir);
 			}
 		} while (scheduleIndex != start);
 

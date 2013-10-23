@@ -17,6 +17,16 @@ class DBSchema {
 		public static String VNC_PORT = "vncport";
 		public static String WORKING_DIR = "workingdir";
 		public static String IMAGE_NAME = "imagename";
+		
+		/*
+		 * the username/password pair that user uses to initially login to the
+		 * launched VM. This pair is passed to web service layer from web front
+		 * end and user can change the credentials later in the VM if he/she
+		 * wants.
+		 */
+		public static String VM_USERNAME = "vmusername";
+		public static String VM_PASSWORD = "vmpassword";
+		
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{
 				put(VM_ID, 1);
@@ -27,6 +37,8 @@ class DBSchema {
 				put(VNC_PORT, 6);
 				put(WORKING_DIR, 7);
 				put(IMAGE_NAME, 8);
+				put(VM_USERNAME, 9);
+				put(VM_PASSWORD, 10);
 			}
 		};
 	}
@@ -46,13 +58,5 @@ class DBSchema {
 		public static String TABLE_NAME = "uservm";
 		public static String USER_NAME = "username";
 		public static String VM_ID = "vmid";
-		/*
-		 * the username/password pair that user uses to initially login to the
-		 * launched VM. This pair is passed to web service layer from web front
-		 * end and user can change the credentials later in the VM if he/she
-		 * wants.
-		 */
-		public static String VM_USERNAME = "vmusername";
-		public static String VM_PASSWORD = "vmpassword";
 	}
 }

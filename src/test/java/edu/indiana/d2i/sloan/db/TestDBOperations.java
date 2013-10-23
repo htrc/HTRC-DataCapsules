@@ -127,7 +127,7 @@ public class TestDBOperations {
 			
 			portsExpected[index*2] = 2000 + index*2;
 			portsExpected[index*2+1] = 2000 + index*2 + 1;
-			DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", host, workDir);
+			DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", "vmusername", "vmpasswd", host, workDir);
 		}
 		
 		// trigger error
@@ -135,7 +135,7 @@ public class TestDBOperations {
 		vmid = "vmid-" + 0;
 		VMPorts host = new VMPorts("192.168.0." + (0+2), 2000 + 0*2, 2000 + 0*2 + 1);
 		workDir = "/var/instance/" + "vmid-" + 0;
-		DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", host, workDir);
+		DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", "vmusername", "vmpasswd", host, workDir);
 		
 		// read 1 vm back
 		VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo("user-" + 0, "vmid-" + 0);
