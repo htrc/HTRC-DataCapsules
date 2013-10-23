@@ -14,7 +14,6 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.LaunchVMCommand;
@@ -32,41 +31,39 @@ public class LaunchVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = null;
-		
+
 		if (vmid == null) {
-			return Response
-				.status(400)
-				.entity(new ErrorBean(400,
-					"vmid cannot be empty!"))
-				.build();
-		}		
-		
+			return Response.status(400)
+					.entity(new ErrorBean(400, "vmid cannot be empty!"))
+					.build();
+		}
+
 		// how to avoid multiple launching requests for the same vm
 		// check and update?
-		
+
 		// launch can only start from shutdown
-		try {			
+		try {
 			// vm has already been launched
-			if (!VMStateManager.getInstance().transitTo(userName, vmid, VMState.LAUNCHING)) {
+			if (!VMStateManager.getInstance().transitTo(userName, vmid,
+					VMState.LAUNCHING)) {
 				return Response
-					.status(400)
-					.entity(new ErrorBean(400,
-						"VM " + vmid + " has been launched!"))
-					.build();
+						.status(400)
+						.entity(new ErrorBean(400, "VM " + vmid
+								+ " has been launched!")).build();
 			}
-			
+
 			// nonblocking call to hypervisor
 			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmid));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
-			response = Response
+			return Response
 					.status(400)
-					.entity(new ErrorBean(400,
-							"VM " + vmid + " is not associated with user " + userName))
+					.entity(new ErrorBean(400, "VM " + vmid
+							+ " is not associated with user " + userName))
 					.build();
-			return response;
+
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

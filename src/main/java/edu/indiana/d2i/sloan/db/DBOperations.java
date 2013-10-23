@@ -13,7 +13,6 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.sloan.bean.VmStatusBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMPorts;
-import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class DBOperations {
@@ -23,20 +22,20 @@ public class DBOperations {
 	private DBOperations() {
 
 	}
-	
+
 	static {
 		instance = new DBOperations();
 	}
-	
+
 	private void executeTransaction(List<String> updates) throws SQLException {
 		Connection connection = null;
 		Statement st = null;
-		
+
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			connection.setAutoCommit(false);
 			st = connection.createStatement();
-			
+
 			for (String update : updates) {
 				st.executeUpdate(update);
 			}
@@ -45,42 +44,52 @@ public class DBOperations {
 		} catch (SQLException e) {
 			logger.error(e.getMessage(), e);
 			if (connection != null) {
-                try {
-                	connection.rollback();
-                	logger.info("Rollback updates " + updates.toString());
-                } catch (SQLException ex1) {
-                    throw ex1;
-                }
-            }
+				try {
+					connection.rollback();
+					logger.info("Rollback updates " + updates.toString());
+				} catch (SQLException sqle) {
+					throw sqle;
+				}
+			}
 		} finally {
-			if (st != null) st.close();
-			if (connection != null) connection.close();
+			if (st != null)
+				st.close();
+			if (connection != null)
+				connection.close();
 		}
 	}
-	
-	private List<VmStatusBean> getVmStatusInternal(String sql) throws SQLException {
-		logger.debug(sql);
-		
+
+	private List<VmStatusBean> getVmStatusInternal(String sql)
+			throws SQLException {
+		if (logger.isDebugEnabled())
+			logger.debug(sql);
+
 		List<VmStatusBean> res = new ArrayList<VmStatusBean>();
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
-		
+
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				VmStatusBean status = new VmStatusBean(
-					rs.getString(DBSchema.VmTable.VM_ID), rs.getString(DBSchema.VmTable.VM_MODE), 
-					rs.getString(DBSchema.VmTable.STATE), rs.getString(DBSchema.VmTable.PUBLIC_IP), 
-					rs.getInt(DBSchema.VmTable.SSH_PORT), rs.getInt(DBSchema.VmTable.VNC_PORT));
+						rs.getString(DBSchema.VmTable.VM_ID),
+						rs.getString(DBSchema.VmTable.VM_MODE),
+						rs.getString(DBSchema.VmTable.STATE),
+						rs.getString(DBSchema.VmTable.PUBLIC_IP),
+						rs.getInt(DBSchema.VmTable.SSH_PORT),
+						rs.getInt(DBSchema.VmTable.VNC_PORT));
 				res.add(status);
 			}
 		} finally {
-			if (rs != null) rs.close();
-			if (pst != null) pst.close();
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
 		}
 		return res;
 	}
@@ -89,101 +98,203 @@ public class DBOperations {
 		return instance;
 	}
 
-	public boolean quotaExceedsLimit(String userName) {
-		return false;
+	public boolean quotaExceedsLimit(String userName,
+			int requestedVolumeSize) throws SQLException,
+			NoItemIsFoundInDBException {
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ").append(DBSchema.UserTable.LEFT_QUOTA)
+				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append("=").append(String.format("\"%s\"", userName));
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql.toString());
+			rs = pst.executeQuery();
+			if (rs.next()) {
+				return rs.getInt(DBSchema.UserTable.LEFT_QUOTA) > requestedVolumeSize;
+			} else {
+				throw new NoItemIsFoundInDBException(String.format(
+						"Cannot find user record for user %s in table %s",
+						userName, DBSchema.UserTable.TABLE_NAME));
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
 	}
-	
-	public boolean vmExists(String userName, String vmid) {
-		return true;
+
+	public boolean vmExists(String userName, String vmid) throws SQLException {
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ").append(DBSchema.UserVmTable.VM_ID)
+				.append(" FROM ").append(DBSchema.UserVmTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.UserVmTable.USER_NAME)
+				.append("=").append(String.format("\"%s\"", userName))
+				.append(" AND ").append(DBSchema.UserVmTable.VM_ID).append("=")
+				.append(String.format("\"%s\"", vmid));
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql.toString());
+			rs = pst.executeQuery();
+			if (rs.next()) {
+				return true;
+			} else {
+				return false;
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
 	}
-	
+
 	public List<VmStatusBean> getVmStatus() throws SQLException {
-		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + "," 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + "," 
-				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT 
-				+ " FROM " 
-				+ DBSchema.VmTable.TABLE_NAME;
-		return getVmStatusInternal(sql);
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ").append(DBSchema.VmTable.VM_MODE).append(",")
+				.append(DBSchema.VmTable.TABLE_NAME).append(".")
+				.append(DBSchema.VmTable.VM_ID).append(",")
+				.append(DBSchema.VmTable.PUBLIC_IP).append(",")
+				.append(DBSchema.VmTable.STATE).append(",")
+				.append(DBSchema.VmTable.SSH_PORT).append(",")
+				.append(DBSchema.VmTable.VNC_PORT).append(" FROM ")
+				.append(DBSchema.VmTable.TABLE_NAME);
+
+		return getVmStatusInternal(sql.toString());
 	}
-	
+
 	public List<VmStatusBean> getVmStatus(String userName) throws SQLException {
-		String sql = String.format(
-				"SELECT " + DBSchema.VmTable.VM_MODE + "," 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + "," 
-				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT 
-				+ " FROM " 
-				+ DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME 
-				+ " WHERE " 
-				+ DBSchema.UserVmTable.TABLE_NAME + "."  +  DBSchema.UserVmTable.VM_ID + "=" 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID
-				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\"", userName);
-		return getVmStatusInternal(sql);
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ").append(DBSchema.VmTable.VM_MODE).append(",")
+				.append(DBSchema.VmTable.TABLE_NAME).append(".")
+				.append(DBSchema.VmTable.VM_ID).append(",")
+				.append(DBSchema.VmTable.PUBLIC_IP).append(",")
+				.append(DBSchema.VmTable.STATE).append(",")
+				.append(DBSchema.VmTable.SSH_PORT).append(",")
+				.append(DBSchema.VmTable.VNC_PORT).append(" FROM ")
+				.append(DBSchema.UserVmTable.TABLE_NAME).append(",")
+				.append(DBSchema.VmTable.TABLE_NAME).append(" WHERE ")
+				.append(DBSchema.UserVmTable.TABLE_NAME).append(".")
+				.append(DBSchema.UserVmTable.VM_ID).append("=")
+				.append(DBSchema.VmTable.TABLE_NAME).append(".")
+				.append(DBSchema.VmTable.VM_ID).append(" AND ")
+				.append(DBSchema.UserVmTable.USER_NAME)
+				.append(String.format("=\"%s\"", userName));
+
+		return getVmStatusInternal(sql.toString());
 	}
-	
-	public List<VmStatusBean> getVmStatus(String userName, String vmid) 
-		throws SQLException, NoItemIsFoundInDBException {
-		String sql = String.format(
-				"SELECT " + DBSchema.VmTable.VM_MODE + "," 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
-				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT 
-				+ " FROM " 
-				+ DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME 
-				+ " WHERE " 
-				+ DBSchema.UserVmTable.TABLE_NAME + "."  +  DBSchema.UserVmTable.VM_ID + "=" 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID
-				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID + "=\"%s\"", userName, vmid);
-		List<VmStatusBean> status = getVmStatusInternal(sql);
-		if (status.size() == 0) 
+
+	public List<VmStatusBean> getVmStatus(String userName, String vmid)
+			throws SQLException, NoItemIsFoundInDBException {
+		StringBuilder sql = new StringBuilder();
+		sql.append("SELECT ").append(DBSchema.VmTable.VM_MODE).append(",")
+				.append(DBSchema.VmTable.TABLE_NAME).append(".")
+				.append(DBSchema.VmTable.VM_ID).append(",")
+				.append(DBSchema.VmTable.PUBLIC_IP).append(",")
+				.append(DBSchema.VmTable.STATE).append(",")
+				.append(DBSchema.VmTable.SSH_PORT).append(",")
+				.append(DBSchema.VmTable.VNC_PORT).append(" FROM ")
+				.append(DBSchema.UserVmTable.TABLE_NAME).append(",")
+				.append(DBSchema.VmTable.TABLE_NAME).append(" WHERE ")
+				.append(DBSchema.UserVmTable.TABLE_NAME).append(".")
+				.append(DBSchema.UserVmTable.VM_ID).append("=")
+				.append(DBSchema.VmTable.TABLE_NAME).append(".")
+				.append(DBSchema.VmTable.VM_ID).append(" AND ")
+				.append(DBSchema.UserVmTable.USER_NAME)
+				.append(String.format("=\"%s\"", userName)).append(" AND ")
+				.append(DBSchema.VmTable.TABLE_NAME).append(".")
+				.append(DBSchema.VmTable.VM_ID)
+				.append(String.format("=\"%s\"", vmid));
+
+		List<VmStatusBean> status = getVmStatusInternal(sql.toString());
+		if (status.size() == 0)
 			throw new NoItemIsFoundInDBException(String.format(
-				"VM %s with user %s is not found in DB.", vmid, userName));
+					"VM %s with user %s is not found in DB.", vmid, userName));
 		return status;
 	}
-	
-	public void addVM(String userName, String vmid, String imageName, VMPorts host, String workDir) throws SQLException {		
-		String insertvmsql = String.format("INSERT INTO " + DBSchema.VmTable.TABLE_NAME + " ("
-			+ DBSchema.VmTable.VM_ID + "," + DBSchema.VmTable.STATE + "," 
-			+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.SSH_PORT + "," 
-			+ DBSchema.VmTable.VNC_PORT + "," + DBSchema.VmTable.WORKING_DIR + "," + DBSchema.VmTable.IMAGE_NAME + ") VALUES"
-			+ "(\"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\")", 
-			vmid, VMState.BUILDING.toString(), host.host, host.sshport, host.vncport, workDir, imageName);
-		String insertvmusersql = String.format("INSERT INTO " + DBSchema.UserVmTable.TABLE_NAME + " ("
-			+ DBSchema.UserVmTable.USER_NAME + "," + DBSchema.UserVmTable.VM_ID + ") VALUES"
-			+ "(\"%s\", \"%s\")", 
-			userName, vmid);
-		
-		logger.debug(insertvmsql);
-		logger.debug(insertvmusersql);
-		
+
+	public void addVM(String userName, String vmid, String imageName,
+			VMPorts host, String workDir) throws SQLException {
+		StringBuilder insertvmsql = new StringBuilder();
+		insertvmsql
+				.append("INSERT INTO ")
+				.append(DBSchema.VmTable.TABLE_NAME)
+				.append(" (")
+				.append(DBSchema.VmTable.VM_ID)
+				.append(",")
+				.append(DBSchema.VmTable.STATE)
+				.append(",")
+				.append(DBSchema.VmTable.PUBLIC_IP)
+				.append(",")
+				.append(DBSchema.VmTable.SSH_PORT)
+				.append(",")
+				.append(DBSchema.VmTable.VNC_PORT)
+				.append(",")
+				.append(DBSchema.VmTable.WORKING_DIR)
+				.append(",")
+				.append(DBSchema.VmTable.IMAGE_NAME)
+				.append(") VALUES")
+				.append(String.format(
+						"(\"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\")",
+						vmid, VMState.BUILDING.toString(), host.host,
+						host.sshport, host.vncport, workDir, imageName));
+
+		StringBuilder insertvmusersql = new StringBuilder();
+		insertvmusersql.append("INSERT INTO ")
+				.append(DBSchema.UserVmTable.TABLE_NAME).append(" (")
+				.append(DBSchema.UserVmTable.USER_NAME).append(",")
+				.append(DBSchema.UserVmTable.VM_ID).append(") VALUES")
+				.append(String.format("=\"%s\", \"%s\"", userName, vmid));
+
+		if (logger.isDebugEnabled()) {
+			logger.debug(insertvmsql);
+			logger.debug(insertvmusersql);
+		}
+
 		List<String> updates = new ArrayList<String>();
-		updates.add(insertvmsql);
-		updates.add(insertvmusersql);
-		
+		updates.add(insertvmsql.toString());
+		updates.add(insertvmusersql.toString());
+
 		executeTransaction(updates);
 	}
-	
 	public void deleteVMs(String vmid) throws SQLException {
-		List<String> updates = new ArrayList<String>(); 
-		String deletevmsql = String.format("DELETE FROM " + DBSchema.VmTable.TABLE_NAME + 
-				" where " + DBSchema.VmTable.VM_ID + "=\"%s\"", vmid);
-		updates.add(deletevmsql);
-		executeTransaction(updates);	
+		List<String> updates = new ArrayList<String>();
+		StringBuilder deletevmsql = new StringBuilder();
+		deletevmsql.append("DELETE FROM ").append(DBSchema.VmTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.VmTable.VM_ID)
+				.append(String.format("=\"%s\"", vmid));
+
+		updates.add(deletevmsql.toString());
+		executeTransaction(updates);
 	}
-	
 	public void updateVMStatus(String vmid, VMState state) throws SQLException {
 		// use row affected to tell whether value exists before ??
-		List<String> updates = new ArrayList<String>(); 
-		String updatevmsql = String.format("DELETE FROM " + DBSchema.VmTable.TABLE_NAME + 
-				" where " + DBSchema.VmTable.VM_ID + "=\"%s\"", vmid);
-		updates.add(updatevmsql);
+		List<String> updates = new ArrayList<String>();
+		StringBuilder updatevmsql = new StringBuilder();
+		updatevmsql.append("DELETE FROM ").append(DBSchema.VmTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.VmTable.VM_ID)
+				.append(String.format("=\"%s\"", vmid));
+
+		updates.add(updatevmsql.toString());
 		executeTransaction(updates);
 	}
-	
 	public void close() {
 		DBConnections.getInstance().close();
 	}

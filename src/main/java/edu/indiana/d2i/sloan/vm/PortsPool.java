@@ -13,7 +13,7 @@ import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.VmStatusBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 
-class PortsPool {
+public class PortsPool {
 	private static Logger logger = Logger.getLogger(PortsPool.class);
 	
 	// <host, <ports_in_use>>
