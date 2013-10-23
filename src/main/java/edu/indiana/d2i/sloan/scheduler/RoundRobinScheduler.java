@@ -15,7 +15,7 @@ import edu.indiana.d2i.sloan.vm.VMPorts;
 public class RoundRobinScheduler extends Scheduler {
 	private int scheduleIndex = 0;
 
-	public RoundRobinScheduler() {
+	private RoundRobinScheduler() {
 
 	}
 

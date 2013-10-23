@@ -17,10 +17,6 @@ public abstract class Scheduler {
 
 	protected static Scheduler instance = null;
 
-	public static Scheduler getInstance() {
-		return instance;
-	}
-
 	public synchronized final VmRequestBean schedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
 		return doSchedule(request);

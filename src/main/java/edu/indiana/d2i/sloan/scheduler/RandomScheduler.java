@@ -16,7 +16,7 @@ import edu.indiana.d2i.sloan.vm.VMPorts;
 
 public class RandomScheduler extends Scheduler {
 
-	public RandomScheduler() {
+	private RandomScheduler() {
 
 	}
 

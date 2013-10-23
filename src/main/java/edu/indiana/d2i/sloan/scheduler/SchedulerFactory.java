@@ -24,7 +24,11 @@ public class SchedulerFactory {
 
 		try {
 			Class<?> schedulerClass = Class.forName(schedulerClassName);
-			Constructor<?> constructor = schedulerClass.getConstructor();
+			Constructor<?> constructor = schedulerClass
+					.getDeclaredConstructor();
+
+			/* set accessible to true since constructor is private */
+			constructor.setAccessible(true);
 
 			scheduler = (Scheduler) constructor.newInstance();
 		} catch (ClassNotFoundException e) {

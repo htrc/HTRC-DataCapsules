@@ -8,7 +8,7 @@ import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 
 public class LoadAwareScheduler extends Scheduler {
 
-	public LoadAwareScheduler() {
+	private LoadAwareScheduler() {
 
 	}
 
