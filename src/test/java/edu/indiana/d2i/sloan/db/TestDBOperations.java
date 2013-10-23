@@ -29,8 +29,8 @@ public class TestDBOperations {
 		
 		try {
 			String insertTableSQL = "INSERT INTO vms"
-					+ "(vmid, vmmode, vmstate, publicip, sshport, vncport, workingdir) VALUES"
-					+ "(?, ?, ?, ?, ?, ?, ?)";
+					+ "(vmid, vmmode, vmstate, publicip, sshport, vncport, workingdir, imagename, vmusername, vmpassword) VALUES"
+					+ "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
 			int count = records;
@@ -44,6 +44,9 @@ public class TestDBOperations {
 				pst.setInt(5, 2000 + i*2);
 				pst.setInt(6, 2000 + i*2 + 1);
 				pst.setString(7, "/var/instance/" + "vmid-" + i);
+				pst.setString(8, "imagepath");
+				pst.setString(9, "username" + i);
+				pst.setString(10, "password");
 				pst.executeUpdate();
 				pst.close();
 				

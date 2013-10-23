@@ -63,6 +63,47 @@
     <load-on-startup>1</load-on-startup>
   </servlet>
   
+  <!-- OAuth2 servlet filter  -->
+  <filter>
+    <filter-name>oauth2-filter</filter-name>
+    <filter-class>edu.indiana.d2i.htrc.oauth2.filter.OAuth2Filter</filter-class>
+    <init-param>
+      <param-name>oauth2.provider.url</param-name>
+      <param-value>https://htrc3.pti.indiana.edu:9443/services/</param-value>
+    </init-param>
+    <init-param>
+      <param-name>oauth2.provider.user</param-name>
+      <param-value>yiming</param-value>
+    </init-param>
+    <init-param>
+      <param-name>oauth2.provider.password</param-name>
+      <param-value>y1m1ngsun</param-value>
+    </init-param>
+    
+    <!-- trustStore and trustPassword only needed if WSO2 IS is using a self-signed certificate -->
+    <!--  init-param>
+      <param-name>javax.net.ssl.trustStore</param-name>
+      <param-value>/path/to/trust/store.jks</param-value>
+    </init-param>
+    <init-param>
+      <param-name>javax.net.ssl.trustStorePassword</param-name>
+      <param-value>password-4-jks</param-value>
+    </init-param -->
+    <init-param>
+      <param-name>auditor.class</param-name>
+      <param-value>edu.indiana.d2i.htrc.audit.Log4jAuditor</param-value>
+    </init-param>
+    <init-param>
+      <param-name>log4j.properties.path</param-name>
+      <param-value>E:\Java\Server\apache-tomcat-6.0.37\webapps\sloan-ws-1.0-SNAPSHOT\WEB-INF\classes\log4j.properties</param-value>
+    </init-param>
+  </filter>
+  
+  <filter-mapping>
+    <filter-name>oauth2-filter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
   <servlet-mapping>
     <servlet-name>jersey-servlet</servlet-name>
     <url-pattern>/*</url-pattern>

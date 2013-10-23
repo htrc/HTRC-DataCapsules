@@ -92,7 +92,8 @@ public class DBOperations {
 		return instance;
 	}
 
-	public boolean quotaExceedsLimit(CreateVmRequestBean request, int requestedDiskAmount) throws SQLException {
+	public boolean quotaExceedsLimit(CreateVmRequestBean request) throws SQLException {
+		int requestedDiskAmount = request.getVolumeSizeInGB();
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("SELECT ").append(DBSchema.UserTable.LEFT_QUOTA).append(" FROM ").
@@ -194,14 +195,6 @@ public class DBOperations {
 				+ " FROM " 
 				+ DBSchema.VmTable.TABLE_NAME;
 		return getVmInfoInternal(sql);
-//		List<VmInfoBean> vminfoList = getVmInfoInternal(sql);
-//		List<VmStatusBean> status = new ArrayList<VmStatusBean>();
-//		for (VmInfoBean vminfo : vminfoList) {
-//			status.add(new VmStatusBean(vminfo.getVmid(), vminfo.getVmmode().toString(), 
-//				vminfo.getVmstate().toString(), vminfo.getPublicip(), 
-//				vminfo.getSshport(), vminfo.getVncport()));
-//		}
-//		return status;
 	}
 
 	public List<VmInfoBean> getVmInfo(String userName) throws SQLException, NoItemIsFoundInDBException {
@@ -220,51 +213,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID
 				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\"", userName);
 		return getVmInfoInternal(sql);
-
-//		List<VmInfoBean> vminfoList = getVmInfoInternal(sql);
-//		if (vminfoList.size() == 0) 
-//			throw new NoItemIsFoundInDBException(String.format(
-//				"No VM is found in DB for user %s.", userName));
-//		
-//		List<VmStatusBean> status = new ArrayList<VmStatusBean>();
-//		for (VmInfoBean vminfo : vminfoList) {
-//			status.add(new VmStatusBean(vminfo.getVmid(), vminfo.getVmmode().toString(), 
-//				vminfo.getVmstate().toString(), vminfo.getPublicip(), 
-//				vminfo.getSshport(), vminfo.getVncport()));
-//		}
-//		return status;
 	}
-
-//	public List<VmStatusBean> getVmStatus(String userName, String vmid) 
-//		throws SQLException, NoItemIsFoundInDBException {
-//		String sql = String.format(
-//				"SELECT " + DBSchema.VmTable.VM_MODE + "," 
-//				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
-//				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-//				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
-//				+ DBSchema.VmTable.WORKING_DIR
-////				+ image path & policy path 
-//				+ " FROM " 
-//				+ DBSchema.UserVmTable.TABLE_NAME + ","
-//				+ DBSchema.VmTable.TABLE_NAME 
-//				+ " WHERE " 
-//				+ DBSchema.UserVmTable.TABLE_NAME + "."  +  DBSchema.UserVmTable.VM_ID + "=" 
-//				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID
-//				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
-//				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID + "=\"%s\"", userName, vmid);
-//		List<VmInfoBean> vminfoList = getVmInfoInternal(sql);
-//		if (vminfoList.size() == 0) 
-//			throw new NoItemIsFoundInDBException(String.format(
-//				"VM %s with user %s is not found in DB.", vmid, userName));
-//		
-//		List<VmStatusBean> status = new ArrayList<VmStatusBean>();
-//		for (VmInfoBean vminfo : vminfoList) {
-//			status.add(new VmStatusBean(vmid, vminfo.getVmmode().toString(), 
-//				vminfo.getVmstate().toString(), vminfo.getPublicip(), 
-//				vminfo.getSshport(), vminfo.getVncport()));
-//		}
-//		return status;
-//	}
 
 	public VmInfoBean getVmInfo(String userName, String vmid) throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format(

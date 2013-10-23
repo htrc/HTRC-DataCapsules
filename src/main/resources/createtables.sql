@@ -12,7 +12,9 @@ CREATE TABLE IF NOT EXISTS vms(
 	sshport INT, 
 	vncport INT, 
 	workingdir VARCHAR(128),
-	imagename VARCHAR(128)) ENGINE=InnoDB;
+	imagename VARCHAR(128),
+	vmusername VARCHAR(128),
+	vmpassword VARCHAR(128)) ENGINE=InnoDB;
 
 /* More fields will be added */
 CREATE TABLE IF NOT EXISTS users(
