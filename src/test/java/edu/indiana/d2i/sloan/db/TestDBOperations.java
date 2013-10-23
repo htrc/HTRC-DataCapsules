@@ -107,7 +107,7 @@ public class TestDBOperations {
 		connection.close();
 	}
 	
-//	@Test
+	@Test
 	public void testAddGetAndDeleteVM() throws SQLException, NoItemIsFoundInDBException {
 		String userName, vmid, workDir;
 		
