@@ -10,6 +10,10 @@ public class VmInfoBean {
 	private VMMode vmmode;
 	private VMState vmstate;
 
+	public void setImagePath(String imagePath) {
+		this.imagepath = imagePath;
+	}
+	
 	public VmInfoBean(String vmid, String publicip, String workDir,
 			String imagepath, String policypath, int sshport, int vncport,
 			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,
