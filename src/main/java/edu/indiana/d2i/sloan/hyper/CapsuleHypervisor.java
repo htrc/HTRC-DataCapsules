@@ -23,5 +23,23 @@ class CapsuleHypervisor implements IHypervisor {
 	public HypervisorResponse queryVM(VmInfoBean vminfo) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public HypervisorResponse switchVM(VmInfoBean vminfo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HypervisorResponse stopVM(VmInfoBean vminfo) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public HypervisorResponse delete(VmInfoBean vminfo) {
+		// TODO Auto-generated method stub
+		return null;
 	}	
 }

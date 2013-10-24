@@ -15,8 +15,6 @@ public abstract class Scheduler {
 				.getProperty(Configuration.PropertyName.HOSTS).split(";");
 	}
 
-	protected static Scheduler instance = null;
-
 	public synchronized final VmInfoBean schedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
 		return doSchedule(request);

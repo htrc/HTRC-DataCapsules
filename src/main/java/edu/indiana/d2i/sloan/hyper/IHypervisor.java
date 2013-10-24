@@ -9,4 +9,9 @@ interface IHypervisor {
 	
 	public HypervisorResponse queryVM(VmInfoBean vminfo);
 	
+	public HypervisorResponse switchVM(VmInfoBean vminfo);
+	
+	public HypervisorResponse stopVM(VmInfoBean vminfo);
+	
+	public HypervisorResponse delete(VmInfoBean vminfo);
 }
