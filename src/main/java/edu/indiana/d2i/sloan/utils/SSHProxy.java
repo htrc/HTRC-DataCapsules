@@ -30,13 +30,49 @@ public class SSHProxy {
 
 	private final String SUDO_PREFIX = "sudo ";
 
+	public class Commands {
+		private List<String> commands;
+		private boolean isSudoCmds;
+
+		public Commands(List<String> commands, boolean isSudoCmds) {
+			super();
+			this.commands = commands;
+			this.isSudoCmds = isSudoCmds;
+		}
+
+		public List<String> getCommands() {
+			return commands;
+		}
+
+		public boolean isSudoCmds() {
+			return isSudoCmds;
+		}
+
+		public String getConcatenatedForm() {
+
+			if ((commands == null) || (commands.size() == 0)) {
+				return "";
+			}
+
+			StringBuilder cmd = new StringBuilder();
+
+			for (int i = 0; i < commands.size() - 1; i++) {
+				cmd.append(commands.get(i)).append(";");
+			}
+
+			cmd.append(commands.get(commands.size() - 1));
+
+			return cmd.toString();
+		}
+	}
+
 	public class CmdsExecResult {
-		private String cmds;
+		private Commands cmds;
 		private String hostname;
 		private int exitCode;
 		private String screenOutput;
 
-		public CmdsExecResult(String cmds, String hostname, int exitCode,
+		public CmdsExecResult(Commands cmds, String hostname, int exitCode,
 				String screenOutput) {
 			super();
 			this.cmds = cmds;
@@ -45,12 +81,14 @@ public class SSHProxy {
 			this.screenOutput = screenOutput;
 		}
 
-		public String getCmds() {
+		public Commands getCmds() {
 			return cmds;
 		}
+
 		public int getExitCode() {
 			return exitCode;
 		}
+
 		public String getScreenOutput() {
 			return screenOutput;
 		}
@@ -83,24 +121,6 @@ public class SSHProxy {
 		session.disconnect();
 	}
 
-	public String composeMultipleCmds(List<String> cmds) {
-
-		if ((cmds == null) || (cmds.size() == 0)) {
-			logger.error("empty command list");
-			throw new IllegalArgumentException();
-		}
-
-		StringBuilder cmd = new StringBuilder();
-
-		for (int i = 0; i < cmds.size() - 1; i++) {
-			cmd.append(cmds.get(i)).append(";");
-		}
-
-		cmd.append(cmds.get(cmds.size() - 1));
-
-		return cmd.toString();
-	}
-
 	/**
 	 * non-blocking execution of a list of commands
 	 * 
@@ -108,11 +128,10 @@ public class SSHProxy {
 	 * @param requireSudo
 	 * @throws Exception
 	 */
-	public void execCmdAsync(List<String> cmds, boolean requireSudo)
-			throws Exception {
-		String command = composeMultipleCmds(cmds);
+	public void execCmdAsync(Commands cmds) throws Exception {
+		String command = cmds.getConcatenatedForm();
 
-		if (requireSudo)
+		if (cmds.isSudoCmds)
 			command = SUDO_PREFIX + command;
 
 		Channel channel = session.openChannel("exec");
@@ -132,12 +151,12 @@ public class SSHProxy {
 	 * @throws IOException
 	 * @throws Exception
 	 */
-	public CmdsExecResult execCmdSync(List<String> cmds, boolean requireSudo)
-			throws JSchException, IOException {
-		String command = composeMultipleCmds(cmds);
+	public CmdsExecResult execCmdSync(Commands cmds) throws JSchException,
+			IOException {
+		String command = cmds.getConcatenatedForm();
 		int exitCode = Integer.MIN_VALUE;
 
-		if (requireSudo)
+		if (cmds.isSudoCmds)
 			command = SUDO_PREFIX + command;
 
 		StringBuilder screenOutput = new StringBuilder();
@@ -182,7 +201,7 @@ public class SSHProxy {
 		// disconnect
 		channel.disconnect();
 
-		return new CmdsExecResult(command, hostname, exitCode,
+		return new CmdsExecResult(cmds, hostname, exitCode,
 				screenOutput.toString());
 	}
 

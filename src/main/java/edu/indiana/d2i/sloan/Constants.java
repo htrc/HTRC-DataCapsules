@@ -21,9 +21,9 @@ public class Constants {
 	public static final String DEFAULT_SCHEDULER_IMPL_CLASS = "edu.indiana.d2i.sloan.scheduler.RoundRobinScheduler";
 	public static final String DEFAULT_SCHEDULER_MAX_NUM_ATTEMPTS = "5";
 
-	/* configuration file name */
-	public static final String CONFIGURATION_FILE_NAME = "sloan-site-conf.properties";
-	public static final String DEFAULT_CONFIGURATION_FILE_NAME = "default-sloan-conf.properties";
+	/* hypervisor related properties */
+	/* timeout in milliseconds */
+	public static final String DEFAULT_HYPERVISOR_TASK_TIMEOUT = "3000";
 
 	public static final String DEFAULT_VM_WORKINGDIR_PREFIX = "/var/instance/";
 

@@ -36,6 +36,11 @@ public final class Configuration {
 		public static final String PORT_RANGE_MIN = "sloan.ws.port.range.min";
 		public static final String PORT_RANGE_MAX = "sloan.ws.port.range.max";
 		public static final String HOSTS = "sloan.ws.hosts";
+
+		// hypervisor related properties
+
+		/* timeout in milliseconds */
+		public static final String HYPERVISOR_TASK_TIMEOUT = "hypervisor.task.timeout";
 	}
 
 	public static synchronized Configuration getInstance() {
