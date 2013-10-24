@@ -59,7 +59,9 @@ public class QueryVM {
 						vminfo.getSshport(), vminfo.getVncport()));
 			}
 			
-			HypervisorProxy.getInstance().addCommand(new QueryVMCommand(vmInfoList));
+			for (VmInfoBean vminfo : vmInfoList) {
+				HypervisorProxy.getInstance().addCommand(new QueryVMCommand(vminfo));
+			}			
 			
 			return Response.status(200)
 				.entity(new QueryVmResponseBean(status)).build();
