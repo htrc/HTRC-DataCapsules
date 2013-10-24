@@ -58,9 +58,18 @@ public class CreateVM {
 					.build();
 		}
 
-		// TODO: check if image name is valid
-
 		try {
+			// check if image name is valid
+			String imagePath = DBOperations.getInstance().getImagePath(imageName);
+			if (imagePath == null) {
+				return Response.status(400).entity(
+					new ErrorBean(400, 
+						String.format("Image %s does not exist!", imageName)))
+						.build();
+			}
+			
+			// check if policy name is valid
+			
 			int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
 					.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB,
 							Constants.DEFAULT_VOLUME_SIZE_IN_GB));

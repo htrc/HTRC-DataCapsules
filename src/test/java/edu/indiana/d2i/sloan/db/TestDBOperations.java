@@ -169,10 +169,8 @@ public class TestDBOperations {
 		
 		// delete vm
 		for (int i = 0; i < vmids.size(); i++) {
-			
 			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null,
-					null, null, 0, 0, 2, 1024, 10, null, null, null, null); 
-			
+				null, null, 0, 0, 2, 1024, 10, null, null, null, null, null, null); 
 			DBOperations.getInstance().deleteVMs(userNames.get(i), vinfo);
 		}		
 	

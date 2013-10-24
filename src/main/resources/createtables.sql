@@ -14,7 +14,12 @@ CREATE TABLE IF NOT EXISTS vms(
 	workingdir VARCHAR(512),
 	imagename VARCHAR(128),
 	vmusername VARCHAR(128),
-	vmpassword VARCHAR(128)) ENGINE=InnoDB;
+	vmpassword VARCHAR(128),
+	numcpus INT,
+	memorysize INT,
+	diskspace INT,
+	CONSTRAINT fk_images FOREIGN KEY (imagename)
+		REFERENCES images(imagename)) ENGINE=InnoDB;
 
 /* More fields will be added */
 CREATE TABLE IF NOT EXISTS users(
@@ -32,5 +37,4 @@ CREATE TABLE IF NOT EXISTS uservm(
 	
 CREATE TABLE IF NOT EXISTS images(
 	imagename VARCHAR(128) PRIMARY KEY,
-	imagepath VARCHAR(512)
-	) ENGINE=InnoDB;
+	imagepath VARCHAR(512)) ENGINE=InnoDB;

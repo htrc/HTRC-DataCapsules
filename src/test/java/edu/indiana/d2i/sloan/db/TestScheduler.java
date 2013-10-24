@@ -138,7 +138,7 @@ public class TestScheduler {
 
 		// release one
 		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null, null,
-				null, null, 0, 0, 2, 1024, 10, null, null, null, null); 
+				null, null, 0, 0, 2, 1024, 10, null, null, null, null, null, null); 
 
 		DBOperations.getInstance().deleteVMs("user-" + (scheduled - 1), vmInfo);
 

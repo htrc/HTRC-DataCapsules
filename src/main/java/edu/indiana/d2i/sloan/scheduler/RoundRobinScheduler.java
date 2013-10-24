@@ -40,14 +40,15 @@ public class RoundRobinScheduler extends Scheduler {
 						request.getVmLoginID(), request.getVmLoginPasswd(),
 						vmhost, workDir, request.getVcpu(), 
 						request.getMemory(), request.getVolumeSizeInGB());
-
+			
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
-						request.getImageName(), 
-						null, // TODO: replace with path by looking up db
+						null, // image path
+						null, // policy path
 						vmhost.sshport, vmhost.vncport, 
 						request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
 						VMMode.NOT_DEFINED, VMState.BUILDING,
-						request.getVmLoginID(), request.getVmLoginPasswd());
+						request.getVmLoginID(), request.getVmLoginPasswd(),
+						request.getImageName(), null /* policy name */);
 			}
 		} while (scheduleIndex != start);
 

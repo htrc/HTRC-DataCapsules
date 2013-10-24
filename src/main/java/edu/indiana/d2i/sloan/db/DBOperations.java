@@ -75,14 +75,15 @@ public class DBOperations {
 			while (rs.next()) {
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID), rs.getString(DBSchema.VmTable.PUBLIC_IP),
-						rs.getString(DBSchema.VmTable.WORKING_DIR), null, null,
+						rs.getString(DBSchema.VmTable.WORKING_DIR), 
+						null, null,
 						rs.getInt(DBSchema.VmTable.SSH_PORT), rs.getInt(DBSchema.VmTable.VNC_PORT),
 						rs.getInt(DBSchema.VmTable.NUM_CPUS), rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
 						rs.getInt(DBSchema.VmTable.DISK_SPACE),
 						VMMode.valueOf(rs.getString(DBSchema.VmTable.VM_MODE)), 
 						VMState.valueOf(rs.getString(DBSchema.VmTable.STATE)),
-						rs.getString(DBSchema.VmTable.VM_USERNAME), rs.getString(DBSchema.VmTable.VM_PASSWORD)
-						);
+						rs.getString(DBSchema.VmTable.VM_USERNAME), rs.getString(DBSchema.VmTable.VM_PASSWORD),
+						rs.getString(DBSchema.VmTable.IMAGE_NAME), null);
 				res.add(vminfo);
 			}
 		} finally {
@@ -225,7 +226,9 @@ public class DBOperations {
 				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
 				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME
+				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + "," + DBSchema.VmTable.IMAGE_NAME
 //				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.VmTable.TABLE_NAME;
@@ -239,7 +242,9 @@ public class DBOperations {
 				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
 				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME
+				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + "," + DBSchema.VmTable.IMAGE_NAME
 //				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.UserVmTable.TABLE_NAME + ","
@@ -260,7 +265,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.WORKING_DIR + ","
 				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
 				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
-				+ DBSchema.VmTable.DISK_SPACE
+				+ DBSchema.VmTable.DISK_SPACE + "," + DBSchema.VmTable.IMAGE_NAME
 //				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.UserVmTable.TABLE_NAME + ","
@@ -374,6 +379,32 @@ public class DBOperations {
 			DBSchema.VmTable.VM_ID + "=\"%s\"", state.toString(), vmid);
 		updates.add(updatevmsql);
 		executeTransaction(updates);
+	}
+	
+	public String getImagePath(String imageName) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst1 = null;
+		PreparedStatement pst2 = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String queryUser = "SELECT * FROM " + DBSchema.ImageTable.TABLE_NAME
+				+ " WHERE " + DBSchema.ImageTable.TABLE_NAME + "=(?)";			
+			pst1 = connection.prepareStatement(queryUser);
+			pst1.setString(1, imageName);
+			rs = pst1.executeQuery();
+			if (!rs.next()) {
+				return rs.getString(DBSchema.ImageTable.IMAGE_PATH);
+			} else {
+				return null;
+			}
+		} finally {
+			if (rs != null) rs.close();
+			if (pst1 != null) pst1.close();
+			if (pst2 != null) pst2.close();
+			if (connection != null) connection.close();
+		}
 	}
 
 	public void close() {

@@ -17,6 +17,7 @@ class DBSchema {
 		public static String VNC_PORT = "vncport";
 		public static String WORKING_DIR = "workingdir";
 		public static String IMAGE_NAME = "imagename";
+		public static String POLICY_NAME = "policyname";
 		
 		/*
 		 * the username/password pair that user uses to initially login to the
@@ -46,6 +47,7 @@ class DBSchema {
 				put(NUM_CPUS, 11);
 				put(MEMORY_SIZE, 12);
 				put(DISK_SPACE, 13);
+				put(POLICY_NAME, 14);
 			}
 		};
 	}
@@ -74,5 +76,11 @@ class DBSchema {
 		public static String TABLE_NAME = "uservm";
 		public static String USER_NAME = "username";
 		public static String VM_ID = "vmid";
+	}
+	
+	public static class ImageTable {
+		public static String TABLE_NAME = "images";
+		public static String IMAGE_NAME = "imagename";
+		public static String IMAGE_PATH = "imagepath";
 	}
 }
