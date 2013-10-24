@@ -15,10 +15,13 @@ import org.junit.Test;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.db.DBSchema;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.scheduler.SchedulerFactory;
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMState;
 
 public class TestScheduler {
 	@BeforeClass
@@ -134,7 +137,10 @@ public class TestScheduler {
 		}
 
 		// release one
-		DBOperations.getInstance().deleteVMs("vmid-" + (scheduled - 1));
+		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null, null,
+				null, null, 0, 0, 2, 1024, 10, null, null, null, null); 
+
+		DBOperations.getInstance().deleteVMs("user-" + (scheduled - 1), vmInfo);
 
 		// schedule even more
 		for (int i = scheduled; i < records; i++) {

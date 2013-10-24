@@ -32,7 +32,18 @@ public class DeleteVM {
 	public Response getResourcePost(@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
-		String userName = null;
+		
+		// check whether the user has been authorized
+		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+
+		// check input
+		if (userName == null) {
+			logger.error("Username is not present in http header.");
+			return Response
+					.status(500)
+					.entity(new ErrorBean(500,
+							"Username is not present in http header.")).build();
+		}
 		
 		if (vmid == null) {
 			return Response
@@ -51,8 +62,10 @@ public class DeleteVM {
 					.build();
 			}
 			
-			HypervisorProxy.getInstance().addCommand(new DeleteVMCommand(vmInfo));			
-//			DBOperations.getInstance().deleteVMs(vmid);
+			HypervisorProxy.getInstance().addCommand(new DeleteVMCommand(vmInfo));	
+			
+			/* Also restore user quota after deleting the VM */
+			DBOperations.getInstance().deleteVMs(userName, vmInfo);
 			
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

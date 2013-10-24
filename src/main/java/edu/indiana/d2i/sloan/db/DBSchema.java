@@ -27,6 +27,10 @@ class DBSchema {
 		public static String VM_USERNAME = "vmusername";
 		public static String VM_PASSWORD = "vmpassword";
 		
+		public static String NUM_CPUS = "numcpus";
+		public static String MEMORY_SIZE = "memorysize";
+		public static String DISK_SPACE = "diskspace";
+		
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{
 				put(VM_ID, 1);
@@ -39,6 +43,9 @@ class DBSchema {
 				put(IMAGE_NAME, 8);
 				put(VM_USERNAME, 9);
 				put(VM_PASSWORD, 10);
+				put(NUM_CPUS, 11);
+				put(MEMORY_SIZE, 12);
+				put(DISK_SPACE, 13);
 			}
 		};
 	}

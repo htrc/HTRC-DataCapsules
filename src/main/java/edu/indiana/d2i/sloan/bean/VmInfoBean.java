@@ -4,14 +4,16 @@ import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class VmInfoBean {
-	private String vmid, publicip, workDir, imagepath, policypath, vmloginId, vmloginPwd;
-	private int sshport, vncport;
-	private VMMode vmmode; 
+	private String vmid, publicip, workDir, imagepath, policypath, vmloginId,
+			vmloginPwd;
+	private int sshport, vncport, numCPUs, memorySize, diskSpace;
+	private VMMode vmmode;
 	private VMState vmstate;
-	
-	public VmInfoBean(String vmid, String publicip, String workDir, 
-		String imagepath, String policypath, int sshport, int vncport,
-		VMMode vmmode, VMState vmstate, String vmloginId, String vmloginPwd) {
+
+	public VmInfoBean(String vmid, String publicip, String workDir,
+			String imagepath, String policypath, int sshport, int vncport,
+			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,
+			VMState vmstate, String vmloginId, String vmloginPwd) {
 		this.vmid = vmid;
 		this.publicip = publicip;
 		this.workDir = workDir;
@@ -19,12 +21,15 @@ public class VmInfoBean {
 		this.policypath = policypath;
 		this.sshport = sshport;
 		this.vncport = vncport;
+		this.numCPUs = numCPUs;
+		this.memorySize = memorySize;
+		this.diskSpace = diskSpace;
 		this.vmmode = vmmode;
 		this.vmstate = vmstate;
 		this.vmloginId = vmloginId;
 		this.vmloginPwd = vmloginPwd;
 	}
-	
+
 	public String getVmid() {
 		return vmid;
 	}
@@ -61,5 +66,17 @@ public class VmInfoBean {
 
 	public String getVmloginPwd() {
 		return vmloginPwd;
+	}
+
+	public int getNumCPUs() {
+		return numCPUs;
+	}
+
+	public int getMemorySize() {
+		return memorySize;
+	}
+
+	public int getDiskSpace() {
+		return diskSpace;
 	}
 }

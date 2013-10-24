@@ -77,6 +77,8 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.VM_ID), rs.getString(DBSchema.VmTable.PUBLIC_IP),
 						rs.getString(DBSchema.VmTable.WORKING_DIR), null, null,
 						rs.getInt(DBSchema.VmTable.SSH_PORT), rs.getInt(DBSchema.VmTable.VNC_PORT),
+						rs.getInt(DBSchema.VmTable.NUM_CPUS), rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
+						rs.getInt(DBSchema.VmTable.DISK_SPACE),
 						VMMode.valueOf(rs.getString(DBSchema.VmTable.VM_MODE)), 
 						VMState.valueOf(rs.getString(DBSchema.VmTable.STATE)),
 						rs.getString(DBSchema.VmTable.VM_USERNAME), rs.getString(DBSchema.VmTable.VM_PASSWORD)
@@ -129,7 +131,7 @@ public class DBOperations {
 						(leftMemoryQuota > requestedMemory);
 				
 				if (satisfiable) {
-					/* update DB */
+					/* update user table */
 					
 					StringBuilder updateSql = new StringBuilder();
 					updateSql.append("UPDATE ").append(DBSchema.UserTable.TABLE_NAME).
@@ -256,7 +258,9 @@ public class DBOperations {
 				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
 				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME
+				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE
 //				+ image path & policy path 
 				+ " FROM " 
 				+ DBSchema.UserVmTable.TABLE_NAME + ","
@@ -276,16 +280,19 @@ public class DBOperations {
 		return res.get(0);
 	}
 
-	public void addVM(String userName, String vmid, String imageName, String vmLoginName, String vmLoginPasswd, VMPorts host, String workDir) throws SQLException {		
+	public void addVM(String userName, String vmid, String imageName, String vmLoginName, String vmLoginPasswd, 
+			VMPorts host, String workDir, int numCPUs, int memorySize, int diskSpace) throws SQLException {		
 		String insertvmsql = String.format("INSERT INTO " + DBSchema.VmTable.TABLE_NAME + " ("
 			+ DBSchema.VmTable.VM_ID + "," + DBSchema.VmTable.STATE + "," 
 			+ DBSchema.VmTable.VM_MODE + ","
 			+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.SSH_PORT + "," 
 			+ DBSchema.VmTable.VNC_PORT + "," + DBSchema.VmTable.WORKING_DIR + "," + DBSchema.VmTable.IMAGE_NAME + "," 
-			+ DBSchema.VmTable.VM_USERNAME + "," + DBSchema.VmTable.VM_PASSWORD + ") VALUES"
-			+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\")", 
+			+ DBSchema.VmTable.VM_USERNAME + "," + DBSchema.VmTable.VM_PASSWORD 
+			+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + "," + DBSchema.VmTable.DISK_SPACE + ") VALUES"
+			+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d)", 
 			vmid, VMState.BUILDING.toString(), VMMode.NOT_DEFINED.toString(), host.publicip, host.sshport, host.vncport, workDir, 
-			imageName, vmLoginName, vmLoginPasswd);
+			imageName, vmLoginName, vmLoginPasswd, numCPUs, memorySize, diskSpace);
+		
 		String insertvmusersql = String.format("INSERT INTO " + DBSchema.UserVmTable.TABLE_NAME + " ("
 			+ DBSchema.UserVmTable.USER_NAME + "," + DBSchema.UserVmTable.VM_ID + ") VALUES"
 			+ "(\"%s\", \"%s\")", 
@@ -301,11 +308,62 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
-	public void deleteVMs(String vmid) throws SQLException {
+	public void deleteVMs(String username, VmInfoBean vmInfo) throws SQLException {
 		List<String> updates = new ArrayList<String>(); 
+		
 		String deletevmsql = String.format("DELETE FROM " + DBSchema.VmTable.TABLE_NAME + 
-				" where " + DBSchema.VmTable.VM_ID + "=\"%s\"", vmid);
+				" where " + DBSchema.VmTable.VM_ID + "=\"%s\"", vmInfo.getVmid());
+		
+		/* restore quota */
+		
+		// first query remaining quota
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA).append(",").
+		append(DBSchema.UserTable.CPU_LEFT_QUOTA).append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA).append(" FROM ").
+		append(DBSchema.UserTable.TABLE_NAME).append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
+		append(String.format("\"%s\"", username));
+		
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		
+		StringBuilder updateUserTableSql = new StringBuilder();
+		
+		try {
+			connection = DBConnections.getInstance().getConnection();
+						
+			pst = connection.prepareStatement(sql.toString());
+			
+			rs = pst.executeQuery();
+			if (rs.next()) {
+				int leftDiskQuota = rs.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
+				int leftCPUQuota = rs.getInt(DBSchema.UserTable.CPU_LEFT_QUOTA);
+				int leftMemoryQuota = rs.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+				
+				// compose update sql
+				updateUserTableSql = new StringBuilder();
+				updateUserTableSql.append("UPDATE ").append(DBSchema.UserTable.TABLE_NAME).
+					append(" SET ").append(String.format("%s=%d, %s=%d, %s=%d", 
+					DBSchema.UserTable.DISK_LEFT_QUOTA, leftDiskQuota + vmInfo.getDiskSpace(), 
+					DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota + vmInfo.getNumCPUs(), 
+					DBSchema.UserTable.MEMORY_LEFT_QUOTA, leftMemoryQuota + vmInfo.getMemorySize())).
+					append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
+					append(String.format("\"%s\"", username));	
+			}
+				 			
+		} finally {
+			if (rs != null) rs.close();
+			if (pst != null) pst.close();			
+			if (connection != null) connection.close();
+		}
+		
 		updates.add(deletevmsql);
+		
+		if (updateUserTableSql.length() > 0) {
+			updates.add(updateUserTableSql.toString());
+		}
+		
 		executeTransaction(updates);	
 	}
 

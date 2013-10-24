@@ -117,6 +117,8 @@ public class TestDBOperations {
 		loadDataToUserTable(count);	
 		int[] portsExpected = new int[count * 2];
 		List<String> vmids = new ArrayList<String>();
+		List<String> userNames = new ArrayList<String>();
+		
 		for (int index = 0; index < count; index++) {
 			userName = "user-" + index;
 			if (index == count-1) {
@@ -127,10 +129,12 @@ public class TestDBOperations {
 			VMPorts host = new VMPorts("192.168.0." + (index+2), 2000 + index*2, 2000 + index*2 + 1);
 			workDir = "/var/instance/" + "vmid-" + index;
 			vmids.add(vmid);
+			userNames.add(userName);
 			
 			portsExpected[index*2] = 2000 + index*2;
 			portsExpected[index*2+1] = 2000 + index*2 + 1;
-			DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", "vmusername", "vmpasswd", host, workDir);
+			DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", "vmusername", "vmpasswd", 
+					host, workDir, 2, 1024, 10);
 		}
 		
 		// trigger error
@@ -138,7 +142,8 @@ public class TestDBOperations {
 		vmid = "vmid-" + 0;
 		VMPorts host = new VMPorts("192.168.0." + (0+2), 2000 + 0*2, 2000 + 0*2 + 1);
 		workDir = "/var/instance/" + "vmid-" + 0;
-		DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", "vmusername", "vmpasswd", host, workDir);
+		DBOperations.getInstance().addVM(userName, vmid, "/path/to/image", "vmusername", "vmpasswd", 
+				host, workDir, 2, 1024, 10);
 		
 		// read 1 vm back
 		VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo("user-" + 0, "vmid-" + 0);
@@ -163,9 +168,14 @@ public class TestDBOperations {
 		Assert.assertArrayEquals(portsExpected, ports);
 		
 		// delete vm
-		for (String id : vmids) {
-			DBOperations.getInstance().deleteVMs(id);
+		for (int i = 0; i < vmids.size(); i++) {
+			
+			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null,
+					null, null, 0, 0, 2, 1024, 10, null, null, null, null); 
+			
+			DBOperations.getInstance().deleteVMs(userNames.get(i), vinfo);
 		}		
+	
 		
 		vmStatus = DBOperations.getInstance().getVmInfo();
 		Assert.assertEquals(0, vmStatus.size());		

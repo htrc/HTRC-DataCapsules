@@ -7,7 +7,6 @@ import org.apache.commons.io.FilenameUtils;
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.bean.VmRequestBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.vm.PortsPool;
@@ -39,12 +38,15 @@ public class RoundRobinScheduler extends Scheduler {
 				DBOperations.getInstance().addVM(request.getUserName(),
 						request.getVmId(), request.getImageName(),
 						request.getVmLoginID(), request.getVmLoginPasswd(),
-						vmhost, workDir);
+						vmhost, workDir, request.getVcpu(), 
+						request.getMemory(), request.getVolumeSizeInGB());
 
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
-						request.getImageName(), // TODO: replace with path by looking up db 
+						request.getImageName(), 
 						null, // TODO: replace with path by looking up db
-						vmhost.sshport, vmhost.vncport, VMMode.NOT_DEFINED, VMState.BUILDING,
+						vmhost.sshport, vmhost.vncport, 
+						request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
+						VMMode.NOT_DEFINED, VMState.BUILDING,
 						request.getVmLoginID(), request.getVmLoginPasswd());
 			}
 		} while (scheduleIndex != start);
