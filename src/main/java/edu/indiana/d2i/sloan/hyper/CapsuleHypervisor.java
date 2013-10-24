@@ -28,8 +28,6 @@ class CapsuleHypervisor implements IHypervisor {
 						Constants.DEFAULT_HYPERVISOR_TASK_TIMEOUT));
 	}
 
-	// singleton?? It depends on how the ssh lib is implemented!
-
 	class CapsuleTask implements Callable<CmdsExecResult> {
 		private SSHProxy sshProxy;
 		private Commands cmds;
@@ -50,17 +48,19 @@ class CapsuleHypervisor implements IHypervisor {
 
 	private <T> T executateTask(Callable<T> task) throws InterruptedException,
 			ExecutionException, TimeoutException {
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Future<T> future = executor.submit(task);
+
+		ExecutorService executor = null;
 
 		try {
+			executor = Executors.newSingleThreadExecutor();
+			Future<T> future = executor.submit(task);
 			return future.get(timeoutInMillis, TimeUnit.MILLISECONDS);
 		} finally {
 			if (executor != null)
 				executor.shutdownNow();
 		}
-
 	}
+	
 	@Override
 	public HypervisorResponse createVM(VmInfoBean vminfo) {
 		// TODO Auto-generated method stub
