@@ -41,6 +41,13 @@ public final class Configuration {
 
 		/* timeout in milliseconds */
 		public static final String HYPERVISOR_TASK_TIMEOUT = "hypervisor.task.timeout";
+		/* hypervisor commands */
+		public static final String CMD_CREATE_VM = "cmd.create.vm";
+		public static final String CMD_LAUNCH_VM = "cmd.launch.vm";
+		public static final String CMD_QUERY_VM = "cmd.query.vm";
+		public static final String CMD_SWITCH_VM = "cmd.switch.vm";
+		public static final String CMD_STOP_VM = "cmd.stop.vm";
+		public static final String CMD_DELETE_VM = "cmd.delete.vm";
 	}
 
 	public static synchronized Configuration getInstance() {
