@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -96,16 +97,21 @@ public class DBOperations {
 
 	public boolean quotaExceedsLimit(CreateVmRequestBean request) throws SQLException {
 		int requestedDiskAmount = request.getVolumeSizeInGB();
+		int requestedCPUNum = request.getVcpu();
+		int requestedMemory = request.getMemory();
+		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("SELECT ").append(DBSchema.UserTable.LEFT_QUOTA).append(" FROM ").
+		sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA).append(",").
+		append(DBSchema.UserTable.CPU_LEFT_QUOTA).append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA).append(" FROM ").
 		append(DBSchema.UserTable.TABLE_NAME).append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
 		append(String.format("\"%s\"", request.getUserName()));
 		
 		Connection connection = null;
 		PreparedStatement pst = null;
-
 		ResultSet rs = null;
+		
+		boolean satisfiable = false;
 		
 		try {
 			connection = DBConnections.getInstance().getConnection();
@@ -114,7 +120,30 @@ public class DBOperations {
 			
 			rs = pst.executeQuery();
 			if (rs.next()) {
-				return rs.getInt(DBSchema.UserTable.LEFT_QUOTA) > requestedDiskAmount;
+				int leftDiskQuota = rs.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
+				int leftCPUQuota = rs.getInt(DBSchema.UserTable.CPU_LEFT_QUOTA);
+				int leftMemoryQuota = rs.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+				
+				satisfiable = (leftDiskQuota > requestedDiskAmount) && 
+						(leftCPUQuota > requestedCPUNum) && 
+						(leftMemoryQuota > requestedMemory);
+				
+				if (satisfiable) {
+					/* update DB */
+					
+					StringBuilder updateSql = new StringBuilder();
+					updateSql.append("UPDATE ").append(DBSchema.UserTable.TABLE_NAME).
+					append(" SET ").append(String.format("%s=%d, %s=%d, %s=%d", 
+							DBSchema.UserTable.DISK_LEFT_QUOTA, leftDiskQuota - requestedDiskAmount, 
+							DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota - requestedCPUNum, 
+							DBSchema.UserTable.MEMORY_LEFT_QUOTA, leftMemoryQuota - requestedMemory)).
+					append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
+					append(String.format("\"%s\"", request.getUserName()));
+					
+					executeTransaction(Collections.<String>singletonList(updateSql.toString()));
+					
+				}
+				
 			} 			
 		} finally {
 			if (rs != null) rs.close();
@@ -122,7 +151,7 @@ public class DBOperations {
 			if (connection != null) connection.close();
 		}
 		
-		return false;
+		return satisfiable;
 	}
 
 	public boolean vmExists(String userName, String vmid) throws SQLException {
@@ -138,6 +167,7 @@ public class DBOperations {
 
 		ResultSet rs = null;
 		
+		boolean isExist = false;
 		try {
 			connection = DBConnections.getInstance().getConnection();
 						
@@ -145,7 +175,7 @@ public class DBOperations {
 			
 			rs = pst.executeQuery();
 			if (rs.next()) {
-				return true;
+				isExist = true;
 			} 			
 		} finally {
 			if (rs != null) rs.close();
@@ -153,7 +183,7 @@ public class DBOperations {
 			if (connection != null) connection.close();
 		}
 		
-		return false;
+		return isExist;
 	}
 
 	public void insertUserIfNotExists(String userName) throws SQLException {

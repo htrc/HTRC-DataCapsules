@@ -46,10 +46,19 @@ class DBSchema {
 	public static class UserTable {
 		public static String TABLE_NAME = "users";
 		public static String USER_NAME = "username";
+		
 		/* directory that hosts user's volume (disk) files */
 		public static String VOLUME_DIR = "volumedir";
+		
+		/* remaining CPU quota */
+		public static String CPU_LEFT_QUOTA = "cpuLeftQuota";
+		
+		/* remaining memory quota in MB */
+		public static String MEMORY_LEFT_QUOTA = "memoryLeftQuota";
+		
 		/* remaining disk space quota in GB */
-		public static String LEFT_QUOTA = "leftquota";
+		public static String DISK_LEFT_QUOTA = "diskLeftQuota";
+		
 		/* currently all users are of the same type */
 		public static String USER_TYPE = "usertype";
 	}

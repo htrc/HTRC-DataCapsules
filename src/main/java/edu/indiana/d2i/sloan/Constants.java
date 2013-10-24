@@ -14,6 +14,8 @@ public class Constants {
 
 	/* user related parameters */
 	public static final String DEFAULT_USER_DISK_QUOTA_IN_GB = "300";
+	public static final String DEFAULT_USER_CPU_QUOTA_IN_NUM = "20";
+	public static final String DEFAULT_USER_MEMORY_QUOTA_IN_MB = "20480";
 
 	/* scheduler related properties */
 	public static final String DEFAULT_SCHEDULER_IMPL_CLASS = "edu.indiana.d2i.sloan.scheduler.RoundRobinScheduler";
