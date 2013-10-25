@@ -32,7 +32,7 @@ public class QueryVMCommand extends HypervisorCommand {
 
 		/**
 		 * check whether the transition of VM state in DB to the one reported by
-		 * hyperviosr is possible, if not, set state to error
+		 * hyperviosr is possible, if not, set state to error.
 		 */
 
 		VMState returnedState = VMState.valueOf(resp
