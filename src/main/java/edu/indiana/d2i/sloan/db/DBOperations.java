@@ -314,8 +314,7 @@ public class DBOperations {
 		return getVmInfoInternal(sql);
 	}
 
-	public List<VmInfoBean> getVmInfo(String userName) throws SQLException,
-			NoItemIsFoundInDBException {
+	public List<VmInfoBean> getVmInfo(String userName) throws SQLException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
 				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
