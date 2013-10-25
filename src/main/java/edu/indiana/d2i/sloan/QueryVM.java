@@ -28,7 +28,7 @@ import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
 @Path("/queryvm")
 public class QueryVM {
 	private static Logger logger = Logger.getLogger(QueryVM.class);
-	
+
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -36,40 +36,45 @@ public class QueryVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		
+
 		// read from db and return first
 		// at the same time, send query to hypervisor async
 		// it might be overwhelmed by other users' requests
 		// ws periodically updates VM status??
-		
-		try {		
+
+		try {
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
 			List<VmInfoBean> vmInfoList = null;
 			if (vmid == null) {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
-					status.add(new VmStatusBean(vmid, vminfo.getVmmode().toString(), 
-						vminfo.getVmstate().toString(), vminfo.getPublicip(), 
-						vminfo.getSshport(), vminfo.getVncport()));
+					status.add(new VmStatusBean(vmid, vminfo.getVmmode()
+							.toString(), vminfo.getVmstate().toString(), vminfo
+							.getPublicip(), vminfo.getSshport(), vminfo
+							.getVncport()));
 				}
 			} else {
-				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmid);
-				status.add(new VmStatusBean(vmid, vminfo.getVmmode().toString(), 
-						vminfo.getVmstate().toString(), vminfo.getPublicip(), 
-						vminfo.getSshport(), vminfo.getVncport()));
+				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
+						userName, vmid);
+				status.add(new VmStatusBean(vmid,
+						vminfo.getVmmode().toString(), vminfo.getVmstate()
+								.toString(), vminfo.getPublicip(), vminfo
+								.getSshport(), vminfo.getVncport()));
 			}
-			
-//			HypervisorProxy.getInstance().addCommand(new QueryVMCommand(vmInfoList));
-			
-			return Response.status(200)
-				.entity(new QueryVmResponseBean(status)).build();
+
+			for (VmInfoBean vminfo : vmInfoList) {
+				HypervisorProxy.getInstance().addCommand(
+						new QueryVMCommand(vminfo));
+			}
+
+			return Response.status(200).entity(new QueryVmResponseBean(status))
+					.build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response
 					.status(400)
-					.entity(new ErrorBean(400,
-							"Cannot find VMs " + vmid + " with username " + userName))
-					.build();
+					.entity(new ErrorBean(400, "Cannot find VMs " + vmid
+							+ " with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
