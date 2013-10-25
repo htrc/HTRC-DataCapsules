@@ -58,6 +58,16 @@ public final class Configuration {
 		/* delimiter used for the key-value pair by internal API response */
 		public static final String RESP_KV_DELIMITER = "resp.kv.delimiter";
 		public static final String RESP_VM_STATUS_KEY = "resp.vm.status.key";
+
+		/* properties related with retriable task */
+		public static final String USE_RETRY_TASK = "use.retry.task";
+		public static final String RETRY_TASK_WAIT_IN_MILLIS = "retry.task.wait.in.millis";
+		public static final String RETRY_TASK_MAX_ATTEMPT = "retry.task.max.attempt";
+		/*
+		 * semicolon separated list of fully qualified class names of exceptions
+		 * that can be retried
+		 */
+		public static final String RETRY_TASK_RETRIABLE_EXPS = "retry.task.retriable.exps";
 	}
 
 	public static synchronized Configuration getInstance() {

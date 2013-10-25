@@ -1,7 +1,10 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -19,6 +22,7 @@ import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.utils.CommandUtils;
 import edu.indiana.d2i.sloan.utils.CommandUtils.HYPERVISOR_CMD;
+import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.utils.SSHProxy;
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
@@ -29,6 +33,10 @@ class CapsuleHypervisor implements IHypervisor {
 	private static String sshUsername;
 	private static String sshPasswd;
 	private static String privateKeyPath;
+	private static boolean retriable;
+	private static long retryWaitInMs = 500;
+	private static int maxRetry = 5;
+	private static Set<String> retriableExpNames = null;
 
 	static {
 		timeoutInMillis = Long.parseLong(Configuration.getInstance()
@@ -44,6 +52,30 @@ class CapsuleHypervisor implements IHypervisor {
 
 		privateKeyPath = Configuration.getInstance().getProperty(
 				Configuration.PropertyName.SSH_PRIVATE_KEY_PATH);
+
+		retriable = Boolean.parseBoolean(Configuration.getInstance()
+				.getProperty(Configuration.PropertyName.USE_RETRY_TASK));
+
+		if (retriable) {
+			retryWaitInMs = Long
+					.parseLong(Configuration
+							.getInstance()
+							.getProperty(
+									Configuration.PropertyName.RETRY_TASK_WAIT_IN_MILLIS));
+
+			maxRetry = Integer.parseInt(Configuration.getInstance()
+					.getProperty(
+							Configuration.PropertyName.RETRY_TASK_MAX_ATTEMPT));
+
+			String[] classNames = Configuration
+					.getInstance()
+					.getProperty(
+							Configuration.PropertyName.RETRY_TASK_RETRIABLE_EXPS)
+					.split(";");
+
+			retriableExpNames = new HashSet<String>(
+					Arrays.<String> asList(classNames));
+		}
 	}
 
 	class CapsuleTask implements Callable<CmdsExecResult> {
@@ -62,6 +94,17 @@ class CapsuleHypervisor implements IHypervisor {
 			return sshProxy.execCmdSync(cmds);
 		}
 
+	}
+
+	private static <T> T executeRetriableTask(Callable<T> task)
+			throws InterruptedException, ExecutionException, TimeoutException {
+
+		if (retriable) {
+			task = new RetriableTask<T>(task, retryWaitInMs, maxRetry,
+					retriableExpNames);
+		}
+
+		return executeTask(task);
 	}
 
 	private static <T> T executeTask(Callable<T> task)
@@ -114,7 +157,7 @@ class CapsuleHypervisor implements IHypervisor {
 									argList)), false);
 
 			/* execute task */
-			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					createVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
@@ -148,7 +191,7 @@ class CapsuleHypervisor implements IHypervisor {
 									argList)), false);
 
 			/* execute task */
-			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					launchVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
@@ -179,7 +222,7 @@ class CapsuleHypervisor implements IHypervisor {
 									argList)), false);
 
 			/* execute task */
-			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					queryVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
@@ -212,7 +255,7 @@ class CapsuleHypervisor implements IHypervisor {
 									argList)), false);
 
 			/* execute task */
-			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					switchVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
@@ -245,7 +288,7 @@ class CapsuleHypervisor implements IHypervisor {
 					false);
 
 			/* execute task */
-			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					stopVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
@@ -276,7 +319,7 @@ class CapsuleHypervisor implements IHypervisor {
 									argList)), false);
 
 			/* execute task */
-			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					deleteVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
