@@ -1,6 +1,8 @@
 package edu.indiana.d2i.sloan.utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -41,7 +43,69 @@ public class CommandUtils {
 		};
 	}
 
+	public static class Argument {
+		/* set argName to null if not present */
+		private String argName;
+		private String argValue;
+
+		public Argument(String argName, String argValue) {
+			super();
+			this.argName = argName;
+			this.argValue = argValue;
+		}
+
+		public String getArgName() {
+			return argName;
+		}
+		public String getArgValue() {
+			return argValue;
+		}
+
+		@Override
+		public String toString() {
+			return (argName == null) ? argValue : argName + " " + argValue;
+		}
+	}
+
+	public static class ArgsBuilder {
+		private List<Argument> args = new ArrayList<Argument>();
+
+		public ArgsBuilder addArgument(Argument argument) {
+			args.add(argument);
+			return this;
+		}
+
+		public ArgsBuilder addArgument(String argName, String argValue) {
+			args.add(new Argument(argName, argValue));
+			return this;
+		}
+
+		public String build() {
+			StringBuilder argList = new StringBuilder();
+
+			for (Argument arg : args) {
+				argList.append(arg.toString()).append(" ");
+			}
+
+			// remove the trailing whitespace
+			argList.deleteCharAt(argList.length() - 1);
+
+			return argList.toString();
+		}
+	}
+
+	/**
+	 * 
+	 * @param cmdKey
+	 * @return the hypervisor script name
+	 */
 	public static String getCommand(HYPERVISOR_CMD cmdKey) {
 		return commands.get(cmdKey);
 	}
+
+	public static String composeFullCommand(HYPERVISOR_CMD cmdKey,
+			String argList) {
+		return commands.get(cmdKey) + " " + argList;
+	}
+	
 }

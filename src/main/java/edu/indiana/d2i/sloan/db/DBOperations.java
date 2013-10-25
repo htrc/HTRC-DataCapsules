@@ -47,16 +47,18 @@ public class DBOperations {
 		} catch (SQLException e) {
 			logger.error(e.getMessage(), e);
 			if (connection != null) {
-                try {
-                	connection.rollback();
-                	logger.info("Rollback updates " + updates.toString());
-                } catch (SQLException ex1) {
-                    throw ex1;
-                }
-            }
+				try {
+					connection.rollback();
+					logger.info("Rollback updates " + updates.toString());
+				} catch (SQLException ex1) {
+					throw ex1;
+				}
+			}
 		} finally {
-			if (st != null) st.close();
-			if (connection != null) connection.close();
+			if (st != null)
+				st.close();
+			if (connection != null)
+				connection.close();
 		}
 	}
 
@@ -74,22 +76,28 @@ public class DBOperations {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				VmInfoBean vminfo = new VmInfoBean(
-						rs.getString(DBSchema.VmTable.VM_ID), rs.getString(DBSchema.VmTable.PUBLIC_IP),
-						rs.getString(DBSchema.VmTable.WORKING_DIR), 
-						null, null,
-						rs.getInt(DBSchema.VmTable.SSH_PORT), rs.getInt(DBSchema.VmTable.VNC_PORT),
-						rs.getInt(DBSchema.VmTable.NUM_CPUS), rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
+						rs.getString(DBSchema.VmTable.VM_ID),
+						rs.getString(DBSchema.VmTable.PUBLIC_IP),
+						rs.getString(DBSchema.VmTable.WORKING_DIR), null, null,
+						rs.getInt(DBSchema.VmTable.SSH_PORT),
+						rs.getInt(DBSchema.VmTable.VNC_PORT),
+						rs.getInt(DBSchema.VmTable.NUM_CPUS),
+						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
 						rs.getInt(DBSchema.VmTable.DISK_SPACE),
-						VMMode.valueOf(rs.getString(DBSchema.VmTable.VM_MODE)), 
+						VMMode.valueOf(rs.getString(DBSchema.VmTable.VM_MODE)),
 						VMState.valueOf(rs.getString(DBSchema.VmTable.STATE)),
-						rs.getString(DBSchema.VmTable.VM_USERNAME), rs.getString(DBSchema.VmTable.VM_PASSWORD),
-						rs.getString(DBSchema.VmTable.IMAGE_NAME), null);
+						rs.getString(DBSchema.VmTable.VM_USERNAME),
+						rs.getString(DBSchema.VmTable.VM_PASSWORD),
+						rs.getString(DBSchema.VmTable.IMAGE_NAME), null, null);
 				res.add(vminfo);
 			}
 		} finally {
-			if (rs != null) rs.close();
-			if (pst != null) pst.close();
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
 		}
 		return res;
 	}
@@ -98,94 +106,117 @@ public class DBOperations {
 		return instance;
 	}
 
-	public boolean quotaExceedsLimit(CreateVmRequestBean request) throws SQLException {
+	public boolean quotaExceedsLimit(CreateVmRequestBean request)
+			throws SQLException {
 		int requestedDiskAmount = request.getVolumeSizeInGB();
 		int requestedCPUNum = request.getVcpu();
 		int requestedMemory = request.getMemory();
-		
+
 		StringBuilder sql = new StringBuilder();
-		
-		sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA).append(",").
-		append(DBSchema.UserTable.CPU_LEFT_QUOTA).append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA).append(" FROM ").
-		append(DBSchema.UserTable.TABLE_NAME).append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
-		append(String.format("\"%s\"", request.getUserName()));
-		
+
+		sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA)
+				.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
+				.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
+				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append("=")
+				.append(String.format("\"%s\"", request.getUserName()));
+
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
-		
+
 		boolean satisfiable = false;
-		
+
 		try {
 			connection = DBConnections.getInstance().getConnection();
-						
+
 			pst = connection.prepareStatement(sql.toString());
-			
+
 			rs = pst.executeQuery();
 			if (rs.next()) {
-				int leftDiskQuota = rs.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
+				int leftDiskQuota = rs
+						.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
 				int leftCPUQuota = rs.getInt(DBSchema.UserTable.CPU_LEFT_QUOTA);
-				int leftMemoryQuota = rs.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
-				
-				satisfiable = (leftDiskQuota > requestedDiskAmount) && 
-						(leftCPUQuota > requestedCPUNum) && 
-						(leftMemoryQuota > requestedMemory);
-				
+				int leftMemoryQuota = rs
+						.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+
+				satisfiable = (leftDiskQuota > requestedDiskAmount)
+						&& (leftCPUQuota > requestedCPUNum)
+						&& (leftMemoryQuota > requestedMemory);
+
 				if (satisfiable) {
 					/* update user table */
-					
+
 					StringBuilder updateSql = new StringBuilder();
-					updateSql.append("UPDATE ").append(DBSchema.UserTable.TABLE_NAME).
-					append(" SET ").append(String.format("%s=%d, %s=%d, %s=%d", 
-							DBSchema.UserTable.DISK_LEFT_QUOTA, leftDiskQuota - requestedDiskAmount, 
-							DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota - requestedCPUNum, 
-							DBSchema.UserTable.MEMORY_LEFT_QUOTA, leftMemoryQuota - requestedMemory)).
-					append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
-					append(String.format("\"%s\"", request.getUserName()));
-					
-					executeTransaction(Collections.<String>singletonList(updateSql.toString()));
-					
+					updateSql
+							.append("UPDATE ")
+							.append(DBSchema.UserTable.TABLE_NAME)
+							.append(" SET ")
+							.append(String.format("%s=%d, %s=%d, %s=%d",
+									DBSchema.UserTable.DISK_LEFT_QUOTA,
+									leftDiskQuota - requestedDiskAmount,
+									DBSchema.UserTable.CPU_LEFT_QUOTA,
+									leftCPUQuota - requestedCPUNum,
+									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
+									leftMemoryQuota - requestedMemory))
+							.append(" WHERE ")
+							.append(DBSchema.UserTable.USER_NAME)
+							.append("=")
+							.append(String.format("\"%s\"",
+									request.getUserName()));
+
+					executeTransaction(Collections
+							.<String> singletonList(updateSql.toString()));
+
 				}
-				
-			} 			
+
+			}
 		} finally {
-			if (rs != null) rs.close();
-			if (pst != null) pst.close();			
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
 		}
-		
+
 		return satisfiable;
 	}
 
 	public boolean vmExists(String userName, String vmid) throws SQLException {
 		StringBuilder sql = new StringBuilder();
-		
-		sql.append("SELECT * FROM ").
-		append(DBSchema.UserVmTable.TABLE_NAME).append(" WHERE ").append(DBSchema.UserVmTable.USER_NAME).append("=").
-		append(String.format("\"%s\"", userName)).append(" AND ").append(DBSchema.UserVmTable.VM_ID).append("=").
-		append(String.format("\"%s\"", vmid));
-		
+
+		sql.append("SELECT * FROM ").append(DBSchema.UserVmTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.UserVmTable.USER_NAME)
+				.append("=").append(String.format("\"%s\"", userName))
+				.append(" AND ").append(DBSchema.UserVmTable.VM_ID).append("=")
+				.append(String.format("\"%s\"", vmid));
+
 		Connection connection = null;
 		PreparedStatement pst = null;
 
 		ResultSet rs = null;
-		
+
 		boolean isExist = false;
 		try {
 			connection = DBConnections.getInstance().getConnection();
-						
+
 			pst = connection.prepareStatement(sql.toString());
-			
+
 			rs = pst.executeQuery();
 			if (rs.next()) {
 				isExist = true;
-			} 			
+			}
 		} finally {
-			if (rs != null) rs.close();
-			if (pst != null) pst.close();			
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
 		}
-		
+
 		return isExist;
 	}
 
@@ -198,83 +229,108 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String queryUser = "SELECT * FROM " + DBSchema.UserTable.TABLE_NAME
-				+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";			
+					+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";
 			pst1 = connection.prepareStatement(queryUser);
 			pst1.setString(1, userName);
 			rs = pst1.executeQuery();
 			if (!rs.next()) {
 				// ignore the error if there is a duplicate
 				String insertUser = String.format(
-					"INSERT IGNORE INTO " + DBSchema.UserTable.TABLE_NAME
-					+ "(%s) VALUES"
-					+ "(?)", DBSchema.UserTable.USER_NAME);
+						"INSERT IGNORE INTO " + DBSchema.UserTable.TABLE_NAME
+								+ "(%s) VALUES" + "(?)",
+						DBSchema.UserTable.USER_NAME);
 				pst2 = connection.prepareStatement(insertUser);
 				pst2.setString(1, userName);
 				pst2.executeUpdate();
-			} 			
+			}
 		} finally {
-			if (rs != null) rs.close();
-			if (pst1 != null) pst1.close();
-			if (pst2 != null) pst2.close();
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst1 != null)
+				pst1.close();
+			if (pst2 != null)
+				pst2.close();
+			if (connection != null)
+				connection.close();
 		}
 	}
 
 	public List<VmInfoBean> getVmInfo() throws SQLException {
-		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + "," 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
-				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
+		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
+				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
+				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
-				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
-				+ DBSchema.VmTable.DISK_SPACE + "," + DBSchema.VmTable.IMAGE_NAME
-//				+ image path & policy path 
-				+ " FROM " 
-				+ DBSchema.VmTable.TABLE_NAME;
+				+ DBSchema.VmTable.VM_PASSWORD + ","
+				+ DBSchema.VmTable.VM_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + ","
+				+ DBSchema.VmTable.IMAGE_NAME
+				// + image path & policy path
+				+ " FROM " + DBSchema.VmTable.TABLE_NAME;
 		return getVmInfoInternal(sql);
 	}
 
-	public List<VmInfoBean> getVmInfo(String userName) throws SQLException, NoItemIsFoundInDBException {
-		String sql = String.format(
-				"SELECT " + DBSchema.VmTable.VM_MODE + "," 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
-				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
+	public List<VmInfoBean> getVmInfo(String userName) throws SQLException,
+			NoItemIsFoundInDBException {
+		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
+				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
+				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
-				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
-				+ DBSchema.VmTable.DISK_SPACE + "," + DBSchema.VmTable.IMAGE_NAME
-//				+ image path & policy path 
-				+ " FROM " 
-				+ DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME 
-				+ " WHERE " 
-				+ DBSchema.UserVmTable.TABLE_NAME + "."  +  DBSchema.UserVmTable.VM_ID + "=" 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID
-				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\"", userName);
+				+ DBSchema.VmTable.VM_PASSWORD + ","
+				+ DBSchema.VmTable.VM_USERNAME
+				+ ","
+				+ DBSchema.VmTable.NUM_CPUS
+				+ ","
+				+ DBSchema.VmTable.MEMORY_SIZE
+				+ ","
+				+ DBSchema.VmTable.DISK_SPACE
+				+ ","
+				+ DBSchema.VmTable.IMAGE_NAME
+				// + image path & policy path
+				+ " FROM " + DBSchema.UserVmTable.TABLE_NAME + ","
+				+ DBSchema.VmTable.TABLE_NAME + " WHERE "
+				+ DBSchema.UserVmTable.TABLE_NAME + "."
+				+ DBSchema.UserVmTable.VM_ID + "="
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\"",
+				userName);
 		return getVmInfoInternal(sql);
 	}
 
-	public VmInfoBean getVmInfo(String userName, String vmid) throws SQLException, NoItemIsFoundInDBException {
-		String sql = String.format(
-				"SELECT " + DBSchema.VmTable.VM_MODE + "," 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID + ","
-				+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.STATE + "," 
-				+ DBSchema.VmTable.SSH_PORT + "," + DBSchema.VmTable.VNC_PORT + ","
-				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + "," + DBSchema.VmTable.VM_USERNAME + ","
-				+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + ","
-				+ DBSchema.VmTable.DISK_SPACE + "," + DBSchema.VmTable.IMAGE_NAME
-//				+ image path & policy path 
-				+ " FROM " 
-				+ DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME 
-				+ " WHERE " 
-				+ DBSchema.UserVmTable.TABLE_NAME + "."  +  DBSchema.UserVmTable.VM_ID + "=" 
-				+ DBSchema.VmTable.TABLE_NAME + "."  +  DBSchema.VmTable.VM_ID
+	public VmInfoBean getVmInfo(String userName, String vmid)
+			throws SQLException, NoItemIsFoundInDBException {
+		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
+				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
+				+ "," + DBSchema.VmTable.VNC_PORT + ","
+				+ DBSchema.VmTable.WORKING_DIR
+				+ ","
+				+ DBSchema.VmTable.VM_PASSWORD
+				+ ","
+				+ DBSchema.VmTable.VM_USERNAME
+				+ ","
+				+ DBSchema.VmTable.NUM_CPUS
+				+ ","
+				+ DBSchema.VmTable.MEMORY_SIZE
+				+ ","
+				+ DBSchema.VmTable.DISK_SPACE
+				+ ","
+				+ DBSchema.VmTable.IMAGE_NAME
+				// + image path & policy path
+				+ " FROM " + DBSchema.UserVmTable.TABLE_NAME + ","
+				+ DBSchema.VmTable.TABLE_NAME + " WHERE "
+				+ DBSchema.UserVmTable.TABLE_NAME + "."
+				+ DBSchema.UserVmTable.VM_ID + "="
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
 				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID + "=\"%s\"", userName, vmid);
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
+				+ DBSchema.UserVmTable.VM_ID + "=\"%s\"", userName, vmid);
 
 		logger.debug(sql);
 
@@ -285,23 +341,51 @@ public class DBOperations {
 		return res.get(0);
 	}
 
-	public void addVM(String userName, String vmid, String imageName, String vmLoginName, String vmLoginPasswd, 
-			VMPorts host, String workDir, int numCPUs, int memorySize, int diskSpace) throws SQLException {		
-		String insertvmsql = String.format("INSERT INTO " + DBSchema.VmTable.TABLE_NAME + " ("
-			+ DBSchema.VmTable.VM_ID + "," + DBSchema.VmTable.STATE + "," 
-			+ DBSchema.VmTable.VM_MODE + ","
-			+ DBSchema.VmTable.PUBLIC_IP + "," + DBSchema.VmTable.SSH_PORT + "," 
-			+ DBSchema.VmTable.VNC_PORT + "," + DBSchema.VmTable.WORKING_DIR + "," + DBSchema.VmTable.IMAGE_NAME + "," 
-			+ DBSchema.VmTable.VM_USERNAME + "," + DBSchema.VmTable.VM_PASSWORD 
-			+ DBSchema.VmTable.NUM_CPUS + "," + DBSchema.VmTable.MEMORY_SIZE + "," + DBSchema.VmTable.DISK_SPACE + ") VALUES"
-			+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d)", 
-			vmid, VMState.BUILDING.toString(), VMMode.NOT_DEFINED.toString(), host.publicip, host.sshport, host.vncport, workDir, 
-			imageName, vmLoginName, vmLoginPasswd, numCPUs, memorySize, diskSpace);
-		
-		String insertvmusersql = String.format("INSERT INTO " + DBSchema.UserVmTable.TABLE_NAME + " ("
-			+ DBSchema.UserVmTable.USER_NAME + "," + DBSchema.UserVmTable.VM_ID + ") VALUES"
-			+ "(\"%s\", \"%s\")", 
-			userName, vmid);
+	public void addVM(String userName, String vmid, String imageName,
+			String vmLoginName, String vmLoginPasswd, VMPorts host,
+			String workDir, int numCPUs, int memorySize, int diskSpace)
+			throws SQLException {
+		String insertvmsql = String
+				.format("INSERT INTO "
+						+ DBSchema.VmTable.TABLE_NAME
+						+ " ("
+						+ DBSchema.VmTable.VM_ID
+						+ ","
+						+ DBSchema.VmTable.STATE
+						+ ","
+						+ DBSchema.VmTable.VM_MODE
+						+ ","
+						+ DBSchema.VmTable.PUBLIC_IP
+						+ ","
+						+ DBSchema.VmTable.SSH_PORT
+						+ ","
+						+ DBSchema.VmTable.VNC_PORT
+						+ ","
+						+ DBSchema.VmTable.WORKING_DIR
+						+ ","
+						+ DBSchema.VmTable.IMAGE_NAME
+						+ ","
+						+ DBSchema.VmTable.VM_USERNAME
+						+ ","
+						+ DBSchema.VmTable.VM_PASSWORD
+						+ DBSchema.VmTable.NUM_CPUS
+						+ ","
+						+ DBSchema.VmTable.MEMORY_SIZE
+						+ ","
+						+ DBSchema.VmTable.DISK_SPACE
+						+ ") VALUES"
+						+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d)",
+						vmid, VMState.BUILDING.toString(),
+						VMMode.NOT_DEFINED.toString(), host.publicip,
+						host.sshport, host.vncport, workDir, imageName,
+						vmLoginName, vmLoginPasswd, numCPUs, memorySize,
+						diskSpace);
+
+		String insertvmusersql = String.format("INSERT INTO "
+				+ DBSchema.UserVmTable.TABLE_NAME + " ("
+				+ DBSchema.UserVmTable.USER_NAME + ","
+				+ DBSchema.UserVmTable.VM_ID + ") VALUES" + "(\"%s\", \"%s\")",
+				userName, vmid);
 
 		logger.debug(insertvmsql);
 		logger.debug(insertvmusersql);
@@ -313,74 +397,90 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
-	public void deleteVMs(String username, VmInfoBean vmInfo) throws SQLException {
-		List<String> updates = new ArrayList<String>(); 
-		
-		String deletevmsql = String.format("DELETE FROM " + DBSchema.VmTable.TABLE_NAME + 
-				" where " + DBSchema.VmTable.VM_ID + "=\"%s\"", vmInfo.getVmid());
-		
+	public void deleteVMs(String username, VmInfoBean vmInfo)
+			throws SQLException {
+		List<String> updates = new ArrayList<String>();
+
+		String deletevmsql = String.format("DELETE FROM "
+				+ DBSchema.VmTable.TABLE_NAME + " where "
+				+ DBSchema.VmTable.VM_ID + "=\"%s\"", vmInfo.getVmid());
+
 		/* restore quota */
-		
+
 		// first query remaining quota
 		StringBuilder sql = new StringBuilder();
-		
-		sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA).append(",").
-		append(DBSchema.UserTable.CPU_LEFT_QUOTA).append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA).append(" FROM ").
-		append(DBSchema.UserTable.TABLE_NAME).append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
-		append(String.format("\"%s\"", username));
-		
+
+		sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA)
+				.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
+				.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
+				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append("=").append(String.format("\"%s\"", username));
+
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
-		
+
 		StringBuilder updateUserTableSql = new StringBuilder();
-		
+
 		try {
 			connection = DBConnections.getInstance().getConnection();
-						
+
 			pst = connection.prepareStatement(sql.toString());
-			
+
 			rs = pst.executeQuery();
 			if (rs.next()) {
-				int leftDiskQuota = rs.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
+				int leftDiskQuota = rs
+						.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
 				int leftCPUQuota = rs.getInt(DBSchema.UserTable.CPU_LEFT_QUOTA);
-				int leftMemoryQuota = rs.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
-				
+				int leftMemoryQuota = rs
+						.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+
 				// compose update sql
 				updateUserTableSql = new StringBuilder();
-				updateUserTableSql.append("UPDATE ").append(DBSchema.UserTable.TABLE_NAME).
-					append(" SET ").append(String.format("%s=%d, %s=%d, %s=%d", 
-					DBSchema.UserTable.DISK_LEFT_QUOTA, leftDiskQuota + vmInfo.getDiskSpace(), 
-					DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota + vmInfo.getNumCPUs(), 
-					DBSchema.UserTable.MEMORY_LEFT_QUOTA, leftMemoryQuota + vmInfo.getMemorySize())).
-					append(" WHERE ").append(DBSchema.UserTable.USER_NAME).append("=").
-					append(String.format("\"%s\"", username));	
+				updateUserTableSql
+						.append("UPDATE ")
+						.append(DBSchema.UserTable.TABLE_NAME)
+						.append(" SET ")
+						.append(String.format("%s=%d, %s=%d, %s=%d",
+								DBSchema.UserTable.DISK_LEFT_QUOTA,
+								leftDiskQuota + vmInfo.getDiskSpace(),
+								DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota
+										+ vmInfo.getNumCPUs(),
+								DBSchema.UserTable.MEMORY_LEFT_QUOTA,
+								leftMemoryQuota + vmInfo.getMemorySize()))
+						.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+						.append("=").append(String.format("\"%s\"", username));
 			}
-				 			
+
 		} finally {
-			if (rs != null) rs.close();
-			if (pst != null) pst.close();			
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
 		}
-		
+
 		updates.add(deletevmsql);
-		
+
 		if (updateUserTableSql.length() > 0) {
 			updates.add(updateUserTableSql.toString());
 		}
-		
-		executeTransaction(updates);	
+
+		executeTransaction(updates);
 	}
 
 	public void updateVMState(String vmid, VMState state) throws SQLException {
-		List<String> updates = new ArrayList<String>(); 
-		String updatevmsql = String.format("UPDATE " + DBSchema.VmTable.TABLE_NAME + 
-			" SET " + DBSchema.VmTable.STATE + "=\"%s\" WHERE " +
-			DBSchema.VmTable.VM_ID + "=\"%s\"", state.toString(), vmid);
+		List<String> updates = new ArrayList<String>();
+		String updatevmsql = String.format("UPDATE "
+				+ DBSchema.VmTable.TABLE_NAME + " SET "
+				+ DBSchema.VmTable.STATE + "=\"%s\" WHERE "
+				+ DBSchema.VmTable.VM_ID + "=\"%s\"", state.toString(), vmid);
 		updates.add(updatevmsql);
 		executeTransaction(updates);
 	}
-	
+
 	public String getImagePath(String imageName) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst1 = null;
@@ -389,8 +489,9 @@ public class DBOperations {
 
 		try {
 			connection = DBConnections.getInstance().getConnection();
-			String queryUser = "SELECT * FROM " + DBSchema.ImageTable.TABLE_NAME
-				+ " WHERE " + DBSchema.ImageTable.TABLE_NAME + "=(?)";			
+			String queryUser = "SELECT * FROM "
+					+ DBSchema.ImageTable.TABLE_NAME + " WHERE "
+					+ DBSchema.ImageTable.TABLE_NAME + "=(?)";
 			pst1 = connection.prepareStatement(queryUser);
 			pst1.setString(1, imageName);
 			rs = pst1.executeQuery();
@@ -400,10 +501,14 @@ public class DBOperations {
 				return null;
 			}
 		} finally {
-			if (rs != null) rs.close();
-			if (pst1 != null) pst1.close();
-			if (pst2 != null) pst2.close();
-			if (connection != null) connection.close();
+			if (rs != null)
+				rs.close();
+			if (pst1 != null)
+				pst1.close();
+			if (pst2 != null)
+				pst2.close();
+			if (connection != null)
+				connection.close();
 		}
 	}
 

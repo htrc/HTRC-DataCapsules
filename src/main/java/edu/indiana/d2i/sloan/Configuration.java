@@ -39,8 +39,14 @@ public final class Configuration {
 
 		// hypervisor related properties
 
+		/* credentials for ssh */
+		public static final String SSH_USERNAME = "ssh.username";
+		public static final String SSH_PASSWD = "ssh.passwd";
+		public static final String SSH_PRIVATE_KEY_PATH = "ssh.private.key.path";
+
 		/* timeout in milliseconds */
 		public static final String HYPERVISOR_TASK_TIMEOUT = "hypervisor.task.timeout";
+
 		/* hypervisor commands */
 		public static final String CMD_CREATE_VM = "cmd.create.vm";
 		public static final String CMD_LAUNCH_VM = "cmd.launch.vm";
@@ -48,6 +54,9 @@ public final class Configuration {
 		public static final String CMD_SWITCH_VM = "cmd.switch.vm";
 		public static final String CMD_STOP_VM = "cmd.stop.vm";
 		public static final String CMD_DELETE_VM = "cmd.delete.vm";
+
+		/* delimiter used for the key-value pair */
+		public static final String KV_DELIMITER = "kv.delimiter";
 	}
 
 	public static synchronized Configuration getInstance() {
