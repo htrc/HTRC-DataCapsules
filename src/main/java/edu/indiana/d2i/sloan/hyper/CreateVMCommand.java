@@ -25,7 +25,6 @@ public class CreateVMCommand extends HypervisorCommand {
 			if (logger.isDebugEnabled()) {
 				logger.debug(resp.toString());
 			}
-
 		} catch (Exception e) {
 			throw new RetriableException(e.getMessage(), e);
 		}

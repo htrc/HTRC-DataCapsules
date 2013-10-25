@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.RetriableException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -58,6 +59,7 @@ public class DBOperations {
 			                try {
 			                	connection.rollback();
 			                	logger.info("Rollback updates " + updates.toString());
+			                	throw new RetriableException(e.getMessage());
 			                } catch (SQLException ex1) {
 			                    throw ex1;
 			                }
@@ -69,7 +71,7 @@ public class DBOperations {
 					return null;
 				}
 			},  1000, 3,
-			new HashSet<String>(Arrays.asList(SQLException.class.getName())));
+			new HashSet<String>(Arrays.asList(RetriableException.class.getName())));
 		
 		try {
 			r.call();
