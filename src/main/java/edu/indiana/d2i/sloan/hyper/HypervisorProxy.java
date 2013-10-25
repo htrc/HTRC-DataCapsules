@@ -1,5 +1,8 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -9,6 +12,8 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
+import edu.indiana.d2i.sloan.exception.RetriableException;
+import edu.indiana.d2i.sloan.utils.RetriableTask;
 
 public final class HypervisorProxy {
 	private static Logger logger = Logger.getLogger(HypervisorProxy.class);
@@ -33,33 +38,36 @@ public final class HypervisorProxy {
 	class Worker implements Runnable {
 		private HypervisorCommand command;
 		private final int MAX_RETRY;
+		private final long RETRY_DELAY_MS;
 
 		public Worker(HypervisorCommand command) {
 			this.command = command;
 			MAX_RETRY = Integer.valueOf(Configuration.getInstance().getProperty(
 				Configuration.PropertyName.MAX_RETRY, Constants.DEFAULT_HYPER_MAX_RETRY));
+			RETRY_DELAY_MS = 0;
 		}
 
 		@Override
 		public void run() {
-			// TODO: retry in command itself?
-			for (int i = 1; i <= MAX_RETRY; i++) {
-				try {
-					command.execute();
-					return;
-				} catch (Exception e) {
-					logger.error(String.format(
-						"Unable to execute command % s because %s", command, e.getMessage()), e);
-					logger.info("retry command " + command + " " + i + " times");
-				}
-			}
-			logger.error("Unable to execute " + command);
+			RetriableTask<Void> r = new RetriableTask<Void>(
+				new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						command.execute();
+						return null;
+					}
+				}, RETRY_DELAY_MS, MAX_RETRY, 
+				new HashSet<String>(Arrays.asList(RetriableException.class.getName())));
 			
-			// TODO: clean up should go here
 			try {
-				command.cleanupOnFailed();
-			} catch (Exception e) {
-				logger.error("Uable to roll back before error because " + e.getMessage(), e);
+				r.call();
+			} catch (Exception ex) {
+				logger.error(ex.getMessage(), ex);
+				try {
+					command.cleanupOnFailed();
+				} catch (Exception e) {
+					logger.error("Uable to roll back after error because " + e.getMessage(), e);
+				}
 			}
 		}
 	}
