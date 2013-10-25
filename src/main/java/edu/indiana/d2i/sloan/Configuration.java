@@ -55,8 +55,9 @@ public final class Configuration {
 		public static final String CMD_STOP_VM = "cmd.stop.vm";
 		public static final String CMD_DELETE_VM = "cmd.delete.vm";
 
-		/* delimiter used for the key-value pair */
-		public static final String KV_DELIMITER = "kv.delimiter";
+		/* delimiter used for the key-value pair by internal API response */
+		public static final String RESP_KV_DELIMITER = "resp.kv.delimiter";
+		public static final String RESP_VM_STATUS_KEY = "resp.vm.status.key";
 	}
 
 	public static synchronized Configuration getInstance() {

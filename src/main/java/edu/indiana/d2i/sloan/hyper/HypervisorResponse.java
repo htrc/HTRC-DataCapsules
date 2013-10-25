@@ -7,7 +7,8 @@ import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 
 class HypervisorResponse {
-	private static final String KV_DELIMITER;
+	public static final String KV_DELIMITER;
+	public static final String VM_STATUS_KEY;
 
 	private final int responseCode;
 	private final String description;
@@ -15,7 +16,10 @@ class HypervisorResponse {
 
 	static {
 		KV_DELIMITER = Configuration.getInstance().getProperty(
-				Configuration.PropertyName.KV_DELIMITER);
+				Configuration.PropertyName.RESP_KV_DELIMITER);
+
+		VM_STATUS_KEY = Configuration.getInstance().getProperty(
+				Configuration.PropertyName.RESP_VM_STATUS_KEY);
 	}
 
 	public HypervisorResponse(int responseCode, String description) {
@@ -38,6 +42,10 @@ class HypervisorResponse {
 
 	public void setAttribute(String key, String value) {
 		attributes.put(key, value);
+	}
+
+	public String getAttribute(String key) {
+		return attributes.get(key);
 	}
 
 	public static HypervisorResponse commandRes2HyResp(CmdsExecResult cmdRes) {

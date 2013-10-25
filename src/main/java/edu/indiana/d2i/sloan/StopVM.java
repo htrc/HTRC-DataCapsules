@@ -25,7 +25,7 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 @Path("/stopvm")
 public class StopVM {
 	private static Logger logger = Logger.getLogger(StopVM.class);
-	
+
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -33,34 +33,34 @@ public class StopVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		
+
 		if (vmid == null) {
-			return Response
-					.status(400)
-					.entity(new ErrorBean(400,
-							"VM id cannot be empty!"))
+			return Response.status(400)
+					.entity(new ErrorBean(400, "VM id cannot be empty!"))
 					.build();
 		}
-		
+
 		try {
-			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
-			if (!VMStateManager.getInstance().transitTo(vmid, vmInfo.getVmstate(), VMState.SHUTTINGDOWN)) {
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
+					vmid);
+			if (!VMStateManager.getInstance().transitTo(vmid,
+					vmInfo.getVmstate(), VMState.SHUTTINGDOWN)) {
 				return Response
-					.status(400)
-					.entity(new ErrorBean(400, "Cannot stop VM " + vmid + " when it is " + vmInfo.getVmstate()))
-					.build();
+						.status(400)
+						.entity(new ErrorBean(400, "Cannot stop VM " + vmid
+								+ " when it is " + vmInfo.getVmstate()))
+						.build();
 			}
-			
-			HypervisorProxy.getInstance().addCommand(new StopVMCommand(vmInfo));	
-			
-			return Response.status(200).build();			
+
+			HypervisorProxy.getInstance().addCommand(new StopVMCommand(vmInfo));
+
+			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response
 					.status(400)
-					.entity(new ErrorBean(400,
-							"Cannot find VM " + vmid + " with username " + userName))
-					.build();
+					.entity(new ErrorBean(400, "Cannot find VM " + vmid
+							+ " with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
