@@ -18,6 +18,7 @@ import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.db.DBSchema;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.scheduler.SchedulerFactory;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -122,7 +123,7 @@ public class TestScheduler {
 
 	@Test
 	public void testScheduleAndRelease() throws SQLException,
-			NoResourceAvailableException {
+			NoResourceAvailableException, NoItemIsFoundInDBException {
 		int records = 5;
 		int scheduled = 4;
 
@@ -137,8 +138,9 @@ public class TestScheduler {
 		}
 
 		// release one
-		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null, null,
-				null, null, 0, 0, 2, 1024, 10, null, null, null, null, null, null, null); 
+		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null,
+				null, null, null, 0, 0, 2, 1024, 10, null, null, null, null,
+				null, null, null);
 
 		DBOperations.getInstance().deleteVMs("user-" + (scheduled - 1), vmInfo);
 
@@ -150,6 +152,7 @@ public class TestScheduler {
 			SchedulerFactory.getInstance().schedule(request);
 		}
 
-		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmInfo().size());
+		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmInfo()
+				.size());
 	}
 }

@@ -438,7 +438,12 @@ public class DBOperations {
 	}
 
 	public void deleteVMs(String username, VmInfoBean vmInfo)
-			throws SQLException {
+			throws SQLException, NoItemIsFoundInDBException {
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		
 		List<String> updates = new ArrayList<String>();
 
 		String deletevmsql = String.format("DELETE FROM "
@@ -456,10 +461,6 @@ public class DBOperations {
 				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
 				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
 				.append("=").append(String.format("\"%s\"", username));
-
-		Connection connection = null;
-		PreparedStatement pst = null;
-		ResultSet rs = null;
 
 		StringBuilder updateUserTableSql = new StringBuilder();
 
@@ -510,7 +511,6 @@ public class DBOperations {
 
 		executeTransaction(updates);
 	}
-
 	public void updateVMState(String vmid, VMState state) throws SQLException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "

@@ -25,14 +25,14 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 @Path("/deletevm")
 public class DeleteVM {
 	private static Logger logger = Logger.getLogger(DeleteVM.class);
-	
+
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResourcePost(@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
-		
+
 		// check whether the user has been authorized
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 
@@ -44,37 +44,39 @@ public class DeleteVM {
 					.entity(new ErrorBean(500,
 							"Username is not present in http header.")).build();
 		}
-		
+
 		if (vmid == null) {
-			return Response
-					.status(400)
-					.entity(new ErrorBean(400,
-							"VM id cannot be empty!"))
+			return Response.status(400)
+					.entity(new ErrorBean(400, "VM id cannot be empty!"))
 					.build();
 		}
-		
-		try {		
-			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
-			if (!VMStateManager.getInstance().transitTo(vmid, vmInfo.getVmstate(), VMState.DELETING)) {
+
+		try {
+
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
+					vmid);
+			if (!VMStateManager.getInstance().transitTo(vmid,
+					vmInfo.getVmstate(), VMState.DELETING)) {
 				return Response
-					.status(400)
-					.entity(new ErrorBean(400, "Cannot delete VM " + vmid + " when it is " + vmInfo.getVmstate()))
-					.build();
+						.status(400)
+						.entity(new ErrorBean(400, "Cannot delete VM " + vmid
+								+ " when it is " + vmInfo.getVmstate()))
+						.build();
 			}
-			
-			HypervisorProxy.getInstance().addCommand(new DeleteVMCommand(vmInfo));	
-			
+
+			HypervisorProxy.getInstance().addCommand(
+					new DeleteVMCommand(vmInfo));
+
 			/* Also restore user quota after deleting the VM */
 			DBOperations.getInstance().deleteVMs(userName, vmInfo);
-			
+
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response
 					.status(400)
-					.entity(new ErrorBean(400,
-							"Cannot find VM " + vmid + " with username " + userName))
-					.build();
+					.entity(new ErrorBean(400, "Cannot find VM " + vmid
+							+ " with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
