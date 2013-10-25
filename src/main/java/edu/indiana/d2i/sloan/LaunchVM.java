@@ -29,7 +29,8 @@ public class LaunchVM {
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(@FormParam("vmid") String vmid,
+	public Response getResourcePost(
+			@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = null;
