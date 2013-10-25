@@ -14,6 +14,12 @@ class HypervisorResponse {
 	private final String description;
 	private final Map<String, String> attributes;
 
+	/* string representation of the commands being executed */
+	private String cmdsString;
+
+	/* host where the commands are being executed */
+	private String hostname;
+
 	static {
 		KV_DELIMITER = Configuration.getInstance().getProperty(
 				Configuration.PropertyName.RESP_KV_DELIMITER);
@@ -22,7 +28,10 @@ class HypervisorResponse {
 				Configuration.PropertyName.RESP_VM_STATUS_KEY);
 	}
 
-	public HypervisorResponse(int responseCode, String description) {
+	public HypervisorResponse(String cmdsString, String hostname,
+			int responseCode, String description) {
+		this.cmdsString = cmdsString;
+		this.hostname = hostname;
 		this.responseCode = responseCode;
 		this.description = description;
 		this.attributes = new HashMap<String, String>();
@@ -61,7 +70,8 @@ class HypervisorResponse {
 				? lines[1]
 				: null;
 
-		HypervisorResponse hyperResp = new HypervisorResponse(respCode,
+		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
+				.getConcatenatedForm(), cmdRes.getHostname(), respCode,
 				description);
 
 		// parse key-value pairs
@@ -79,8 +89,11 @@ class HypervisorResponse {
 	public String toString() {
 		StringBuilder digest = new StringBuilder();
 
-		digest.append("Response Code: ").append(responseCode).append("\n")
-				.append("Description: ").append(description).append("\n");
+		digest.append("Command(s) executed: ").append(cmdsString).append("\n")
+				.append("Host where commands being executed: ")
+				.append(hostname).append("\n").append("Response Code: ")
+				.append(responseCode).append("\n").append("Description: ")
+				.append(description).append("\n");
 
 		for (Map.Entry<String, String> kvpair : attributes.entrySet()) {
 			digest.append("Key: ").append(kvpair.getKey()).append(" ")

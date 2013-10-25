@@ -4,6 +4,7 @@ import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.RetriableException;
+import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
@@ -25,6 +26,10 @@ public class StopVMCommand extends HypervisorCommand {
 				logger.debug(resp.toString());
 			}
 
+			if (resp.getResponseCode() != 0) {
+				throw new ScriptCmdErrorException(String.format(
+						"Failed to excute command:\n%s ", resp));
+			}
 		} catch (Exception e) {
 			throw new RetriableException(e.getMessage(), e);
 		}

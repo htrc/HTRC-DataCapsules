@@ -3,7 +3,7 @@ package edu.indiana.d2i.sloan.hyper;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.exception.StateTransitionException;
+import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.exception.RetriableException;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
@@ -26,30 +26,27 @@ public class QueryVMCommand extends HypervisorCommand {
 				logger.debug(resp.toString());
 			}
 
+			if (resp.getResponseCode() != 0) {
+				throw new ScriptCmdErrorException(String.format(
+						"Failed to excute command:\n%s ", resp));
+			}
 		} catch (Exception e) {
 			throw new RetriableException(e.getMessage(), e);
 		}
 
 		/**
-		 * check whether the transition of VM state in DB to the one reported by
-		 * hyperviosr is possible, if not, set state to error.
+		 * if VM state returned by hypervisor is ERROR, then update VM state in
+		 * DB accordingly
 		 */
+		VMState returnedState = VMState.valueOf(resp.getAttribute(
+				HypervisorResponse.VM_STATUS_KEY).toUpperCase());
 
-		VMState returnedState = VMState.valueOf(resp
-				.getAttribute(HypervisorResponse.VM_STATUS_KEY));
-
-		if (VMStateManager
-				.isValidTransition(vminfo.getVmstate(), returnedState)) {
+		if (returnedState.equals(VMState.ERROR)) {
 
 			// set state to error
 			VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 					vminfo.getVmstate(), VMState.ERROR);
 
-			throw new StateTransitionException(
-					String.format(
-							"VM state transition error, VM state in DB is %s, returned by hyperviosr is %s",
-							vminfo.getVmstate().toString(),
-							returnedState.toString()));
 		}
 	}
 

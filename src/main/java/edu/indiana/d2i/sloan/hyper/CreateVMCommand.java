@@ -1,10 +1,10 @@
 package edu.indiana.d2i.sloan.hyper;
 
-
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.RetriableException;
+import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
@@ -19,19 +19,24 @@ public class CreateVMCommand extends HypervisorCommand {
 	public void execute() throws Exception {
 
 		try {
-			// call hypervisor layer
+
 			HypervisorResponse resp = hypervisor.createVM(vminfo);
 
 			if (logger.isDebugEnabled()) {
 				logger.debug(resp.toString());
 			}
+
+			if (resp.getResponseCode() != 0) {
+				throw new ScriptCmdErrorException(String.format(
+						"Failed to excute command:\n%s ", resp));
+			}
+
 		} catch (Exception e) {
 			throw new RetriableException(e.getMessage(), e);
 		}
 
-		// update vm status and login info
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-			VMState.BUILDING, VMState.SHUTDOWN);
+				VMState.BUILDING, VMState.SHUTDOWN);
 	}
 
 	@Override

@@ -180,6 +180,9 @@ class CapsuleHypervisor implements IHypervisor {
 					SSHProxy.SSH_DEFAULT_PORT);
 
 			/* compose script command */
+
+			// TODO: should remove the -mode flag if the VM is launched in
+			// maintenance
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("-wdir", vminfo.getWorkDir())
 					.addArgument("-mode", vminfo.getRequestedVMMode())
