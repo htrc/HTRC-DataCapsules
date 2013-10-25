@@ -3,7 +3,6 @@ package edu.indiana.d2i.sloan.hyper;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -38,6 +37,10 @@ class CapsuleHypervisor implements IHypervisor {
 	private static int maxRetry = 5;
 	private static Set<String> retriableExpNames = null;
 
+	private CapsuleHypervisor() {
+		
+	}
+	
 	static {
 		timeoutInMillis = Long.parseLong(Configuration.getInstance()
 				.getProperty(

@@ -27,4 +27,6 @@ public class Constants {
 
 	public static final String DEFAULT_VM_WORKINGDIR_PREFIX = "/var/instance/";
 
+	public static final String DEFAULT_HYPERVISOR_FULL_CLASS_NAME = "edu.indiana.d2i.sloan.hyper.CapsuleHypervisor";
+
 }

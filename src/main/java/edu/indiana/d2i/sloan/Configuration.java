@@ -68,6 +68,15 @@ public final class Configuration {
 		 * that can be retried
 		 */
 		public static final String RETRY_TASK_RETRIABLE_EXPS = "retry.task.retriable.exps";
+
+		/* properties for random fail hypervisor */
+
+		/* value between [0.0 1.0] */
+		public static final String RFHYPER_RANDOM_FAIL_PROB = "rfhyper.random.fail.prob";
+		/* value between [0.0 1.0] */
+		public static final String RFHYPER_RANDOM_EXP_PROB = "rfhyper.random.exp.prob";
+
+		public static final String HYPERVISOR_FULL_CLASS_NAME = "hypervisor.full.class.name";
 	}
 
 	public static synchronized Configuration getInstance() {

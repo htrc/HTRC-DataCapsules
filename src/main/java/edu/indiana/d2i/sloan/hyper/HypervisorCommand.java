@@ -5,16 +5,16 @@ import edu.indiana.d2i.sloan.bean.VmInfoBean;
 public abstract class HypervisorCommand {
 	protected IHypervisor hypervisor = null;
 	protected VmInfoBean vminfo = null;
-	
-	public HypervisorCommand() {
+
+	public HypervisorCommand() throws Exception {
 		this.hypervisor = HypervisorFactory.createHypervisor();
 	}
-	
+
 	public HypervisorCommand(VmInfoBean vminfo) {
 		super();
 		this.vminfo = vminfo;
 	}
-	
+
 	public abstract void execute() throws Exception;
 	public abstract void cleanupOnFailed() throws Exception;
 }
