@@ -1,12 +1,9 @@
 package edu.indiana.d2i.sloan.hyper;
 
-import java.sql.SQLException;
 
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.exception.NonRetryableException;
 import edu.indiana.d2i.sloan.exception.RetriableException;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
@@ -19,7 +16,7 @@ public class CreateVMCommand extends HypervisorCommand {
 	}
 
 	@Override
-	public void execute() throws RetriableException, NonRetryableException {
+	public void execute() throws Exception {
 
 		try {
 			// call hypervisor layer
@@ -33,15 +30,9 @@ public class CreateVMCommand extends HypervisorCommand {
 			throw new RetriableException(e.getMessage(), e);
 		}
 
-		try {
-			// update vm status and login info
-			VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-					VMState.BUILDING, VMState.SHUTDOWN);
-		} catch (NoItemIsFoundInDBException e) {
-			throw new NonRetryableException(e.getMessage(), e);
-		} catch (SQLException e) {
-			throw new NonRetryableException(e.getMessage(), e);
-		}
+		// update vm status and login info
+		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+			VMState.BUILDING, VMState.SHUTDOWN);
 	}
 
 	@Override
