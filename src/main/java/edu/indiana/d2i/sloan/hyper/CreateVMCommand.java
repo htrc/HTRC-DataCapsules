@@ -35,8 +35,12 @@ public class CreateVMCommand extends HypervisorCommand {
 			throw new RetriableException(e.getMessage(), e);
 		}
 
+		// update state
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 				VMState.BUILDING, VMState.SHUTDOWN);
+
+		// no need to update mode since web service layer should already set VM
+		// mode to NOT_DEFINED
 	}
 
 	@Override

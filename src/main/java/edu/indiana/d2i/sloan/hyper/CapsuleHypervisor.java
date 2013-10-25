@@ -38,9 +38,9 @@ class CapsuleHypervisor implements IHypervisor {
 	private static Set<String> retriableExpNames = null;
 
 	private CapsuleHypervisor() {
-		
+
 	}
-	
+
 	static {
 		timeoutInMillis = Long.parseLong(Configuration.getInstance()
 				.getProperty(
@@ -188,7 +188,8 @@ class CapsuleHypervisor implements IHypervisor {
 			// maintenance
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("-wdir", vminfo.getWorkDir())
-					.addArgument("-mode", vminfo.getRequestedVMMode())
+					.addArgument("-mode",
+							vminfo.getRequestedVMMode().toString())
 					.addArgument("-policy", vminfo.getPolicypath()).build();
 
 			Commands launchVMCmd = new Commands(
@@ -252,7 +253,8 @@ class CapsuleHypervisor implements IHypervisor {
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("-wdir", vminfo.getWorkDir())
-					.addArgument("-mode", vminfo.getRequestedVMMode())
+					.addArgument("-mode",
+							vminfo.getRequestedVMMode().toString())
 					.addArgument("-policy", vminfo.getPolicypath()).build();
 
 			Commands switchVMCmd = new Commands(

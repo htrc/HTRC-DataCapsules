@@ -28,12 +28,12 @@ public class DeleteVMCommand extends HypervisorCommand {
 				throw new ScriptCmdErrorException(String.format(
 						"Failed to excute command:\n%s ", resp));
 			}
-			
+
 		} catch (Exception e) {
 			throw new RetriableException(e.getMessage(), e);
 		}
 
-		// no need to update VM' state since it is deleted
+		// no need to update VM' state and mode since it is going to be deleted
 	}
 
 	@Override

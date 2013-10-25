@@ -3,8 +3,10 @@ package edu.indiana.d2i.sloan.hyper;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.RetriableException;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
+import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
@@ -37,6 +39,18 @@ public class StopVMCommand extends HypervisorCommand {
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 				VMState.SHUTTINGDOWN, VMState.SHUTDOWN);
 
+		// update mode
+		assert vminfo.getVmmode().equals(VMMode.MAINTENANCE)
+				|| vminfo.getVmmode().equals(VMMode.SECURE);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug(String.format(
+					"Going to update VM (vmid = %s) mode in DB from %s to %s",
+					vminfo.getVmid(), vminfo.getVmmode(), VMMode.NOT_DEFINED));
+		}
+
+		DBOperations.getInstance().updateVMMode(vminfo.getVmid(),
+				VMMode.NOT_DEFINED);
 	}
 
 	@Override

@@ -42,7 +42,6 @@ public class SwitchVMCommand extends HypervisorCommand {
 				vminfo.getVmstate(), VMState.RUNNING);
 
 		// update mode
-
 		assert vminfo.getVmmode().equals(VMMode.SECURE)
 				|| vminfo.getVmmode().equals(VMMode.MAINTENANCE);
 
@@ -52,8 +51,8 @@ public class SwitchVMCommand extends HypervisorCommand {
 
 		if (logger.isDebugEnabled()) {
 			logger.debug(String.format(
-					"Going to update VM mode in DB from %s to %s",
-					vminfo.getVmmode(), targetMode));
+					"Going to update VM (vmid = %s) mode in DB from %s to %s",
+					vminfo.getVmid(), vminfo.getVmmode(), targetMode));
 		}
 
 		DBOperations.getInstance().updateVMMode(vminfo.getVmid(), targetMode);
