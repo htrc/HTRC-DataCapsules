@@ -14,8 +14,17 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
+/**
+ * 
+ * If private key path is given, SSHProxy will use public-private key
+ * authentication, otherwise it will use password.
+ * 
+ */
 public class SSHProxy {
 	private static final Log logger = LogFactory.getLog(SSHProxy.class);
+
+	public static int SSH_DEFAULT_PORT = 22;
+
 	private static int BUFFER_SIZE = 1024;
 	/* sleep duration in milliseconds */
 	private static long THREAD_SLEEP_DURATION = 1000;
@@ -24,13 +33,14 @@ public class SSHProxy {
 	private int port;
 	private String username;
 	private String passwd;
+	private String privateKeyPath;
 
 	private JSch jsch = null;
 	private Session session;
 
 	private final String SUDO_PREFIX = "sudo ";
 
-	public class Commands {
+	public static class Commands {
 		private List<String> commands;
 		private boolean isSudoCmds;
 
@@ -66,7 +76,7 @@ public class SSHProxy {
 		}
 	}
 
-	public class CmdsExecResult {
+	public static class CmdsExecResult {
 		private Commands cmds;
 		private String hostname;
 		private int exitCode;
@@ -99,25 +109,35 @@ public class SSHProxy {
 
 	}
 
-	public SSHProxy(String hostname, int port, String username, String passwd) {
+	public SSHProxy(String hostname, int port, String username, String passwd,
+			String privateKeyPath) throws JSchException {
 		this.hostname = hostname;
 		this.port = port;
 		this.username = username;
 		this.passwd = passwd;
+		this.privateKeyPath = privateKeyPath;
 
 		jsch = new JSch();
+
+		/* prefer public-private key authentication */
+		if (privateKeyPath != null) {
+			jsch.addIdentity(privateKeyPath);
+		}
 	}
 
 	public void connect() throws JSchException {
 		Properties sshConfig = new Properties();
 		sshConfig.put("StrictHostKeyChecking", "no");
 		session = jsch.getSession(username, hostname, port);
-		session.setPassword(passwd);
+
+		if (privateKeyPath == null) {
+			session.setPassword(passwd);
+		}
+
 		session.setConfig(sshConfig);
 		session.connect();
 	}
-
-	public void close() throws Exception {
+	public void close() {
 		session.disconnect();
 	}
 
@@ -205,7 +225,4 @@ public class SSHProxy {
 				screenOutput.toString());
 	}
 
-	public String getHostname() {
-		return hostname;
-	}
 }

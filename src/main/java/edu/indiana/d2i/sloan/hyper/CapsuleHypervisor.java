@@ -1,5 +1,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -10,9 +12,13 @@ import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
+import com.jcraft.jsch.JSchException;
+
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.utils.CommandUtils;
+import edu.indiana.d2i.sloan.utils.CommandUtils.HYPERVISOR_CMD;
 import edu.indiana.d2i.sloan.utils.SSHProxy;
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
@@ -20,12 +26,24 @@ import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
 class CapsuleHypervisor implements IHypervisor {
 	private static Logger logger = Logger.getLogger(CapsuleHypervisor.class);
 	private static long timeoutInMillis;
+	private static String sshUsername;
+	private static String sshPasswd;
+	private static String privateKeyPath;
 
 	static {
 		timeoutInMillis = Long.parseLong(Configuration.getInstance()
 				.getProperty(
 						Configuration.PropertyName.HYPERVISOR_TASK_TIMEOUT,
 						Constants.DEFAULT_HYPERVISOR_TASK_TIMEOUT));
+
+		sshUsername = Configuration.getInstance().getProperty(
+				Configuration.PropertyName.SSH_USERNAME);
+
+		sshPasswd = Configuration.getInstance().getProperty(
+				Configuration.PropertyName.SSH_PASSWD);
+
+		privateKeyPath = Configuration.getInstance().getProperty(
+				Configuration.PropertyName.SSH_PRIVATE_KEY_PATH);
 	}
 
 	class CapsuleTask implements Callable<CmdsExecResult> {
@@ -46,8 +64,8 @@ class CapsuleHypervisor implements IHypervisor {
 
 	}
 
-	private <T> T executateTask(Callable<T> task) throws InterruptedException,
-			ExecutionException, TimeoutException {
+	private static <T> T executeTask(Callable<T> task)
+			throws InterruptedException, ExecutionException, TimeoutException {
 
 		ExecutorService executor = null;
 
@@ -60,40 +78,212 @@ class CapsuleHypervisor implements IHypervisor {
 				executor.shutdownNow();
 		}
 	}
-	
-	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo) {
-		// TODO Auto-generated method stub
-		return null;
+
+	private static SSHProxy establishSShCon(String hostname, int port)
+			throws JSchException {
+		SSHProxy sshProxy = new SSHProxy(hostname, port, sshUsername,
+				sshPasswd, privateKeyPath);
+		sshProxy.connect();
+		return sshProxy;
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public HypervisorResponse createVM(VmInfoBean vminfo) throws JSchException,
+			InterruptedException, ExecutionException, TimeoutException {
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder()
+					.addArgument("-image", vminfo.getImagepath())
+					.addArgument("-vcpu", String.valueOf(vminfo.getNumCPUs()))
+					.addArgument("-mem", String.valueOf(vminfo.getMemorySize()))
+					.addArgument("-wdir", vminfo.getWorkDir())
+					.addArgument("-vnc", String.valueOf(vminfo.getVncport()))
+					.addArgument("-ssh", String.valueOf(vminfo.getSshport()))
+					.build();
+
+			Commands createVMCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.CREATE_VM,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+					createVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+
 	}
 
 	@Override
-	public HypervisorResponse queryVM(VmInfoBean vminfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public HypervisorResponse launchVM(VmInfoBean vminfo) throws JSchException,
+			InterruptedException, ExecutionException, TimeoutException {
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder()
+					.addArgument("-wdir", vminfo.getWorkDir())
+					.addArgument("-mode", vminfo.getRequestedVMMode())
+					.addArgument("-policy", vminfo.getPolicypath()).build();
+
+			Commands launchVMCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.LAUNCH_VM,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+					launchVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public HypervisorResponse queryVM(VmInfoBean vminfo) throws JSchException,
+			InterruptedException, ExecutionException, TimeoutException {
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().addArgument(
+					"-wdir", vminfo.getWorkDir()).build();
+
+			Commands queryVMCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.QUERY_VM,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+					queryVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
 	}
 
 	@Override
-	public HypervisorResponse stopVM(VmInfoBean vminfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public HypervisorResponse switchVM(VmInfoBean vminfo) throws JSchException,
+			InterruptedException, ExecutionException, TimeoutException {
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder()
+					.addArgument("-wdir", vminfo.getWorkDir())
+					.addArgument("-mode", vminfo.getRequestedVMMode())
+					.addArgument("-policy", vminfo.getPolicypath()).build();
+
+			Commands switchVMCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.SWITCH_VM,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+					switchVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
 	}
 
 	@Override
-	public HypervisorResponse delete(VmInfoBean vminfo) {
-		// TODO Auto-generated method stub
-		return null;
+	public HypervisorResponse stopVM(VmInfoBean vminfo) throws JSchException,
+			InterruptedException, ExecutionException, TimeoutException {
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().addArgument(
+					"-wdir", vminfo.getWorkDir()).build();
+
+			Commands stopVMCmd = new Commands(
+					Collections
+							.<String> singletonList(CommandUtils
+									.composeFullCommand(HYPERVISOR_CMD.STOP_VM,
+											argList)),
+					false);
+
+			/* execute task */
+			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+					stopVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
+
+	@Override
+	public HypervisorResponse delete(VmInfoBean vminfo) throws JSchException,
+			InterruptedException, ExecutionException, TimeoutException {
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().addArgument(
+					"-wdir", vminfo.getWorkDir()).build();
+
+			Commands deleteVMCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.DELETE_VM,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeTask(new CapsuleTask(sshProxy,
+					deleteVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
 	}
 }
