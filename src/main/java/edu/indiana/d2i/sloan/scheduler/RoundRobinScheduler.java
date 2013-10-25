@@ -48,7 +48,7 @@ public class RoundRobinScheduler extends Scheduler {
 						request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
 						VMMode.NOT_DEFINED, VMState.BUILDING,
 						request.getVmLoginID(), request.getVmLoginPasswd(),
-						request.getImageName(), null /* policy name */, null /* user requested vm mode when launching */);
+						request.getImageName(), null /* policy name */, VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */);
 			}
 		} while (scheduleIndex != start);
 
