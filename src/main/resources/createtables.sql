@@ -4,6 +4,10 @@ USE vmdb;
 
 DROP TABLE IF EXISTS vms, users, uservm, images;
 
+CREATE TABLE IF NOT EXISTS images(
+	imagename VARCHAR(128) PRIMARY KEY,
+	imagepath VARCHAR(512)) ENGINE=InnoDB;
+
 CREATE TABLE IF NOT EXISTS vms(
 	vmid VARCHAR(128) PRIMARY KEY, 
 	vmmode VARCHAR(64), 
@@ -24,6 +28,9 @@ CREATE TABLE IF NOT EXISTS vms(
 /* More fields will be added */
 CREATE TABLE IF NOT EXISTS users(
 	username VARCHAR(128) PRIMARY KEY, 
+	cpuleftquota INT,
+	memoryleftquota INT,
+	diskleftquota INT,
 	usertype VARCHAR(64)) ENGINE=InnoDB;
 	
 CREATE TABLE IF NOT EXISTS uservm(
@@ -34,7 +41,3 @@ CREATE TABLE IF NOT EXISTS uservm(
 	CONSTRAINT fk_vms FOREIGN KEY (vmid)
 		REFERENCES vms(vmid) ON DELETE CASCADE,
 	PRIMARY KEY(username, vmid)) ENGINE=InnoDB;
-	
-CREATE TABLE IF NOT EXISTS images(
-	imagename VARCHAR(128) PRIMARY KEY,
-	imagepath VARCHAR(512)) ENGINE=InnoDB;

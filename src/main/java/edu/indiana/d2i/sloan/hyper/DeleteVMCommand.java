@@ -3,6 +3,7 @@ package edu.indiana.d2i.sloan.hyper;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.RetriableException;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.vm.VMState;
@@ -10,9 +11,11 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class DeleteVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(DeleteVMCommand.class);
+	private final String username;
 
-	public DeleteVMCommand(VmInfoBean vminfo) {
+	public DeleteVMCommand(String username, VmInfoBean vminfo) {
 		super(vminfo);
+		this.username = username;
 	}
 
 	@Override
@@ -34,6 +37,8 @@ public class DeleteVMCommand extends HypervisorCommand {
 		}
 
 		// no need to update VM' state and mode since it is going to be deleted
+		/* Also restore user quota after deleting the VM */
+		DBOperations.getInstance().deleteVMs(username, vminfo);
 	}
 
 	@Override

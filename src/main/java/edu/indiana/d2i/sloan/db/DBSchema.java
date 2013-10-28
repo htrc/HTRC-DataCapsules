@@ -60,13 +60,13 @@ class DBSchema {
 		public static String VOLUME_DIR = "volumedir";
 		
 		/* remaining CPU quota */
-		public static String CPU_LEFT_QUOTA = "cpuLeftQuota";
+		public static String CPU_LEFT_QUOTA = "cpuleftquota";
 		
 		/* remaining memory quota in MB */
-		public static String MEMORY_LEFT_QUOTA = "memoryLeftQuota";
+		public static String MEMORY_LEFT_QUOTA = "memoryleftquota";
 		
 		/* remaining disk space quota in GB */
-		public static String DISK_LEFT_QUOTA = "diskLeftQuota";
+		public static String DISK_LEFT_QUOTA = "diskleftquota";
 		
 		/* currently all users are of the same type */
 		public static String USER_TYPE = "usertype";

@@ -60,7 +60,7 @@ public class StopVM {
 			return Response
 					.status(400)
 					.entity(new ErrorBean(400, "Cannot find VM " + vmid
-							+ " with username " + userName)).build();
+							+ " associated with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

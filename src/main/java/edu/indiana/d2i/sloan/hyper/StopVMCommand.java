@@ -37,7 +37,7 @@ public class StopVMCommand extends HypervisorCommand {
 		}
 
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.SHUTTINGDOWN, VMState.SHUTDOWN);
+			vminfo.getVmstate(), VMState.SHUTDOWN);
 
 		// update mode
 		assert vminfo.getVmmode().equals(VMMode.MAINTENANCE)

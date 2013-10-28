@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -36,7 +37,7 @@ public class SSHProxy {
 	private String privateKeyPath;
 
 	private JSch jsch = null;
-	private Session session;
+	private Session session = null;
 
 	private final String SUDO_PREFIX = "sudo ";
 
@@ -59,20 +60,8 @@ public class SSHProxy {
 		}
 
 		public String getConcatenatedForm() {
-
-			if ((commands == null) || (commands.size() == 0)) {
-				return "";
-			}
-
-			StringBuilder cmd = new StringBuilder();
-
-			for (int i = 0; i < commands.size() - 1; i++) {
-				cmd.append(commands.get(i)).append(";");
-			}
-
-			cmd.append(commands.get(commands.size() - 1));
-
-			return cmd.toString();
+			return (commands == null) || (commands.size() == 0) ? "":
+				StringUtils.join(commands.iterator(), ";");
 		}
 	}
 
@@ -108,24 +97,53 @@ public class SSHProxy {
 		}
 
 	}
-
-	public SSHProxy(String hostname, int port, String username, String passwd,
-			String privateKeyPath) throws JSchException {
-		this.hostname = hostname;
-		this.port = port;
-		this.username = username;
-		this.passwd = passwd;
-		this.privateKeyPath = privateKeyPath;
-
+	
+	public static class SSHProxyBuilder {
+		private String hostname;
+		private int port;
+		private String username;
+		private String passwd = null;
+		private String privateKeyPath = null;
+		
+		public SSHProxyBuilder(String hostname, int port, String username) {
+			this.hostname = hostname;
+			this.port = port;
+			this.username = username;
+		}
+		
+		public SSHProxyBuilder usePassword(String passwd) {
+			this.passwd = passwd;
+			return this;
+		}
+		
+		public SSHProxyBuilder usePrivateKey(String privateKeyPath) {
+			this.privateKeyPath = privateKeyPath;
+			return this;
+		}
+		
+		public SSHProxy build() throws JSchException {
+			if (passwd != null && privateKeyPath != null)
+				throw new IllegalArgumentException("Cannot take password and private key at the same time!");
+			if (passwd == null && privateKeyPath == null)
+				throw new IllegalArgumentException("Must set password or private key!");
+			return new SSHProxy(this);
+		}
+	}
+	
+	private SSHProxy(SSHProxyBuilder builder) throws JSchException {
+		this.hostname = builder.hostname;
+		this.port = builder.port;
+		this.username = builder.username;
+		this.passwd = builder.passwd;
+		this.privateKeyPath = builder.privateKeyPath;
+		
 		jsch = new JSch();
 
 		/* prefer public-private key authentication */
 		if (privateKeyPath != null) {
 			jsch.addIdentity(privateKeyPath);
 		}
-	}
-
-	public void connect() throws JSchException {
+		
 		Properties sshConfig = new Properties();
 		sshConfig.put("StrictHostKeyChecking", "no");
 		session = jsch.getSession(username, hostname, port);
@@ -137,8 +155,39 @@ public class SSHProxy {
 		session.setConfig(sshConfig);
 		session.connect();
 	}
+
+//	public SSHProxy(String hostname, int port, String username, String passwd,
+//			String privateKeyPath) throws JSchException {
+//		this.hostname = hostname;
+//		this.port = port;
+//		this.username = username;
+//		this.passwd = passwd;
+//		this.privateKeyPath = privateKeyPath;
+//
+//		jsch = new JSch();
+//
+//		/* prefer public-private key authentication */
+//		if (privateKeyPath != null) {
+//			jsch.addIdentity(privateKeyPath);
+//		}
+//	}
+//	
+//	public void connect() throws JSchException {
+//		Properties sshConfig = new Properties();
+//		sshConfig.put("StrictHostKeyChecking", "no");
+//		session = jsch.getSession(username, hostname, port);
+//
+//		if (privateKeyPath == null) {
+//			session.setPassword(passwd);
+//		}
+//
+//		session.setConfig(sshConfig);
+//		session.connect();
+//	}
+	
 	public void close() {
-		session.disconnect();
+		if (session != null)
+			session.disconnect();
 	}
 
 	/**

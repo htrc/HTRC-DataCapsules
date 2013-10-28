@@ -19,6 +19,7 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.LaunchVMCommand;
+import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
@@ -59,6 +60,7 @@ public class LaunchVM {
 			}
 			
 			// nonblocking call to hypervisor
+			vmInfo.setRequestedVMMode(VMMode.MAINTENANCE);
 			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo));
 
 			return Response.status(200).build();

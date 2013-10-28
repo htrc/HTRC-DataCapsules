@@ -81,7 +81,8 @@ public class CreateVM {
 					vcpu, volumeSizeInGB);
 			
 			// check quota
-			if (DBOperations.getInstance().quotaExceedsLimit(request)) {
+			if (!DBOperations.getInstance().quotasNotExceedLimit(request)) {
+				logger.info("Quota exceeds limit for user " + userName);
 				return Response.status(400)
 						.entity(new ErrorBean(400, "Quota exceeds limit!"))
 						.build();
@@ -91,6 +92,7 @@ public class CreateVM {
 			VmInfoBean vminfo = SchedulerFactory.getInstance().schedule(request);
 
 			// nonblocking call to hypervisor
+			vminfo.setImagePath(imagePath);
 			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid))

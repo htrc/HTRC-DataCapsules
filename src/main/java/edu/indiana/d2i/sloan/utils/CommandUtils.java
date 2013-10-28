@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import edu.indiana.d2i.sloan.Configuration;
 
 public class CommandUtils {
@@ -16,9 +18,6 @@ public class CommandUtils {
 
 	static {
 		commands = new HashMap<HYPERVISOR_CMD, String>() {
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = 1445020643148509308L;
 
 			{
@@ -49,7 +48,7 @@ public class CommandUtils {
 		private String argValue;
 
 		public Argument(String argName, String argValue) {
-			super();
+//			super();
 			this.argName = argName;
 			this.argValue = argValue;
 		}
@@ -81,16 +80,7 @@ public class CommandUtils {
 		}
 
 		public String build() {
-			StringBuilder argList = new StringBuilder();
-
-			for (Argument arg : args) {
-				argList.append(arg.toString()).append(" ");
-			}
-
-			// remove the trailing whitespace
-			argList.deleteCharAt(argList.length() - 1);
-
-			return argList.toString();
+			return (args.size() == 0) ? "": StringUtils.join(args.iterator(), " ");
 		}
 	}
 

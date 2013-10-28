@@ -48,18 +48,12 @@ public class QueryVM {
 			if (vmid == null) {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
-					status.add(new VmStatusBean(vmid, vminfo.getVmmode()
-							.toString(), vminfo.getVmstate().toString(), vminfo
-							.getPublicip(), vminfo.getSshport(), vminfo
-							.getVncport()));
+					status.add(new VmStatusBean(vminfo));
 				}
 			} else {
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
 						userName, vmid);
-				status.add(new VmStatusBean(vmid,
-						vminfo.getVmmode().toString(), vminfo.getVmstate()
-								.toString(), vminfo.getPublicip(), vminfo
-								.getSshport(), vminfo.getVncport()));
+				status.add(new VmStatusBean(vminfo));
 			}
 
 			for (VmInfoBean vminfo : vmInfoList) {
@@ -71,10 +65,12 @@ public class QueryVM {
 					.build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
+			String msg = (vmid == null) ? 
+				"Cannot find VMs with username " + userName: 
+				"Cannot find VMs " + vmid + " with username " + userName;
 			return Response
 					.status(400)
-					.entity(new ErrorBean(400, "Cannot find VMs " + vmid
-							+ " with username " + userName)).build();
+					.entity(new ErrorBean(400, msg)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

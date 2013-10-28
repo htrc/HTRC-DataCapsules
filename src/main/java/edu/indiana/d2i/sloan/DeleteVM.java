@@ -65,10 +65,9 @@ public class DeleteVM {
 			}
 
 			HypervisorProxy.getInstance().addCommand(
-					new DeleteVMCommand(vmInfo));
-
-			/* Also restore user quota after deleting the VM */
-			DBOperations.getInstance().deleteVMs(userName, vmInfo);
+					new DeleteVMCommand(userName, vmInfo));
+			
+			// delete vm from db after the script is executed
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

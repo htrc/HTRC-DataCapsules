@@ -93,7 +93,6 @@ class CapsuleHypervisor implements IHypervisor {
 
 		@Override
 		public CmdsExecResult call() throws Exception {
-
 			return sshProxy.execCmdSync(cmds);
 		}
 
@@ -127,9 +126,11 @@ class CapsuleHypervisor implements IHypervisor {
 
 	private static SSHProxy establishSShCon(String hostname, int port)
 			throws JSchException {
-		SSHProxy sshProxy = new SSHProxy(hostname, port, sshUsername,
-				sshPasswd, privateKeyPath);
-		sshProxy.connect();
+		SSHProxy sshProxy = (sshPasswd != null) ? 
+			new SSHProxy.SSHProxyBuilder(hostname, port, sshUsername).
+				usePassword(sshPasswd).build():
+			new SSHProxy.SSHProxyBuilder(hostname, port, sshUsername).
+				usePrivateKey(privateKeyPath).build();
 		return sshProxy;
 	}
 

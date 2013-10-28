@@ -64,13 +64,13 @@ public class SwitchVM {
 
 			// if already in the target mode, then no need to switch
 			if (target.equals(vmInfo.getVmmode())) {
+				String msg = String.format(
+						"VM %s is already in mode %s, no need to switch",
+						vmid, vmInfo.getVmmode());
+				logger.info(msg);
 				return Response
 						.status(400)
-						.entity(new ErrorBean(
-								400,
-								String.format(
-										"VM %s is already in mode %s, no need to switch",
-										vmid, vmInfo.getVmmode()))).build();
+						.entity(new ErrorBean(400, msg)).build();
 			}
 
 			// VM can only start from "running" state
@@ -82,7 +82,7 @@ public class SwitchVM {
 							: VMState.SWITCHING_TO_SECURITY))) {
 				return Response
 						.status(400)
-						.entity(new ErrorBean(400, "Cannot launch VM " + vmid
+						.entity(new ErrorBean(400, "Cannot switch VM " + vmid
 								+ " when it is " + vmInfo.getVmstate()))
 						.build();
 			}

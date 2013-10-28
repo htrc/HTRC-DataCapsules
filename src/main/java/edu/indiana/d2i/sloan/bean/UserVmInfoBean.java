@@ -44,7 +44,7 @@ public class UserVmInfoBean {
 				vmInfoBean.getVmloginPwd(), vmInfoBean.getImageName(),
 				vmInfoBean.getSshport(), vmInfoBean.getVncport(),
 				vmInfoBean.getNumCPUs(), vmInfoBean.getMemorySize(),
-				vmInfoBean.getDiskSpace(), vmInfoBean.getVmmode(),
+				vmInfoBean.getVolumeSize(), vmInfoBean.getVmmode(),
 				vmInfoBean.getVmstate());
 	}
 

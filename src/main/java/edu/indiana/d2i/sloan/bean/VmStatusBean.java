@@ -1,56 +1,46 @@
 package edu.indiana.d2i.sloan.bean;
 
 public class VmStatusBean {
-	private String vmid, mode, state, publicip;
-	private int vncport, sshport;
+	private final VmInfoBean vminfo;
 	
-	public VmStatusBean(String vmid, String mode, String state, 
-		String publicip, int sshport, int vncport) {
-		this.vmid = vmid;
-		this.mode = mode;
-		this.state = state;
-		this.publicip = publicip;
-		this.sshport = sshport;
-		this.vncport = vncport;
+	public VmStatusBean(VmInfoBean vminfo) {
+		this.vminfo = vminfo;
 	}
 	
 	public String getMode() {
-		return mode;
-	}
-	public void setMode(String mode) {
-		this.mode = mode;
+		return vminfo.getVmmode().toString();
 	}
 	public String getState() {
-		return state;
-	}
-	public void setState(String state) {
-		this.state = state;
+		return vminfo.getVmstate().toString();
 	}
 	public String getPublicip() {
-		return publicip;
-	}
-	public void setPublicip(String publicip) {
-		this.publicip = publicip;
+		return vminfo.getPublicip();
 	}
 	public int getVncport() {
-		return vncport;
-	}
-	public void setVncport(int vncport) {
-		this.vncport = vncport;
+		return vminfo.getVncport();
 	}
 	public int getSshport() {
-		return sshport;
-	}
-	public void setSshport(int sshport) {
-		this.sshport = sshport;
+		return vminfo.getSshport();
 	}
 	public String getVmid() {
-		return this.vmid;
+		return vminfo.getVmid();
 	}
-	
-	@Override
-	public String toString() {
-		return String.format("vmstatus [vmid=%s, mode=%s, state=%s, publicip=%s, vncport=%d, sshport=%d]", 
-			vmid, mode, state, publicip, vncport, sshport);
+	public String getVmInitialLoginId() {
+		return vminfo.getVmloginId();
+	}
+	public String getVmInitialLoginPassword() {
+		return vminfo.getVmloginPwd();
+	}
+	public int getVCPUs() {
+		return vminfo.getNumCPUs();
+	}
+	public int getMemSize() {
+		return vminfo.getMemorySize();
+	}
+	public int getVolumeSize() {
+		return vminfo.getVolumeSize();
+	}
+	public String getImageName() {
+		return vminfo.getImageName();
 	}
 }

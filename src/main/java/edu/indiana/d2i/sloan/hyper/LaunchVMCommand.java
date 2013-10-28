@@ -38,7 +38,7 @@ public class LaunchVMCommand extends HypervisorCommand {
 
 		// update state
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.LAUNCHING, VMState.RUNNING);
+			vminfo.getVmstate(), VMState.RUNNING);
 
 		// update mode
 		assert vminfo.getVmmode().equals(VMMode.NOT_DEFINED);
