@@ -6,11 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.apache.log4j.Logger;
 
@@ -19,8 +16,6 @@ import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.ImageInfoBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.exception.RetriableException;
-import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
@@ -39,49 +34,34 @@ public class DBOperations {
 
 	private void executeTransaction(final List<String> updates)
 			throws SQLException {
-		RetriableTask<Void> r = new RetriableTask<Void>(new Callable<Void>() {
-			@Override
-			public Void call() throws Exception {
-				Connection connection = null;
-				Statement st = null;
-
-				try {
-					connection = DBConnections.getInstance().getConnection();
-					connection.setAutoCommit(false);
-					st = connection.createStatement();
-
-					for (String update : updates) {
-						st.executeUpdate(update);
-					}
-					connection.commit();
-					logger.info("Commit updates " + updates.toString());
-				} catch (SQLException e) {
-					logger.error(e.getMessage(), e);
-					if (connection != null) {
-						try {
-							connection.rollback();
-							logger.info("Rollback updates "
-									+ updates.toString());
-							throw new RetriableException(e.getMessage());
-						} catch (SQLException ex1) {
-							throw ex1;
-						}
-					}
-				} finally {
-					if (st != null)
-						st.close();
-					if (connection != null)
-						connection.close();
-				}
-				return null;
-			}
-		}, 1000, 3, new HashSet<String>(Arrays.asList(RetriableException.class
-				.getName())));
+		Connection connection = null;
+		Statement st = null;
 
 		try {
-			r.call();
-		} catch (Exception e) {
-			throw new SQLException(e);
+			connection = DBConnections.getInstance().getConnection();
+			connection.setAutoCommit(false);
+			st = connection.createStatement();
+
+			for (String update : updates) {
+				st.executeUpdate(update);
+			}
+			connection.commit();
+			logger.info("Commit updates " + updates.toString());
+		} catch (SQLException e) {
+			logger.error(e.getMessage(), e);
+			if (connection != null) {
+				try {
+					connection.rollback();
+					logger.info("Rollback updates " + updates.toString());
+				} catch (SQLException ex1) {
+					throw ex1;
+				}
+			}
+		} finally {
+			if (st != null)
+				st.close();
+			if (connection != null)
+				connection.close();
 		}
 	}
 
@@ -89,60 +69,47 @@ public class DBOperations {
 			throws SQLException {
 		logger.debug(sql);
 
-		RetriableTask<List<VmInfoBean>> r = new RetriableTask<List<VmInfoBean>>(
-				new Callable<List<VmInfoBean>>() {
-					@Override
-					public List<VmInfoBean> call() throws Exception {
-						List<VmInfoBean> res = new ArrayList<VmInfoBean>();
-						Connection connection = null;
-						PreparedStatement pst = null;
-						ResultSet rs = null;
-
-						try {
-							connection = DBConnections.getInstance()
-									.getConnection();
-							pst = connection.prepareStatement(sql);
-							rs = pst.executeQuery();
-							while (rs.next()) {
-								VmInfoBean vminfo = new VmInfoBean(
-										rs.getString(DBSchema.VmTable.VM_ID),
-										rs.getString(DBSchema.VmTable.PUBLIC_IP),
-										rs.getString(DBSchema.VmTable.WORKING_DIR),
-										null, // image path
-										null, // policy path
-										rs.getInt(DBSchema.VmTable.SSH_PORT),
-										rs.getInt(DBSchema.VmTable.VNC_PORT),
-										rs.getInt(DBSchema.VmTable.NUM_CPUS),
-										rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
-										rs.getInt(DBSchema.VmTable.DISK_SPACE),
-										VMMode.valueOf(rs
-												.getString(DBSchema.VmTable.VM_MODE)),
-										VMState.valueOf(rs
-												.getString(DBSchema.VmTable.STATE)),
-										rs.getString(DBSchema.VmTable.VM_USERNAME),
-										rs.getString(DBSchema.VmTable.VM_PASSWORD),
-										rs.getString(DBSchema.VmTable.IMAGE_NAME),
-										null, null);
-								res.add(vminfo);
-							}
-						} finally {
-							if (rs != null)
-								rs.close();
-							if (pst != null)
-								pst.close();
-							if (connection != null)
-								connection.close();
-						}
-						return res;
-					}
-				}, 1000, 3, new HashSet<String>(
-						Arrays.asList(SQLException.class.getName())));
+		List<VmInfoBean> res = new ArrayList<VmInfoBean>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 
 		try {
-			return r.call();
-		} catch (Exception e) {
-			throw new SQLException(e);
+			connection = DBConnections.getInstance()
+					.getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				VmInfoBean vminfo = new VmInfoBean(
+						rs.getString(DBSchema.VmTable.VM_ID),
+						rs.getString(DBSchema.VmTable.PUBLIC_IP),
+						rs.getString(DBSchema.VmTable.WORKING_DIR),
+						null, // image path
+						null, // policy path
+						rs.getInt(DBSchema.VmTable.SSH_PORT),
+						rs.getInt(DBSchema.VmTable.VNC_PORT),
+						rs.getInt(DBSchema.VmTable.NUM_CPUS),
+						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
+						rs.getInt(DBSchema.VmTable.DISK_SPACE),
+						VMMode.valueOf(rs
+								.getString(DBSchema.VmTable.VM_MODE)),
+						VMState.valueOf(rs
+								.getString(DBSchema.VmTable.STATE)),
+						rs.getString(DBSchema.VmTable.VM_USERNAME),
+						rs.getString(DBSchema.VmTable.VM_PASSWORD),
+						rs.getString(DBSchema.VmTable.IMAGE_NAME),
+						null, null);
+				res.add(vminfo);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
 		}
+		return res;
 	}
 
 	public static DBOperations getInstance() {
