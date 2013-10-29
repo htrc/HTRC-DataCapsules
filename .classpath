@@ -59,7 +59,7 @@
   <classpathentry kind="var" path="M2_REPO/org/codehaus/woodstox/wstx-asl/3.2.9/wstx-asl-3.2.9.jar"/>
   <classpathentry kind="var" path="M2_REPO/jline/jline/0.9.94/jline-0.9.94.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-cli/commons-cli/1.0/commons-cli-1.0.jar"/>
-  <classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/1.0/commons-lang-1.0.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-lang/commons-lang/2.6/commons-lang-2.6.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-codec/commons-codec/1.2/commons-codec-1.2.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/wso2/carbon/org.wso2.carbon.securevault/4.0.0/org.wso2.carbon.securevault-4.0.0.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/eclipse/osgi/org.eclipse.osgi/3.7.0.v20110613/org.eclipse.osgi-3.7.0.v20110613.jar"/>
@@ -105,4 +105,5 @@
   <classpathentry kind="var" path="M2_REPO/org/apache/woden/wso2/woden/1.0.0.M8-wso2v1/woden-1.0.0.M8-wso2v1.jar"/>
   <classpathentry kind="var" path="M2_REPO/org/apache/httpcomponents/wso2/httpcore/4.1.0-wso2v1/httpcore-4.1.0-wso2v1.jar"/>
   <classpathentry kind="var" path="M2_REPO/commons-codec/wso2/commons-codec/1.3.0.wso2v1/commons-codec-1.3.0.wso2v1.jar"/>
+  <classpathentry kind="var" path="M2_REPO/commons-configuration/commons-configuration/1.9/commons-configuration-1.9.jar"/>
 </classpath>

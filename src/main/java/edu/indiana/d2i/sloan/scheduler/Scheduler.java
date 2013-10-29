@@ -12,7 +12,7 @@ public abstract class Scheduler {
 
 	static {
 		hosts = Configuration.getInstance()
-				.getProperty(Configuration.PropertyName.HOSTS).split(";");
+				.getString(Configuration.PropertyName.HOSTS).split(";");
 	}
 
 	public synchronized final VmInfoBean schedule(CreateVmRequestBean request)

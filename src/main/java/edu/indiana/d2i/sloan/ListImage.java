@@ -1,6 +1,5 @@
 package edu.indiana.d2i.sloan;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;

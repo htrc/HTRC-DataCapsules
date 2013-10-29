@@ -21,10 +21,10 @@ class HypervisorResponse {
 	private String hostname;
 
 	static {
-		KV_DELIMITER = Configuration.getInstance().getProperty(
+		KV_DELIMITER = Configuration.getInstance().getString(
 				Configuration.PropertyName.RESP_KV_DELIMITER);
 
-		VM_STATUS_KEY = Configuration.getInstance().getProperty(
+		VM_STATUS_KEY = Configuration.getInstance().getString(
 				Configuration.PropertyName.RESP_VM_STATUS_KEY);
 	}
 

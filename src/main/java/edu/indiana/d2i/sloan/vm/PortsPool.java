@@ -25,7 +25,7 @@ public class PortsPool {
 	public PortsPool() {
 		// load hosts
 		portsUsed = new HashMap<String, Set<Integer>>();
-		String[] hosts = Configuration.getInstance().getProperty(
+		String[] hosts = Configuration.getInstance().getString(
 				Configuration.PropertyName.HOSTS).split(";");
 		for (String host : hosts) {
 			portsUsed.put(host, new HashSet<Integer>());
@@ -49,9 +49,9 @@ public class PortsPool {
 		
 		// load port range from configuration
 		PORT_RANGE_MIN = Integer.valueOf(Configuration.getInstance()
-			.getProperty(Configuration.PropertyName.PORT_RANGE_MIN));
+			.getString(Configuration.PropertyName.PORT_RANGE_MIN));
 		PORT_RANGE_MAX = Integer.valueOf(Configuration.getInstance()
-			.getProperty(Configuration.PropertyName.PORT_RANGE_MAX));
+			.getString(Configuration.PropertyName.PORT_RANGE_MAX));
 	}
 	
 //	static {

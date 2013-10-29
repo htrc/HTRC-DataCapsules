@@ -42,37 +42,35 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	static {
-		timeoutInMillis = Long.parseLong(Configuration.getInstance()
-				.getProperty(
-						Configuration.PropertyName.HYPERVISOR_TASK_TIMEOUT,
-						Constants.DEFAULT_HYPERVISOR_TASK_TIMEOUT));
+		timeoutInMillis = Configuration.getInstance().getInt(
+			Configuration.PropertyName.HYPERVISOR_TASK_TIMEOUT);
 
-		sshUsername = Configuration.getInstance().getProperty(
+		sshUsername = Configuration.getInstance().getString(
 				Configuration.PropertyName.SSH_USERNAME);
 
-		sshPasswd = Configuration.getInstance().getProperty(
+		sshPasswd = Configuration.getInstance().getString(
 				Configuration.PropertyName.SSH_PASSWD);
 
-		privateKeyPath = Configuration.getInstance().getProperty(
+		privateKeyPath = Configuration.getInstance().getString(
 				Configuration.PropertyName.SSH_PRIVATE_KEY_PATH);
 
-		retriable = Boolean.parseBoolean(Configuration.getInstance()
-				.getProperty(Configuration.PropertyName.USE_RETRY_TASK));
+		retriable = Configuration.getInstance()
+				.getBoolean(Configuration.PropertyName.USE_RETRY_TASK);
 
 		if (retriable) {
 			retryWaitInMs = Long
 					.parseLong(Configuration
 							.getInstance()
-							.getProperty(
+							.getString(
 									Configuration.PropertyName.RETRY_TASK_WAIT_IN_MILLIS));
 
 			maxRetry = Integer.parseInt(Configuration.getInstance()
-					.getProperty(
+					.getString(
 							Configuration.PropertyName.RETRY_TASK_MAX_ATTEMPT));
 
 			String[] classNames = Configuration
 					.getInstance()
-					.getProperty(
+					.getString(
 							Configuration.PropertyName.RETRY_TASK_RETRIABLE_EXPS)
 					.split(";");
 

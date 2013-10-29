@@ -3,10 +3,33 @@ package edu.indiana.d2i.sloan;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.HierarchicalConfiguration;
+import org.apache.commons.configuration.XMLConfiguration;
+
 public final class Configuration {
 	private static Configuration instance = null;
+	
+	private void loadConfigurations(String xmlPath) {
+		try {
+		    XMLConfiguration config = new XMLConfiguration(xmlPath);
+		    int size = config.getList("property.name").size();
+		    for (int i = 0; i < size; i++) {
+		    	HierarchicalConfiguration sub = config.configurationAt(
+		    		String.format("property(%d)", i));
+		    	String name = sub.getString("name");
+		    	String val = sub.getString("value");
+		    	properties.put(name, val);
+		    }
+		} catch(ConfigurationException cex) {
+		    throw new RuntimeException(cex);
+		}
+	}
+	
 	private Configuration() {
 		properties = new HashMap<String, String>();
+		loadConfigurations("default.xml");
+		loadConfigurations("sites.xml");
 	}
 
 	private Map<String, String> properties = null;
@@ -40,12 +63,12 @@ public final class Configuration {
 		// hypervisor related properties
 
 		/* credentials for ssh */
-		public static final String SSH_USERNAME = "ssh.username";
-		public static final String SSH_PASSWD = "ssh.passwd";
-		public static final String SSH_PRIVATE_KEY_PATH = "ssh.private.key.path";
+		public static final String SSH_USERNAME = "host.ssh.username";
+		public static final String SSH_PASSWD = "host.ssh.passwd";
+		public static final String SSH_PRIVATE_KEY_PATH = "host.ssh.private.key.path";
 
 		/* timeout in milliseconds */
-		public static final String HYPERVISOR_TASK_TIMEOUT = "hypervisor.task.timeout";
+		public static final String HYPERVISOR_TASK_TIMEOUT = "hypervisor.task.timeout.in.ms";
 
 		/* hypervisor commands */
 		public static final String CMD_CREATE_VM = "cmd.create.vm";
@@ -78,7 +101,7 @@ public final class Configuration {
 
 		public static final String HYPERVISOR_FULL_CLASS_NAME = "hypervisor.full.class.name";
 	}
-
+	
 	public static synchronized Configuration getInstance() {
 		if (instance == null) {
 			instance = new Configuration();
@@ -86,15 +109,32 @@ public final class Configuration {
 		return instance;
 	}
 
-	public String getProperty(String name) {
+	public String getString(String name) {
 		return properties.get(name);
 	}
 
-	public String getProperty(String name, String defaul) {
+	public String getString(String name, String defaultVal) {
 		String res = properties.get(name);
-		return (res == null) ? defaul : res;
+		return (res == null) ? defaultVal : res;
 	}
-
+	
+	public int getInt(String name) {
+		return Integer.valueOf(getString(name));
+	}
+	
+	public int getInt(String name, int defaultVal) {
+		return Integer.valueOf(getString(name, String.valueOf(defaultVal)));
+	}
+	
+	public boolean getBoolean(String name) {
+		return Boolean.valueOf(getString(name));
+	}
+	
+	public boolean getBoolean(String name, boolean defaultVal) {
+		return Boolean.valueOf(getString(name, String.valueOf(defaultVal)));
+	}
+	
+	/** unit test purpose */
 	public void setProperty(String name, String value) {
 		properties.put(name, value);
 	}

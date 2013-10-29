@@ -22,22 +22,22 @@ public class CommandUtils {
 
 			{
 				put(HYPERVISOR_CMD.CREATE_VM, Configuration.getInstance()
-						.getProperty(Configuration.PropertyName.CMD_CREATE_VM));
+						.getString(Configuration.PropertyName.CMD_CREATE_VM));
 
 				put(HYPERVISOR_CMD.LAUNCH_VM, Configuration.getInstance()
-						.getProperty(Configuration.PropertyName.CMD_LAUNCH_VM));
+						.getString(Configuration.PropertyName.CMD_LAUNCH_VM));
 
 				put(HYPERVISOR_CMD.QUERY_VM, Configuration.getInstance()
-						.getProperty(Configuration.PropertyName.CMD_QUERY_VM));
+						.getString(Configuration.PropertyName.CMD_QUERY_VM));
 
 				put(HYPERVISOR_CMD.SWITCH_VM, Configuration.getInstance()
-						.getProperty(Configuration.PropertyName.CMD_SWITCH_VM));
+						.getString(Configuration.PropertyName.CMD_SWITCH_VM));
 
 				put(HYPERVISOR_CMD.STOP_VM, Configuration.getInstance()
-						.getProperty(Configuration.PropertyName.CMD_STOP_VM));
+						.getString(Configuration.PropertyName.CMD_STOP_VM));
 
 				put(HYPERVISOR_CMD.DELETE_VM, Configuration.getInstance()
-						.getProperty(Configuration.PropertyName.CMD_DELETE_VM));
+						.getString(Configuration.PropertyName.CMD_DELETE_VM));
 			}
 		};
 	}

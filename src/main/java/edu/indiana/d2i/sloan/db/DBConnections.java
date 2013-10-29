@@ -18,13 +18,13 @@ class DBConnections {
 	private DBConnections() {
 		try {
 			dataSource = new ComboPooledDataSource();
-			dataSource.setDriverClass(Configuration.getInstance().getProperty(
+			dataSource.setDriverClass(Configuration.getInstance().getString(
 				Configuration.PropertyName.DB_DRIVER_CLASS));
-			dataSource.setJdbcUrl(Configuration.getInstance().getProperty(
+			dataSource.setJdbcUrl(Configuration.getInstance().getString(
 				Configuration.PropertyName.JDBC_URL));
-			dataSource.setUser(Configuration.getInstance().getProperty(
+			dataSource.setUser(Configuration.getInstance().getString(
 				Configuration.PropertyName.DB_USER));
-			dataSource.setPassword(Configuration.getInstance().getProperty(
+			dataSource.setPassword(Configuration.getInstance().getString(
 				Configuration.PropertyName.DB_PWD));
 			
 			dataSource.setMinPoolSize(5);

@@ -71,7 +71,7 @@ public class CreateVM {
 			// check if policy name is valid
 			
 			int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
-					.getProperty(Configuration.PropertyName.VOLUME_SIZE_IN_GB,
+					.getString(Configuration.PropertyName.VOLUME_SIZE_IN_GB,
 							Constants.DEFAULT_VOLUME_SIZE_IN_GB));
 
 			// vm parameters

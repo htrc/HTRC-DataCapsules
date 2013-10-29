@@ -14,7 +14,7 @@ class HypervisorFactory {
 	private static Constructor<?> constructor;
 
 	static {
-		String hyperClassName = Configuration.getInstance().getProperty(
+		String hyperClassName = Configuration.getInstance().getString(
 				Configuration.PropertyName.HYPERVISOR_FULL_CLASS_NAME,
 				Constants.DEFAULT_HYPERVISOR_FULL_CLASS_NAME);
 

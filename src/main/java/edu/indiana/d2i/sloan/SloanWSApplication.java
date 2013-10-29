@@ -1,6 +1,5 @@
 package edu.indiana.d2i.sloan;
 
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -35,7 +34,7 @@ public class SloanWSApplication extends Application {
 	@PostConstruct
 	private void init() {
 		configureLogger(servletConfig);
-		loadProperties();
+		Configuration.getInstance(); // load configurations at first
 	}
 
 	@PreDestroy
@@ -48,17 +47,5 @@ public class SloanWSApplication extends Application {
 				.getInitParameter("log4j.properties.path");
 		PropertyConfigurator.configure(log4jPropertiesPath);
 		logger.info("logger configured as " + log4jPropertiesPath);
-	}
-
-	private void loadProperties() {
-		Configuration config = Configuration.getInstance();
-		Enumeration<?> parameterNames = servletConfig.getInitParameterNames();
-        while(parameterNames.hasMoreElements()) {
-            String parameterName = (String)parameterNames.nextElement();
-            String value = (String)servletConfig.getInitParameter(parameterName);
-            logger.debug(parameterName + " = " + value);
-            config.setProperty(parameterName, value);
-        }
-        logger.info("finish loading properties");
 	}
 }

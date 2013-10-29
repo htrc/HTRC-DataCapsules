@@ -25,12 +25,12 @@ public class RandomFailHypervisor implements IHypervisor {
 	
 	static {
 		RANDOM_FAIL_PROB = Float.parseFloat(Configuration.getInstance()
-				.getProperty(
+				.getString(
 						Configuration.PropertyName.RFHYPER_RANDOM_FAIL_PROB,
 						DEFAULT_RANDOM_FAIL_PROB));
 
 		RANDOM_EXP_PROB = Float.parseFloat(Configuration.getInstance()
-				.getProperty(
+				.getString(
 						Configuration.PropertyName.RFHYPER_RANDOM_EXP_PROB,
 						DEFAULT_RANDOM_EXP_PROB));
 

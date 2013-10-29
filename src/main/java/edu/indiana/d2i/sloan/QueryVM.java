@@ -25,7 +25,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
 
-@Path("/queryvm")
+@Path("/show")
 public class QueryVM {
 	private static Logger logger = Logger.getLogger(QueryVM.class);
 

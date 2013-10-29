@@ -35,7 +35,7 @@ public class RandomScheduler extends Scheduler {
 		Random rand = new Random(System.currentTimeMillis());
 
 		int maxNumAttempts = Integer.parseInt(Configuration.getInstance()
-				.getProperty(
+				.getString(
 						Configuration.PropertyName.SCHEDULER_MAX_NUM_ATTEMPTS,
 						Constants.DEFAULT_SCHEDULER_MAX_NUM_ATTEMPTS));
 

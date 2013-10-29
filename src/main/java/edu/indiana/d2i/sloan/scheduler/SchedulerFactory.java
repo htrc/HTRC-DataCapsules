@@ -18,7 +18,7 @@ public class SchedulerFactory {
 	}
 
 	static {
-		String schedulerClassName = Configuration.getInstance().getProperty(
+		String schedulerClassName = Configuration.getInstance().getString(
 				Configuration.PropertyName.SCHEDULER_IMPL_CLASS,
 				Constants.DEFAULT_SCHEDULER_IMPL_CLASS);
 

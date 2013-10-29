@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<configuration>
+	<!-- hypervisor -->
+    <property>
+      	<name>sloan.ws.hyper.workers</name>
+		<value>1024</value>
+    </property>
+    <property>
+      	<name>hypervisor.task.timeout.in.ms</name>
+		<value>30000</value>
+    </property>  
+    <property>
+      	<name>retry.task.wait.in.millis</name>
+		<value>3000</value>
+    </property>  
+    <property>
+      	<name>retry.task.max.attempt</name>
+		<value>3</value>
+    </property>  
+    <property>
+      	<name>use.retry.task</name>
+		<value>true</value>
+    </property>  
+    <property>
+      	<name>retry.task.retriable.exps</name>
+		<value>edu.indiana.d2i.sloan.exception.RetriableException;java.sql.SQLException</value>
+    </property> 
+    <property>
+      	<name>hypervisor.full.class.name</name>
+		<value>edu.indiana.d2i.sloan.hyper.CapsuleHypervisor</value>
+    </property> 
+    
+    <!-- hypervisor scripts -->
+    <property>
+      	<name>resp.kv.delimiter</name>
+		<value>\t</value>
+    </property> 
+    <property>
+      	<name>resp.vm.status.key</name>
+		<value>XXX</value>
+    </property> 
+    <property>
+      	<name>cmd.create.vm</name>
+		<value>XXX.sh</value>
+    </property> 
+    <property>
+      	<name>cmd.launch.vm</name>
+		<value>XXX.sh</value>
+    </property> 
+    <property>
+      	<name>cmd.query.vm</name>
+		<value>XXX.sh</value>
+    </property> 
+    <property>
+      	<name>cmd.switch.vm</name>
+		<value>XXX.sh</value>
+    </property> 
+    <property>
+      	<name>cmd.stop.vm</name>
+		<value>XXX.sh</value>
+    </property> 
+    <property>
+      	<name>cmd.delete.vm</name>
+		<value>XXX.sh</value>
+    </property> 
+    
+    <!-- volume size, user quota -->
+    <property>
+		<name>sloan.ws.volume.size.gb</name>
+		<value>10</value>
+    </property>
+    <property>
+		<name>user.disk.quota.in.gb</name>
+		<value>300</value>
+    </property>
+    <property>
+		<name>user.cpu.quota.in.num</name>
+		<value>20</value>
+    </property>
+    <property>
+		<name>user.memory.quota.in.mb</name>
+		<value>20480</value>
+    </property>
+    
+    <!-- scheduler -->
+    <property>
+		<name>scheduler.impl.class</name>
+		<value>edu.indiana.d2i.sloan.scheduler.RoundRobinScheduler</value>
+    </property>
+    <property>
+		<name>scheduler.max.num.attempts</name>
+		<value>5</value>
+    </property>    
+</configuration>

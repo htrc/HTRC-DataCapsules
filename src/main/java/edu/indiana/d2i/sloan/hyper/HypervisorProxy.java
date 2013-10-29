@@ -42,8 +42,8 @@ public final class HypervisorProxy {
 
 		public Worker(HypervisorCommand command) {
 			this.command = command;
-			MAX_RETRY = Integer.valueOf(Configuration.getInstance().getProperty(
-				Configuration.PropertyName.MAX_RETRY, Constants.DEFAULT_HYPER_MAX_RETRY));
+			MAX_RETRY = Configuration.getInstance().getInt(
+					Configuration.PropertyName.MAX_RETRY);
 			RETRY_DELAY_MS = 0;
 		}
 
@@ -73,8 +73,7 @@ public final class HypervisorProxy {
 	}
 
 	private HypervisorProxy() {
-		int workers = Integer.valueOf(Configuration.getInstance().getProperty(
-			Configuration.PropertyName.WORKER_POOL_SIZE, Constants.DEFAULT_HYPER_WORKERS));
+		int workers = Configuration.getInstance().getInt(Configuration.PropertyName.WORKER_POOL_SIZE); 
 		executorService = Executors.newFixedThreadPool(workers,
 			new WorkerThreadFactory());
 	}
