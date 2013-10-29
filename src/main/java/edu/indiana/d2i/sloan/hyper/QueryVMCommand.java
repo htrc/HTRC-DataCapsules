@@ -1,10 +1,14 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.Callable;
+
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
-import edu.indiana.d2i.sloan.exception.RetriableException;
+import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
@@ -17,21 +21,15 @@ public class QueryVMCommand extends HypervisorCommand {
 
 	@Override
 	public void execute() throws Exception {
+		HypervisorResponse resp = hypervisor.queryVM(vminfo);
 
-		HypervisorResponse resp = null;
-		try {
-			resp = hypervisor.queryVM(vminfo);
+		if (logger.isDebugEnabled()) {
+			logger.debug(resp.toString());
+		}
 
-			if (logger.isDebugEnabled()) {
-				logger.debug(resp.toString());
-			}
-
-			if (resp.getResponseCode() != 0) {
-				throw new ScriptCmdErrorException(String.format(
-						"Failed to excute command:\n%s ", resp));
-			}
-		} catch (Exception e) {
-			throw new RetriableException(e.getMessage(), e);
+		if (resp.getResponseCode() != 0) {
+			throw new ScriptCmdErrorException(String.format(
+					"Failed to excute command:\n%s ", resp));
 		}
 
 		/**
@@ -40,13 +38,19 @@ public class QueryVMCommand extends HypervisorCommand {
 		 */
 		VMState returnedState = VMState.valueOf(resp.getAttribute(
 				HypervisorResponse.VM_STATUS_KEY).toUpperCase());
-
 		if (returnedState.equals(VMState.ERROR)) {
-
-			// set state to error
-			VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-					vminfo.getVmstate(), VMState.ERROR);
-
+			RetriableTask<Void> r = new RetriableTask<Void>(
+				new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						// set state to error
+						VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+								vminfo.getVmstate(), VMState.ERROR);
+						return null;
+					}
+				},  1000, 3, 
+				new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+			r.call();
 		}
 	}
 

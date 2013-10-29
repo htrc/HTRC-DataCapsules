@@ -37,11 +37,12 @@ public class RetriableTask<T> implements Callable<T> {
 			try {
 				return task.call();
 			} catch (Exception ex) {
+				logger.error(ex.getMessage(), ex);
 				if (retriableExceptions == null || 
 					retriableExceptions.contains(ex.getClass().getName())) {
 					if (retry == 0) throw ex;
 					Thread.sleep(waitInMs);
-					logger.debug("Retry " + task.getClass().getName() + ", " + retry + " times left.");
+					logger.info("Retry " + task.getClass().getName() + ", " + retry + " times left.");
 					retry--;
 				} else {
 					throw ex;

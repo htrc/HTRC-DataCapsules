@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import com.jcraft.jsch.JSchException;
 
 import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.utils.CommandUtils;
 import edu.indiana.d2i.sloan.utils.CommandUtils.HYPERVISOR_CMD;
