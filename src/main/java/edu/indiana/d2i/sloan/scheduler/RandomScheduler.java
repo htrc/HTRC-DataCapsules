@@ -60,7 +60,7 @@ public class RandomScheduler extends Scheduler {
 						null, // policy path
 						vmhost.sshport, vmhost.vncport, 
 						request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
-						VMMode.NOT_DEFINED, VMState.BUILDING,
+						VMMode.NOT_DEFINED, VMState.CREATE_PENDING,
 						request.getVmLoginID(), request.getVmLoginPasswd(),
 						request.getImageName(), null /* policy name */, VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */);
 			}

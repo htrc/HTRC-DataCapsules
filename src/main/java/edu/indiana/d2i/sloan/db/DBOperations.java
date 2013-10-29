@@ -354,7 +354,7 @@ public class DBOperations {
 						+ DBSchema.VmTable.DISK_SPACE
 						+ ") VALUES"
 						+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d)",
-						vmid, VMState.BUILDING.toString(),
+						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
 						vmLoginName, vmLoginPasswd, numCPUs, memorySize,

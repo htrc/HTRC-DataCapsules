@@ -53,7 +53,7 @@ public class DeleteVMCommand extends HypervisorCommand {
 	public void cleanupOnFailed() throws Exception {
 		// retry on cleanup?
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.DELETING, VMState.ERROR);
+				VMState.DELETE_PENDING, VMState.ERROR);
 
 	}
 

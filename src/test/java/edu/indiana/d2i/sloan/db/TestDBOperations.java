@@ -187,7 +187,7 @@ public class TestDBOperations {
 		
 		// read 1 vm back
 		VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo("username-" + 0, "vmid-" + 0);
-		Assert.assertEquals(VMState.BUILDING, vmInfo.getVmstate());
+		Assert.assertEquals(VMState.CREATE_PENDING, vmInfo.getVmstate());
 		Assert.assertEquals(2000, vmInfo.getSshport());
 		Assert.assertEquals(2001, vmInfo.getVncport());
 		Assert.assertEquals("192.168.0.2", vmInfo.getPublicip());
@@ -281,7 +281,7 @@ public class TestDBOperations {
 		
 		DBOperations.getInstance().updateVMState("vmid-0", VMState.RUNNING);
 		DBOperations.getInstance().updateVMMode("vmid-0", VMMode.MAINTENANCE);
-		DBOperations.getInstance().updateVMState("vmid-2", VMState.DELETING);
+		DBOperations.getInstance().updateVMState("vmid-2", VMState.DELETE_PENDING);
 		
 		boolean vm1 = false;
 		boolean vm2 = false;
@@ -293,7 +293,7 @@ public class TestDBOperations {
 				Assert.assertEquals(VMMode.MAINTENANCE, vmInfo.getVmmode());
 				vm1 = true;
 			} else if (vmInfo.getVmid().equals("vmid-2")) {
-				Assert.assertEquals(VMState.DELETING, vmInfo.getVmstate());
+				Assert.assertEquals(VMState.DELETE_PENDING, vmInfo.getVmstate());
 				vm2 = true;
 			}
 		}

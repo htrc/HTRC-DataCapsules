@@ -56,7 +56,7 @@ public class DeleteVM {
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);
 			if (!VMStateManager.getInstance().transitTo(vmid,
-					vmInfo.getVmstate(), VMState.DELETING)) {
+					vmInfo.getVmstate(), VMState.DELETE_PENDING)) {
 				return Response
 						.status(400)
 						.entity(new ErrorBean(400, "Cannot delete VM " + vmid

@@ -63,7 +63,7 @@ public class StopVMCommand extends HypervisorCommand {
 	@Override
 	public void cleanupOnFailed() throws Exception {
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.SHUTTINGDOWN, VMState.ERROR);
+				VMState.SHUTDOWN_PENDING, VMState.ERROR);
 	}
 
 	@Override

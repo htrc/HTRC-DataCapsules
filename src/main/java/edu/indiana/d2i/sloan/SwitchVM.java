@@ -78,8 +78,8 @@ public class SwitchVM {
 					vmid,
 					vmInfo.getVmstate(),
 					(VMMode.MAINTENANCE.equals(target)
-							? VMState.SWITCHING_TO_MAINTENANCE
-							: VMState.SWITCHING_TO_SECURITY))) {
+							? VMState.SWITCH_TO_MAINTENANCE_PENDING
+							: VMState.SWITCH_TO_SECURE_PENDING))) {
 				return Response
 						.status(400)
 						.entity(new ErrorBean(400, "Cannot switch VM " + vmid

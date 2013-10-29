@@ -64,7 +64,7 @@ public class LaunchVMCommand extends HypervisorCommand {
 	@Override
 	public void cleanupOnFailed() throws Exception {
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.LAUNCHING, VMState.ERROR);
+				VMState.LUANCH_PENDING, VMState.ERROR);
 	}
 
 	@Override

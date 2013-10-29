@@ -25,66 +25,43 @@ public class VMStateManager {
 		// check if current state can be transmitted
 		boolean canTrasist = false;
 		switch (src) {
-			case BUILDING :
-				if (target == VMState.SHUTTINGDOWN
-						|| target == VMState.SHUTDOWN
-						|| target == VMState.DELETING) {
-					canTrasist = true;
-				}
+			case CREATE_PENDING :
 				break;
 
-			case LAUNCHING :
-				if (target == VMState.RUNNING || target == VMState.SHUTTINGDOWN
-						|| target == VMState.SHUTDOWN
-						|| target == VMState.DELETING) {
-					canTrasist = true;
-				}
+			case LUANCH_PENDING :
 				break;
 
 			case RUNNING :
-				if (target == VMState.SHUTTINGDOWN
+				if (target == VMState.SHUTDOWN_PENDING
 						|| target == VMState.SHUTDOWN
-						|| target == VMState.SWITCHING_TO_MAINTENANCE
-						|| target == VMState.SWITCHING_TO_SECURITY
-						|| target == VMState.DELETING) {
+						|| target == VMState.SWITCH_TO_MAINTENANCE_PENDING
+						|| target == VMState.SWITCH_TO_SECURE_PENDING
+						|| target == VMState.DELETE_PENDING) {
 					canTrasist = true;
 				}
 				break;
 
-			case SWITCHING_TO_MAINTENANCE :
-				if (target == VMState.RUNNING || target == VMState.SHUTTINGDOWN
-						|| target == VMState.SHUTDOWN
-						|| target == VMState.DELETING) {
-					canTrasist = true;
-				}
+			case SWITCH_TO_MAINTENANCE_PENDING :
 				break;
 
-			case SWITCHING_TO_SECURITY :
-				if (target == VMState.RUNNING || target == VMState.SHUTTINGDOWN
-						|| target == VMState.SHUTDOWN
-						|| target == VMState.DELETING) {
-					canTrasist = true;
-				}
+			case SWITCH_TO_SECURE_PENDING :
 				break;
 
-			case SHUTTINGDOWN :
-				if (target == VMState.SHUTDOWN || target == VMState.DELETING) {
-					canTrasist = true;
-				}
+			case SHUTDOWN_PENDING :
 				break;
 
 			case SHUTDOWN :
-				if (target == VMState.LAUNCHING || target == VMState.DELETING) {
+				if (target == VMState.LUANCH_PENDING || target == VMState.DELETE_PENDING) {
 					canTrasist = true;
 				}
 				break;
 
 			case ERROR :
-				if (target == VMState.DELETING) {
+				if (target == VMState.DELETE_PENDING) {
 					canTrasist = true;
 				}
 				break;
-			case DELETING :
+			case DELETE_PENDING :
 				break;
 
 			default :

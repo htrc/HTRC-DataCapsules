@@ -38,7 +38,7 @@ public class CreateVMCommand extends HypervisorCommand {
 				@Override
 				public Void call() throws Exception {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-							VMState.BUILDING, VMState.SHUTDOWN);
+							VMState.CREATE_PENDING, VMState.SHUTDOWN);
 					return null;
 				}
 			},  1000, 3, 
@@ -53,7 +53,7 @@ public class CreateVMCommand extends HypervisorCommand {
 	public void cleanupOnFailed() throws Exception {
 		// retry on cleanup?
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.BUILDING, VMState.ERROR);
+				VMState.CREATE_PENDING, VMState.ERROR);
 	}
 
 	@Override

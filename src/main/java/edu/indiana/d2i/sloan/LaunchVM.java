@@ -51,7 +51,7 @@ public class LaunchVM {
 		try {			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 			if (!VMStateManager.getInstance().transitTo(vmid, 
-				vmInfo.getVmstate(), VMState.LAUNCHING)) {
+				vmInfo.getVmstate(), VMState.LUANCH_PENDING)) {
 				return Response
 					.status(400)
 					.entity(new ErrorBean(400,
