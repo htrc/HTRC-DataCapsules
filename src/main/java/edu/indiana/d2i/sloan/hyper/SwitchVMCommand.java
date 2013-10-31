@@ -18,7 +18,7 @@ public class SwitchVMCommand extends HypervisorCommand {
 
 	private static Logger logger = Logger.getLogger(SwitchVMCommand.class);
 
-	public SwitchVMCommand(VmInfoBean vminfo) {
+	public SwitchVMCommand(VmInfoBean vminfo) throws Exception {
 		super(vminfo);
 	}
 
@@ -67,8 +67,17 @@ public class SwitchVMCommand extends HypervisorCommand {
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				vminfo.getVmstate(), VMState.ERROR);
+		RetriableTask<Void> r = new RetriableTask<Void>(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+							vminfo.getVmstate(), VMState.ERROR);
+					return null;
+				}
+			},  1000, 3, 
+			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+		r.call();
 
 		// TODO: should we also update VM mode to NOT_DEFINED ?
 	}

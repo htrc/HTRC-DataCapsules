@@ -42,8 +42,8 @@ public class RetriableTask<T> implements Callable<T> {
 					retriableExceptions.contains(ex.getClass().getName())) {
 					if (retry == 0) throw ex;
 					Thread.sleep(waitInMs);
-					logger.info("Retry " + task.getClass().getName() + ", " + retry + " times left.");
 					retry--;
+					logger.info("Retry " + task.getClass().getName() + ", " + retry + " times left.");
 				} else {
 					throw ex;
 				}

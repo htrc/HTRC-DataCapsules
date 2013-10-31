@@ -130,7 +130,12 @@ public class SSHProxy {
 		}
 	}
 	
-	private SSHProxy(SSHProxyBuilder builder) throws JSchException {
+	// unit test purpose
+	protected SSHProxy() {
+		
+	}
+	
+	protected SSHProxy(SSHProxyBuilder builder) throws JSchException {
 		this.hostname = builder.hostname;
 		this.port = builder.port;
 		this.username = builder.username;
@@ -227,6 +232,7 @@ public class SSHProxy {
 
 		if (cmds.isSudoCmds)
 			command = SUDO_PREFIX + command;
+		logger.info("ssh execute: " + command);
 
 		StringBuilder screenOutput = new StringBuilder();
 

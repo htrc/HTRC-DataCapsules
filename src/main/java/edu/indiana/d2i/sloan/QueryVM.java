@@ -36,6 +36,13 @@ public class QueryVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		if (userName == null) {
+			logger.error("Username is not present in http header.");
+			return Response
+					.status(500)
+					.entity(new ErrorBean(500,
+							"Username is not present in http header.")).build();
+		}
 
 		// read from db and return first
 		// at the same time, send query to hypervisor async
@@ -43,8 +50,10 @@ public class QueryVM {
 		// ws periodically updates VM status??
 
 		try {
+			DBOperations.getInstance().insertUserIfNotExists(userName);
+			
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
-			List<VmInfoBean> vmInfoList = null;
+			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
 			if (vmid == null) {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
@@ -53,9 +62,12 @@ public class QueryVM {
 			} else {
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
 						userName, vmid);
+				vmInfoList.add(vminfo);
 				status.add(new VmStatusBean(vminfo));
 			}
 
+			logger.info(userName + " requests to query VM " + vmInfoList.toString());
+			
 			for (VmInfoBean vminfo : vmInfoList) {
 				HypervisorProxy.getInstance().addCommand(
 						new QueryVMCommand(vminfo));

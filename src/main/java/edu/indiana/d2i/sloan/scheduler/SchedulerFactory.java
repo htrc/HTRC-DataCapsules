@@ -1,7 +1,6 @@
 package edu.indiana.d2i.sloan.scheduler;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 
 import org.apache.log4j.Logger;
 
@@ -21,6 +20,7 @@ public class SchedulerFactory {
 		String schedulerClassName = Configuration.getInstance().getString(
 				Configuration.PropertyName.SCHEDULER_IMPL_CLASS,
 				Constants.DEFAULT_SCHEDULER_IMPL_CLASS);
+		logger.info("Load scheduler as " + schedulerClassName);
 
 		try {
 			Class<?> schedulerClass = Class.forName(schedulerClassName);
@@ -31,7 +31,12 @@ public class SchedulerFactory {
 			constructor.setAccessible(true);
 
 			scheduler = (Scheduler) constructor.newInstance();
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw new RuntimeException(e);
+		}
+		/*
+		catch (ClassNotFoundException e) {
 			logger.error(e.getMessage(), e);
 		} catch (SecurityException e) {
 			logger.error(e.getMessage(), e);
@@ -46,7 +51,7 @@ public class SchedulerFactory {
 		} catch (InvocationTargetException e) {
 			logger.error(e.getMessage(), e);
 		}
-
+		*/
 	}
 
 	public static Scheduler getInstance() {

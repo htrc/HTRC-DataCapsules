@@ -17,7 +17,7 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 public class LaunchVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(LaunchVMCommand.class);
 
-	public LaunchVMCommand(VmInfoBean vminfo) {
+	public LaunchVMCommand(VmInfoBean vminfo) throws Exception {
 		super(vminfo);
 	}
 
@@ -63,8 +63,17 @@ public class LaunchVMCommand extends HypervisorCommand {
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.LUANCH_PENDING, VMState.ERROR);
+		RetriableTask<Void> r = new RetriableTask<Void>(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+							vminfo.getVmstate(), VMState.ERROR);
+					return null;
+				}
+			},  1000, 3, 
+			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+		r.call();
 	}
 
 	@Override

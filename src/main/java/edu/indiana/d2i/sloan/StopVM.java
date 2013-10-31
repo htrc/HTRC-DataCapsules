@@ -33,7 +33,14 @@ public class StopVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-
+		if (userName == null) {
+			logger.error("Username is not present in http header.");
+			return Response
+					.status(500)
+					.entity(new ErrorBean(500,
+							"Username is not present in http header.")).build();
+		}
+		
 		if (vmid == null) {
 			return Response.status(400)
 					.entity(new ErrorBean(400, "VM id cannot be empty!"))
@@ -41,9 +48,12 @@ public class StopVM {
 		}
 
 		try {
+			DBOperations.getInstance().insertUserIfNotExists(userName);
+			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);
-			if (!VMStateManager.getInstance().transitTo(vmid,
+			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
+				!VMStateManager.getInstance().transitTo(vmid,
 					vmInfo.getVmstate(), VMState.SHUTDOWN_PENDING)) {
 				return Response
 						.status(400)
@@ -51,7 +61,10 @@ public class StopVM {
 								+ " when it is " + vmInfo.getVmstate()))
 						.build();
 			}
+			
+			logger.info(userName + " requests to stop VM " + vmInfo.getVmid());
 
+			vmInfo.setVmState(VMState.SHUTDOWN_PENDING);
 			HypervisorProxy.getInstance().addCommand(new StopVMCommand(vmInfo));
 
 			return Response.status(200).build();

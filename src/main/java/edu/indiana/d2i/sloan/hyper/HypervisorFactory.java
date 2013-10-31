@@ -6,7 +6,6 @@ import java.lang.reflect.InvocationTargetException;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.Constants;
 
 class HypervisorFactory {
 	private static Logger logger = Logger.getLogger(HypervisorFactory.class);
@@ -15,8 +14,8 @@ class HypervisorFactory {
 
 	static {
 		String hyperClassName = Configuration.getInstance().getString(
-				Configuration.PropertyName.HYPERVISOR_FULL_CLASS_NAME,
-				Constants.DEFAULT_HYPERVISOR_FULL_CLASS_NAME);
+				Configuration.PropertyName.HYPERVISOR_FULL_CLASS_NAME);
+		logger.info("Load hyper as " + hyperClassName);
 
 		try {
 			Class<?> hyperClass = Class.forName(hyperClassName);
@@ -25,14 +24,10 @@ class HypervisorFactory {
 			/* set accessible to true since constructor is private */
 			constructor.setAccessible(true);
 
-		} catch (SecurityException e) {
+		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-		} catch (NoSuchMethodException e) {
-			logger.error(e.getMessage(), e);
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage(), e);
+			throw new RuntimeException(e);
 		}
-
 	}
 
 	public static IHypervisor createHypervisor()

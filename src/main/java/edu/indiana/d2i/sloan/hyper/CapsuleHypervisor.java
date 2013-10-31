@@ -1,16 +1,12 @@
 package edu.indiana.d2i.sloan.hyper;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.log4j.Logger;
 
@@ -27,18 +23,14 @@ import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
 
 class CapsuleHypervisor implements IHypervisor {
 	private static Logger logger = Logger.getLogger(CapsuleHypervisor.class);
-	private static long timeoutInMillis;
+	protected static long timeoutInMillis;
 	private static String sshUsername;
 	private static String sshPasswd;
 	private static String privateKeyPath;
 	private static boolean retriable;
-	private static long retryWaitInMs = 500;
-	private static int maxRetry = 5;
+	protected static long retryWaitInMs = 500;
+	protected static int maxRetry = 5;
 	private static Set<String> retriableExpNames = null;
-
-	private CapsuleHypervisor() {
-
-	}
 
 	static {
 		timeoutInMillis = Configuration.getInstance().getInt(
@@ -67,14 +59,12 @@ class CapsuleHypervisor implements IHypervisor {
 					.getString(
 							Configuration.PropertyName.RETRY_TASK_MAX_ATTEMPT));
 
-			String[] classNames = Configuration
-					.getInstance()
-					.getString(
-							Configuration.PropertyName.RETRY_TASK_RETRIABLE_EXPS)
-					.split(";");
-
-			retriableExpNames = new HashSet<String>(
-					Arrays.<String> asList(classNames));
+//			String[] classNames = Configuration
+//					.getInstance()
+//					.getString(
+//							Configuration.PropertyName.RETRY_TASK_RETRIABLE_EXPS)
+//					.split(";");
+//			retriableExpNames = new HashSet<String>(Arrays.<String> asList(classNames));
 		}
 	}
 
@@ -92,25 +82,26 @@ class CapsuleHypervisor implements IHypervisor {
 		public CmdsExecResult call() throws Exception {
 			return sshProxy.execCmdSync(cmds);
 		}
-
 	}
 
-	private static <T> T executeRetriableTask(Callable<T> task)
-			throws InterruptedException, ExecutionException, TimeoutException {
-
+	private static <T> T executeRetriableTask(final Callable<T> task)
+			throws Exception {
 		if (retriable) {
-			task = new RetriableTask<T>(task, retryWaitInMs, maxRetry,
-					retriableExpNames);
+			RetriableTask<T> r = new RetriableTask<T>(
+				new Callable<T>() {
+					@Override
+					public T call() throws Exception {
+						return executeTask(task);
+					}
+				},  retryWaitInMs, maxRetry, retriableExpNames);
+			return r.call();	
+		} else {
+			return executeTask(task);
 		}
-
-		return executeTask(task);
 	}
 
-	private static <T> T executeTask(Callable<T> task)
-			throws InterruptedException, ExecutionException, TimeoutException {
-
+	private static <T> T executeTask(Callable<T> task) throws Exception {
 		ExecutorService executor = null;
-
 		try {
 			executor = Executors.newSingleThreadExecutor();
 			Future<T> future = executor.submit(task);
@@ -121,7 +112,7 @@ class CapsuleHypervisor implements IHypervisor {
 		}
 	}
 
-	private static SSHProxy establishSShCon(String hostname, int port)
+	protected SSHProxy establishSShCon(String hostname, int port)
 			throws JSchException {
 		SSHProxy sshProxy = (sshPasswd != null) ? 
 			new SSHProxy.SSHProxyBuilder(hostname, port, sshUsername).
@@ -132,11 +123,10 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo) throws JSchException,
-			InterruptedException, ExecutionException, TimeoutException {
-
+	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
+		logger.debug(vminfo);
+		
 		SSHProxy sshProxy = null;
-
 		try {
 			/* establish ssh connection */
 			sshProxy = establishSShCon(vminfo.getPublicip(),
@@ -171,10 +161,10 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo) throws JSchException,
-			InterruptedException, ExecutionException, TimeoutException {
+	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
+		logger.debug(vminfo);
+		
 		SSHProxy sshProxy = null;
-
 		try {
 			/* establish ssh connection */
 			sshProxy = establishSShCon(vminfo.getPublicip(),
@@ -208,8 +198,9 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse queryVM(VmInfoBean vminfo) throws JSchException,
-			InterruptedException, ExecutionException, TimeoutException {
+	public HypervisorResponse queryVM(VmInfoBean vminfo) throws Exception {
+		logger.debug(vminfo);
+		
 		SSHProxy sshProxy = null;
 
 		try {
@@ -239,8 +230,9 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo) throws JSchException,
-			InterruptedException, ExecutionException, TimeoutException {
+	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
+		logger.debug(vminfo);
+		
 		SSHProxy sshProxy = null;
 
 		try {
@@ -273,8 +265,9 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse stopVM(VmInfoBean vminfo) throws JSchException,
-			InterruptedException, ExecutionException, TimeoutException {
+	public HypervisorResponse stopVM(VmInfoBean vminfo) throws Exception {
+		logger.debug(vminfo);
+		
 		SSHProxy sshProxy = null;
 
 		try {
@@ -306,8 +299,9 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse delete(VmInfoBean vminfo) throws JSchException,
-			InterruptedException, ExecutionException, TimeoutException {
+	public HypervisorResponse delete(VmInfoBean vminfo) throws Exception {
+		logger.debug(vminfo);
+		
 		SSHProxy sshProxy = null;
 
 		try {

@@ -34,7 +34,14 @@ public class LaunchVM {
 			@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
-		String userName = null;
+		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		if (userName == null) {
+			logger.error("Username is not present in http header.");
+			return Response
+					.status(500)
+					.entity(new ErrorBean(500,
+							"Username is not present in http header.")).build();
+		}
 		
 		if (vmid == null) {
 			return Response
@@ -48,10 +55,13 @@ public class LaunchVM {
 		// check and update?
 		
 		// launch can only start from shutdown
-		try {			
+		try {		
+			DBOperations.getInstance().insertUserIfNotExists(userName);
+			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
-			if (!VMStateManager.getInstance().transitTo(vmid, 
-				vmInfo.getVmstate(), VMState.LUANCH_PENDING)) {
+			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
+				!VMStateManager.getInstance().transitTo(vmid, 
+				vmInfo.getVmstate(), VMState.LAUNCH_PENDING)) {
 				return Response
 					.status(400)
 					.entity(new ErrorBean(400,
@@ -59,7 +69,10 @@ public class LaunchVM {
 					.build();
 			}
 			
+			logger.info(userName + " requests to launch VM " + vmInfo.getVmid());
+			
 			// nonblocking call to hypervisor
+			vmInfo.setVmState(VMState.LAUNCH_PENDING);
 			vmInfo.setRequestedVMMode(VMMode.MAINTENANCE);
 			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo));
 

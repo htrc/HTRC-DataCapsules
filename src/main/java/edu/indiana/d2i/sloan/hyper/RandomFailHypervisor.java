@@ -1,10 +1,12 @@
 package edu.indiana.d2i.sloan.hyper;
 
+import java.util.HashMap;
 import java.util.Random;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.RandomFailException;
+import edu.indiana.d2i.sloan.vm.VMState;
 
 public class RandomFailHypervisor implements IHypervisor {
 
@@ -40,12 +42,16 @@ public class RandomFailHypervisor implements IHypervisor {
 	private static HypervisorResponse genFakeResponse(boolean fail) {
 
 		if (fail) {
-			return new HypervisorResponse("Random fail command",
+			return HypervisorResponse.createTestHypervisorResp(
+					"Random fail command",
 					"Random fail host", DEFAULT_SCRIPT_ERR_CODE,
-					"Random fail description");
+					"Random fail description", 
+					VMState.ERROR, new HashMap<String, String>());
 		} else {
-			return new HypervisorResponse("Random success command",
-					"Random success host", 0, "Random success description");
+			return HypervisorResponse.createTestHypervisorResp(
+					"Random success command",
+					"Random success host", 0, "Random success description", 
+					VMState.RUNNING, new HashMap<String, String>());
 		}
 
 	}

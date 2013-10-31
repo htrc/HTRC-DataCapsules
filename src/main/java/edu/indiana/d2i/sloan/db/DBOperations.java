@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.Constants;
+import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.ImageInfoBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
@@ -216,10 +216,12 @@ public class DBOperations {
 						DBSchema.UserTable.CPU_LEFT_QUOTA, DBSchema.UserTable.MEMORY_LEFT_QUOTA);
 				pst2 = connection.prepareStatement(insertUser);
 				pst2.setString(1, userName);
-				pst2.setInt(2, 
-					Integer.valueOf(Constants.DEFAULT_USER_DISK_QUOTA_IN_GB)); // volume size in GB
-				pst2.setInt(3, Integer.valueOf(Constants.DEFAULT_USER_CPU_QUOTA_IN_NUM)); // vcpus
-				pst2.setInt(4, Integer.valueOf(Constants.DEFAULT_USER_MEMORY_QUOTA_IN_MB)); // memory size in MB
+				pst2.setInt(2, Configuration.getInstance().
+					getInt(Configuration.PropertyName.USER_DISK_QUOTA_IN_GB)); // volume size in GB
+				pst2.setInt(3, Configuration.getInstance().
+					getInt(Configuration.PropertyName.USER_CPU_QUOTA_IN_NUM)); // vcpus
+				pst2.setInt(4, Configuration.getInstance().
+					getInt(Configuration.PropertyName.USER_MEMORY_QUOTA_IN_MB)); // memory size in MB
 				pst2.executeUpdate();
 			}
 		} finally {

@@ -17,7 +17,7 @@ public class DeleteVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(DeleteVMCommand.class);
 	private final String username;
 
-	public DeleteVMCommand(String username, VmInfoBean vminfo) {
+	public DeleteVMCommand(String username, VmInfoBean vminfo) throws Exception {
 		super(vminfo);
 		this.username = username;
 	}
@@ -51,10 +51,17 @@ public class DeleteVMCommand extends HypervisorCommand {
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		// retry on cleanup?
-		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				VMState.DELETE_PENDING, VMState.ERROR);
-
+		RetriableTask<Void> r = new RetriableTask<Void>(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+							vminfo.getVmstate(), VMState.ERROR);
+					return null;
+				}
+			},  1000, 3, 
+			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+		r.call();
 	}
 
 	@Override

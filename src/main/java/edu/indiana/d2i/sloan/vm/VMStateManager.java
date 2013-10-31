@@ -20,15 +20,33 @@ public class VMStateManager {
 		}
 		return instance;
 	}
+	
+	public static boolean isPendingState(VMState state) {
+		return (state == VMState.CREATE_PENDING || state == VMState.LAUNCH_PENDING ||
+				state == VMState.SHUTDOWN_PENDING || state == VMState.DELETE_PENDING ||
+				state == VMState.SWITCH_TO_MAINTENANCE_PENDING || 
+				state == VMState.SWITCH_TO_SECURE_PENDING)
+				? true: false;
+	}
 
 	public static boolean isValidTransition(VMState src, VMState target) {
 		// check if current state can be transmitted
 		boolean canTrasist = false;
 		switch (src) {
 			case CREATE_PENDING :
+				if (target == VMState.SHUTDOWN_PENDING
+						|| target == VMState.SHUTDOWN
+						|| target == VMState.DELETE_PENDING) {
+					canTrasist = true;
+				}
 				break;
 
-			case LUANCH_PENDING :
+			case LAUNCH_PENDING:
+				if (target == VMState.RUNNING || target == VMState.SHUTDOWN_PENDING
+						|| target == VMState.SHUTDOWN
+						|| target == VMState.DELETE_PENDING) {
+					canTrasist = true;
+				}
 				break;
 
 			case RUNNING :
@@ -42,16 +60,29 @@ public class VMStateManager {
 				break;
 
 			case SWITCH_TO_MAINTENANCE_PENDING :
+				if (target == VMState.RUNNING || target == VMState.SHUTDOWN_PENDING
+						|| target == VMState.SHUTDOWN
+						|| target == VMState.DELETE_PENDING) {
+					canTrasist = true;
+				}
 				break;
 
 			case SWITCH_TO_SECURE_PENDING :
+				if (target == VMState.RUNNING || target == VMState.SHUTDOWN_PENDING
+						|| target == VMState.SHUTDOWN
+						|| target == VMState.DELETE_PENDING) {
+					canTrasist = true;
+				}
 				break;
 
 			case SHUTDOWN_PENDING :
+				if (target == VMState.SHUTDOWN || target == VMState.DELETE_PENDING) {
+					canTrasist = true;
+				}
 				break;
 
 			case SHUTDOWN :
-				if (target == VMState.LUANCH_PENDING || target == VMState.DELETE_PENDING) {
+				if (target == VMState.LAUNCH_PENDING || target == VMState.DELETE_PENDING) {
 					canTrasist = true;
 				}
 				break;

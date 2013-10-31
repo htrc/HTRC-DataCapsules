@@ -6,9 +6,11 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.log4j.Logger;
 
 public final class Configuration {
 	private static Configuration instance = null;
+	private static Logger logger = Logger.getLogger(Configuration.class);
 	
 	private void loadConfigurations(String xmlPath) {
 		try {
@@ -30,6 +32,7 @@ public final class Configuration {
 		properties = new HashMap<String, String>();
 		loadConfigurations("default.xml");
 		loadConfigurations("sites.xml");
+		logger.info(properties.toString());
 	}
 
 	private Map<String, String> properties = null;

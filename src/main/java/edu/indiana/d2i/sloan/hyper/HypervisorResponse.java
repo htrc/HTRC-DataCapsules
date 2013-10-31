@@ -5,12 +5,14 @@ import java.util.Map;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
+import edu.indiana.d2i.sloan.vm.VMState;
 
 class HypervisorResponse {
 	public static final String KV_DELIMITER;
 	public static final String VM_STATUS_KEY;
 
-	private final int responseCode;
+	private final int responseCode; // code from hyper script
+	private final VMState state; // non-error, or error
 	private final String description;
 	private final Map<String, String> attributes;
 
@@ -28,13 +30,15 @@ class HypervisorResponse {
 				Configuration.PropertyName.RESP_VM_STATUS_KEY);
 	}
 
-	public HypervisorResponse(String cmdsString, String hostname,
-			int responseCode, String description) {
+	private HypervisorResponse(String cmdsString, String hostname,
+			int responseCode, String description, VMState state, 
+			Map<String, String> attributes) {
 		this.cmdsString = cmdsString;
 		this.hostname = hostname;
 		this.responseCode = responseCode;
 		this.description = description;
-		this.attributes = new HashMap<String, String>();
+		this.attributes = attributes;
+		this.state = state;
 	}
 
 	public int getResponseCode() {
@@ -43,6 +47,10 @@ class HypervisorResponse {
 
 	public String getDescription() {
 		return description;
+	}
+	
+	public VMState getVmState() {
+		return state;
 	}
 
 	public Map<String, String> getAttributes() {
@@ -70,18 +78,21 @@ class HypervisorResponse {
 				? lines[1]
 				: null;
 
-		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
-				.getConcatenatedForm(), cmdRes.getHostname(), respCode,
-				description);
-
 		// parse key-value pairs
+		Map<String, String> attributes = new HashMap<String, String>();
 		if ((lines != null) && (lines.length > 2)) {
 			for (int i = 2; i < lines.length; i++) {
 				String[] kvpair = lines[i].split(KV_DELIMITER);
-				hyperResp.setAttribute(kvpair[0].trim(), kvpair[1].trim());
+				attributes.put(kvpair[0].trim(), kvpair[1].trim());
 			}
 		}
 
+		// TODO: extra parsing is needed to convert vm state from script string to VMState string
+		
+		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
+				.getConcatenatedForm(), cmdRes.getHostname(), respCode,
+				description, VMState.valueOf(attributes.get(VM_STATUS_KEY)), attributes);
+		
 		return hyperResp;
 	}
 
@@ -101,5 +112,13 @@ class HypervisorResponse {
 		}
 
 		return digest.toString();
+	}
+	
+	public static HypervisorResponse createTestHypervisorResp(String cmdsString, 
+			String hostname,
+			int responseCode, String description, VMState state, 
+			Map<String, String> attributes) {
+		return new HypervisorResponse(cmdsString, hostname, 
+			responseCode, description, state, attributes);
 	}
 }

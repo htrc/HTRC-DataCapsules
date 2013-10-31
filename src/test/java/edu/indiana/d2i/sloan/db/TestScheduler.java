@@ -21,8 +21,6 @@ import edu.indiana.d2i.sloan.db.DBSchema;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.scheduler.SchedulerFactory;
-import edu.indiana.d2i.sloan.vm.VMMode;
-import edu.indiana.d2i.sloan.vm.VMState;
 
 public class TestScheduler {
 	@BeforeClass

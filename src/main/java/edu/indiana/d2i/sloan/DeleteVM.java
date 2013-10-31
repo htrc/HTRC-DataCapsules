@@ -52,10 +52,12 @@ public class DeleteVM {
 		}
 
 		try {
+			DBOperations.getInstance().insertUserIfNotExists(userName);
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);
-			if (!VMStateManager.getInstance().transitTo(vmid,
+			if (VMStateManager.isPendingState(vmInfo.getVmstate()) || 
+				!VMStateManager.getInstance().transitTo(vmid,
 					vmInfo.getVmstate(), VMState.DELETE_PENDING)) {
 				return Response
 						.status(400)
@@ -64,6 +66,7 @@ public class DeleteVM {
 						.build();
 			}
 
+			vmInfo.setVmState(VMState.DELETE_PENDING);
 			HypervisorProxy.getInstance().addCommand(
 					new DeleteVMCommand(userName, vmInfo));
 			

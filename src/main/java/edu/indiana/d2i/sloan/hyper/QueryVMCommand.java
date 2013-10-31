@@ -15,7 +15,7 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 public class QueryVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(QueryVMCommand.class);
 
-	public QueryVMCommand(VmInfoBean vminfo) {
+	public QueryVMCommand(VmInfoBean vminfo) throws Exception {
 		super(vminfo);
 	}
 
@@ -36,9 +36,8 @@ public class QueryVMCommand extends HypervisorCommand {
 		 * if VM state returned by hypervisor is ERROR, then update VM state in
 		 * DB accordingly
 		 */
-		VMState returnedState = VMState.valueOf(resp.getAttribute(
-				HypervisorResponse.VM_STATUS_KEY).toUpperCase());
-		if (returnedState.equals(VMState.ERROR)) {
+		VMState returnedState = resp.getVmState();
+		if (returnedState == VMState.ERROR) {
 			RetriableTask<Void> r = new RetriableTask<Void>(
 				new Callable<Void>() {
 					@Override
@@ -56,6 +55,7 @@ public class QueryVMCommand extends HypervisorCommand {
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
+		// set to error?
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 				vminfo.getVmstate(), VMState.ERROR);
 	}

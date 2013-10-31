@@ -59,6 +59,8 @@ public class CreateVM {
 		}
 
 		try {
+			DBOperations.getInstance().insertUserIfNotExists(userName);
+			
 			// check if image name is valid
 			String imagePath = DBOperations.getInstance().getImagePath(imageName);
 			if (imagePath == null) {
@@ -79,6 +81,7 @@ public class CreateVM {
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
 					vcpu, volumeSizeInGB);
+			logger.info(request);
 			
 			// check quota
 			if (!DBOperations.getInstance().quotasNotExceedLimit(request)) {

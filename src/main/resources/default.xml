@@ -21,13 +21,15 @@
       	<name>use.retry.task</name>
 		<value>true</value>
     </property>  
+    <!-- 
     <property>
       	<name>retry.task.retriable.exps</name>
-		<value>edu.indiana.d2i.sloan.exception.RetriableException;java.sql.SQLException</value>
+		<value>java.lang.Exception</value>
     </property> 
+     -->
     <property>
       	<name>hypervisor.full.class.name</name>
-		<value>edu.indiana.d2i.sloan.hyper.CapsuleHypervisor</value>
+		<value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value>
     </property> 
     
     <!-- hypervisor scripts -->
@@ -37,7 +39,7 @@
     </property> 
     <property>
       	<name>resp.vm.status.key</name>
-		<value>XXX</value>
+		<value>status</value>
     </property> 
     <property>
       	<name>cmd.create.vm</name>
