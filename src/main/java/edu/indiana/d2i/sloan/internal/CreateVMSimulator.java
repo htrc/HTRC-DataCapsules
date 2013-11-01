@@ -1,5 +1,8 @@
 package edu.indiana.d2i.sloan.internal;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
@@ -7,6 +10,7 @@ import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -77,7 +81,7 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 			int vcpu = Integer.parseInt(line.getOptionValue("vcpu"));
 			int mem = Integer.parseInt(line.getOptionValue("mem"));
 
-			if (!HypervisorCmdSimulator.checkVMImageExist(imagePath)) {
+			if (!HypervisorCmdSimulator.checkFileExist(imagePath)) {
 				logger.error(String.format("Cannot find requested image: %s",
 						imagePath));
 				System.exit(ERROR_CODE.get(ERROR_STATE.IMAGE_NOT_EXIST));
@@ -95,18 +99,15 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 				System.exit(ERROR_CODE.get(ERROR_STATE.NOT_ENOUGH_MEM));
 			}
 
+			String wdir = line.getOptionValue("wdir");
 			// copy VM image
+			FileUtils.copyFile(new File(imagePath), new File(wdir));
+
+			// do other related settings
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-
-			}
-
-			// start VM
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-
+				logger.error(e.getMessage());
 			}
 
 			// success
@@ -119,6 +120,9 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 					simulator.getUsage(100, "", 5, 5, "")));
 
 			System.exit(ERROR_CODE.get(ERROR_STATE.INVALID_INPUT_ARGS));
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			System.exit(ERROR_CODE.get(ERROR_STATE.IO_ERR));
 		}
 	}
 }
