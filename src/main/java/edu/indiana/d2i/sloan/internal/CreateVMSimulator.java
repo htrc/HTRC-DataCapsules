@@ -127,7 +127,11 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 			}
 
 			// copy VM image to working directory
-			FileUtils.copyFile(new File(imagePath), new File(wdir));
+			File imageFile = new File(imagePath);
+			FileUtils.copyFile(
+					imageFile,
+					new File(HypervisorCmdSimulator.cleanPath(wdir)
+							+ imageFile.getName()));
 
 			// write state as property file so that we can query later
 			Properties prop = new Properties();
