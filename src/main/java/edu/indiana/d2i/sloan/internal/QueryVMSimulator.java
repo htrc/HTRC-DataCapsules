@@ -1,10 +1,10 @@
 package edu.indiana.d2i.sloan.internal;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -17,24 +17,13 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.internal.HypervisorCmdSimulator.ERROR_STATE;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class QueryVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(QueryVMSimulator.class);
-	private static final String STATE_FILE_NAME = "vmstatefile.txt";
-	private static String ip = null;
+	private static final String QUERY_RES_FILE_NAME = "vmstate-query-result.txt";
 
-	static {
-		try {
-			ip = InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			logger.error(String.format(
-					"Cannot get ip address, error message: %s", e.getMessage()));
-			ip = "";
-		}
-	}
 	public static class VMStatus {
 		private VMMode mode;
 		private VMState state;
@@ -97,23 +86,13 @@ public class QueryVMSimulator extends HypervisorCmdSimulator {
 		}
 	}
 
-	public static VMStatus queryVMStatus(String wdir) {
-		// TODO: need to maintain the VM states somewhere so we can query on the
-		// fly
-
-		// currently hard code and return static state
-		VMStatus status = new VMStatus(VMMode.MAINTENANCE, VMState.RUNNING, ip,
-				28, 22, 2, 1024);
-
-		return status;
-	}
-
 	@Override
 	protected void initOptions() {
 		options = new Options();
 
 		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory").create("wdir");
+				.withDescription("working directory")
+				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
 		options.addOption(wdir);
 	}
@@ -125,19 +104,38 @@ public class QueryVMSimulator extends HypervisorCmdSimulator {
 
 		try {
 			CommandLine line = simulator.parseCommandLine(parser, args);
-			String wdir = line.getOptionValue("wdir");
+			String wdir = line.getOptionValue(CMD_FLAG_VALUE
+					.get(CMD_FLAG_KEY.WORKING_DIR));
 
-			if (!HypervisorCmdSimulator.checkFileExist(wdir)) {
+			if (!HypervisorCmdSimulator.resourceExist(wdir)) {
 				logger.error(String.format("Cannot find VM working dir: %s",
 						wdir));
 				System.exit(ERROR_CODE.get(ERROR_STATE.VM_NOT_EXIST));
 			}
 
-			VMStatus status = QueryVMSimulator.queryVMStatus(wdir);
+			Properties prop = new Properties();
+			String filename = HypervisorCmdSimulator.cleanPath(wdir)
+					+ HypervisorCmdSimulator.VM_INFO_FILE_NAME;
 
-			// write state file so shell script can read the vm state info
-			FileUtils.writeStringToFile(new File(STATE_FILE_NAME),
-					status.toString(), Charset.forName("UTF-8"));
+			prop.load(new FileInputStream(new File(filename)));
+
+			VMStatus status = new VMStatus(VMMode.valueOf(prop
+					.getProperty(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE))),
+					VMState.valueOf(prop.getProperty(CMD_FLAG_VALUE
+							.get(CMD_FLAG_KEY.VM_STATE))), ip,
+					Integer.parseInt(prop.getProperty(CMD_FLAG_VALUE
+							.get(CMD_FLAG_KEY.VNC_PORT))),
+					Integer.parseInt(prop.getProperty(CMD_FLAG_VALUE
+							.get(CMD_FLAG_KEY.SSH_PORT))),
+					Integer.parseInt(prop.getProperty(CMD_FLAG_VALUE
+							.get(CMD_FLAG_KEY.VCPU))), Integer.parseInt(prop
+							.getProperty(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.MEM))));
+
+			// write state query file so shell script can read the vm state info
+			filename = HypervisorCmdSimulator.cleanPath(wdir)
+					+ QueryVMSimulator.QUERY_RES_FILE_NAME;
+			FileUtils.writeStringToFile(new File(filename), status.toString(),
+					Charset.forName("UTF-8"));
 
 		} catch (ParseException e) {
 			logger.error(String.format(

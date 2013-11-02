@@ -1,5 +1,12 @@
 package edu.indiana.d2i.sloan.internal;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
@@ -10,7 +17,8 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.internal.HypervisorCmdSimulator.ERROR_STATE;
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMState;
 
 public class LaunchVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(LaunchVMSimulator.class);
@@ -20,14 +28,16 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 		options = new Options();
 
 		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory").create("wdir");
+				.withDescription("working directory")
+				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
-		Option mode = OptionBuilder.withArgName("maintain|secure").hasArg()
-				.withDescription("vm mode").create("mode");
+		Option mode = OptionBuilder.withArgName("maintenance|secure").hasArg()
+				.withDescription("vm mode")
+				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE));
 
 		Option policy = OptionBuilder.withArgName("firewallpolicy").hasArg()
 				.withDescription("path to firewall policy file")
-				.create("policy");
+				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.POLICY_PATH));
 
 		options.addOption(wdir);
 		options.addOption(mode);
@@ -45,17 +55,22 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 		try {
 			CommandLine line = simulator.parseCommandLine(parser, args);
 
-			String wdir = line.getOptionValue("wdir");
-			String mode = line.getOptionValue("mode");
-			String policyFilePath = line.getOptionValue("policy");
+			String wdir = line.getOptionValue(CMD_FLAG_VALUE
+					.get(CMD_FLAG_KEY.WORKING_DIR));
+			String mode = line.getOptionValue(CMD_FLAG_VALUE
+					.get(CMD_FLAG_KEY.VM_MODE));
+			String policyFilePath = line.getOptionValue(CMD_FLAG_VALUE
+					.get(CMD_FLAG_KEY.POLICY_PATH));
 
-			if (!HypervisorCmdSimulator.checkFileExist(wdir)) {
+			if (!HypervisorCmdSimulator.resourceExist(wdir)) {
 				logger.error(String.format("Cannot find VM working dir: %s",
 						wdir));
 				System.exit(ERROR_CODE.get(ERROR_STATE.VM_NOT_EXIST));
 			}
 
-			if (!HypervisorCmdSimulator.checkFileExist(policyFilePath)) {
+			VMMode vmmode = HypervisorCmdSimulator.getVMMode(mode);
+
+			if (vmmode == null) {
 				logger.error(String.format("Cannot find plicy file: %s",
 						policyFilePath));
 				System.exit(ERROR_CODE
@@ -76,6 +91,25 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 				logger.error(e.getMessage());
 			}
 
+			// update VM state file
+			Properties prop = new Properties();
+			String filename = HypervisorCmdSimulator.cleanPath(wdir)
+					+ HypervisorCmdSimulator.VM_INFO_FILE_NAME;
+
+			prop.load(new FileInputStream(new File(filename)));
+
+			// set following properties
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.POLICY_PATH),
+					policyFilePath);
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE),
+					vmmode.toString());
+
+			// set VM state to running
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE), VMState.RUNNING);
+
+			// save VM state file back
+			prop.store(new FileOutputStream(new File(filename)), "");
+
 			// success
 			System.exit(0);
 		} catch (ParseException e) {
@@ -85,6 +119,15 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 					simulator.getUsage(100, "", 5, 5, "")));
 
 			System.exit(ERROR_CODE.get(ERROR_STATE.INVALID_INPUT_ARGS));
+		} catch (FileNotFoundException e) {
+			logger.error(String.format("Cannot find vm state file: %s",
+					e.getMessage()));
+
+			System.exit(ERROR_CODE.get(ERROR_STATE.VM_STATE_FILE_NOT_FOUND));
+		} catch (IOException e) {
+			logger.error(e.getMessage(), e);
+			System.exit(ERROR_CODE.get(ERROR_STATE.IO_ERR));
 		}
 	}
+
 }
