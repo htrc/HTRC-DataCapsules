@@ -24,6 +24,10 @@ public class QueryVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(QueryVMSimulator.class);
 	private static final String QUERY_RES_FILE_NAME = "vmstate-query-result.txt";
 
+	public QueryVMSimulator() {
+		initOptions();
+	}
+
 	public static class VMStatus {
 		private VMMode mode;
 		private VMState state;
@@ -90,8 +94,8 @@ public class QueryVMSimulator extends HypervisorCmdSimulator {
 	protected void initOptions() {
 		options = new Options();
 
-		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory")
+		Option wdir = OptionBuilder.withArgName("workingdir").isRequired()
+				.hasArg().withDescription("working directory")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
 		options.addOption(wdir);

@@ -22,40 +22,44 @@ import edu.indiana.d2i.sloan.vm.VMState;
 public class CreateVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(CreateVMSimulator.class);
 
+	public CreateVMSimulator() {
+		initOptions();
+	}
+	
 	@Override
 	protected void initOptions() {
 		options = new Options();
 
-		Option image = OptionBuilder.withArgName("image").hasArg()
+		Option image = OptionBuilder.withArgName("image").isRequired().hasArg()
 				.withDescription("path to vm image file")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.IMAGE_PATH));
 
-		Option vcpu = OptionBuilder.withArgName("numcpus").hasArg()
-				.withDescription("# of cpus")
+		Option vcpu = OptionBuilder.withArgName("numcpus").isRequired()
+				.hasArg().withDescription("# of cpus")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VCPU));
 
-		Option mem = OptionBuilder.withArgName("memorysize").hasArg()
-				.withDescription("memeory size in MB")
+		Option mem = OptionBuilder.withArgName("memorysize").isRequired()
+				.hasArg().withDescription("memeory size in MB")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.MEM));
 
-		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory")
+		Option wdir = OptionBuilder.withArgName("workingdir").isRequired()
+				.hasArg().withDescription("working directory")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
-		Option vnc = OptionBuilder.withArgName("vncport").hasArg()
+		Option vnc = OptionBuilder.withArgName("vncport").isRequired().hasArg()
 				.withDescription("vnc port #")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VNC_PORT));
 
-		Option ssh = OptionBuilder.withArgName("sshport").hasArg()
+		Option ssh = OptionBuilder.withArgName("sshport").isRequired().hasArg()
 				.withDescription("ssh port #")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.SSH_PORT));
 
-		Option loginid = OptionBuilder.withArgName("loginusername").hasArg()
-				.withDescription("vm login username")
+		Option loginid = OptionBuilder.withArgName("loginusername")
+				.isRequired().hasArg().withDescription("vm login username")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.LOGIN_USERNAME));
 
-		Option loginpwd = OptionBuilder.withArgName("loginpassword").hasArg()
-				.withDescription("vm login password")
+		Option loginpwd = OptionBuilder.withArgName("loginpassword")
+				.isRequired().hasArg().withDescription("vm login password")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.LOGIN_PASSWD));
 
 		options.addOption(image);

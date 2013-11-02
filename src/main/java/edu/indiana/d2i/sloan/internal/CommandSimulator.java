@@ -12,6 +12,7 @@ import org.apache.commons.cli.ParseException;
 public abstract class CommandSimulator {
 	protected Options options;
 
+	/* this method should be called within constructor as initialization code */
 	abstract protected void initOptions();
 
 	protected CommandLine parseCommandLine(CommandLineParser parser,

@@ -21,12 +21,16 @@ import edu.indiana.d2i.sloan.vm.VMState;
 public class StopVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(StopVMSimulator.class);
 
+	public StopVMSimulator() {
+		initOptions();
+	}
+
 	@Override
 	protected void initOptions() {
 		options = new Options();
 
-		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory")
+		Option wdir = OptionBuilder.withArgName("workingdir").isRequired()
+				.hasArg().withDescription("working directory")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
 		options.addOption(wdir);

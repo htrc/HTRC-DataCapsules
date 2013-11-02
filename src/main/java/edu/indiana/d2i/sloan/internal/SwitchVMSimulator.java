@@ -23,19 +23,24 @@ import edu.indiana.d2i.sloan.vm.VMState;
 public class SwitchVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(SwitchVMSimulator.class);
 
+	public SwitchVMSimulator() {
+		initOptions();
+	}
+
 	@Override
 	protected void initOptions() {
 		options = new Options();
 
-		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory")
+		Option wdir = OptionBuilder.withArgName("workingdir").isRequired()
+				.hasArg().withDescription("working directory")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
-		Option mode = OptionBuilder.withArgName("maintenance|secure").hasArg()
-				.withDescription("vm mode")
+		Option mode = OptionBuilder.withArgName("maintenance|secure")
+				.isRequired().hasArg().withDescription("vm mode")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE));
 
-		Option policy = OptionBuilder.withArgName("firewallpolicy").hasArg()
+		Option policy = OptionBuilder.withArgName("firewallpolicy")
+				.isRequired().hasArg()
 				.withDescription("path to firewall policy file")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.POLICY_PATH));
 

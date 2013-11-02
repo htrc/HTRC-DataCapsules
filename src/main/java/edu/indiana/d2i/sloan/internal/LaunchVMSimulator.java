@@ -17,27 +17,30 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.internal.HypervisorCmdSimulator.CMD_FLAG_KEY;
-import edu.indiana.d2i.sloan.internal.HypervisorCmdSimulator.ERROR_STATE;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class LaunchVMSimulator extends HypervisorCmdSimulator {
 	private static Logger logger = Logger.getLogger(LaunchVMSimulator.class);
 
+	public LaunchVMSimulator() {
+		initOptions();
+	}
+
 	@Override
 	protected void initOptions() {
 		options = new Options();
 
-		Option wdir = OptionBuilder.withArgName("workingdir").hasArg()
-				.withDescription("working directory")
+		Option wdir = OptionBuilder.withArgName("workingdir").isRequired()
+				.hasArg().withDescription("working directory")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR));
 
-		Option mode = OptionBuilder.withArgName("maintenance|secure").hasArg()
-				.withDescription("vm mode")
+		Option mode = OptionBuilder.withArgName("maintenance|secure")
+				.isRequired().hasArg().withDescription("vm mode")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE));
 
-		Option policy = OptionBuilder.withArgName("firewallpolicy").hasArg()
+		Option policy = OptionBuilder.withArgName("firewallpolicy")
+				.isRequired().hasArg()
 				.withDescription("path to firewall policy file")
 				.create(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.POLICY_PATH));
 
