@@ -17,13 +17,11 @@ import org.apache.commons.cli.PosixParser;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.internal.HypervisorCmdSimulator.CMD_FLAG_KEY;
-import edu.indiana.d2i.sloan.internal.HypervisorCmdSimulator.ERROR_STATE;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
-public class LaunchVMSimulator extends HypervisorCmdSimulator {
-	private static Logger logger = Logger.getLogger(LaunchVMSimulator.class);
+public class SwitchVMSimulator extends HypervisorCmdSimulator {
+	private static Logger logger = Logger.getLogger(SwitchVMSimulator.class);
 
 	@Override
 	protected void initOptions() {
@@ -44,13 +42,14 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 		options.addOption(wdir);
 		options.addOption(mode);
 		options.addOption(policy);
+
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		LaunchVMSimulator simulator = new LaunchVMSimulator();
+		SwitchVMSimulator simulator = new SwitchVMSimulator();
 
 		CommandLineParser parser = new PosixParser();
 
@@ -70,13 +69,14 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 				System.exit(ERROR_CODE.get(ERROR_STATE.VM_NOT_EXIST));
 			}
 
-			VMMode vmmode = HypervisorCmdSimulator.getVMMode(mode);
+			VMMode requestedMode = HypervisorCmdSimulator.getVMMode(mode);
 
-			if (vmmode == null) {
+			if (requestedMode == null) {
 				logger.error(String.format(
 						"Invalid requested mode: %s, can only be %s or %s",
 						mode, VMMode.MAINTENANCE.toString(),
 						VMMode.SECURE.toString()));
+				System.exit(ERROR_CODE.get(ERROR_STATE.INVALID_VM_MODE));
 			}
 
 			if (!HypervisorCmdSimulator.resourceExist(policyFilePath)) {
@@ -86,41 +86,44 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 						.get(ERROR_STATE.FIREWALL_POLICY_NOT_EXIST));
 			}
 
-			// load VM status info
+			// load VM state file
 			Properties prop = new Properties();
 			String filename = HypervisorCmdSimulator.cleanPath(wdir)
 					+ HypervisorCmdSimulator.VM_INFO_FILE_NAME;
 
 			prop.load(new FileInputStream(new File(filename)));
 
-			// can only launch VM when it is in shutdown state
+			// cannot switch when VM is not running
 			VMState currentState = VMState.valueOf(prop
 					.getProperty(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE)));
 
-			if (!currentState.equals(VMState.SHUTDOWN)) {
-				logger.error(String
-						.format("Can only launch VM when it is in %s state, current VM state is %s",
-								VMState.SHUTDOWN.toString(),
-								currentState.toString()));
-				System.exit(ERROR_CODE.get(ERROR_STATE.VM_NOT_SHUTDOWN));
+			if (!currentState.equals(VMState.RUNNING)) {
+				logger.error("Cannot perform switch when VM is not running");
+				System.exit(ERROR_CODE.get(ERROR_STATE.VM_NOT_RUNNING));
 			}
-			// launch VM
+
+			// get current mode
+			VMMode currentMode = VMMode.valueOf(prop.getProperty(CMD_FLAG_VALUE
+					.get(CMD_FLAG_KEY.VM_MODE)));
+
+			if (currentMode.equals(requestedMode)) {
+				logger.error(String.format(
+						"VM is already in the requested mode: %s",
+						requestedMode.toString()));
+				System.exit(ERROR_CODE
+						.get(ERROR_STATE.VM_ALREADY_IN_REQUESTED_MODE));
+			}
+
+			// switch VM
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 				logger.error(e.getMessage());
 			}
 
-			// update VM state file
-
-			// set following properties
-			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.POLICY_PATH),
-					policyFilePath);
+			// update VM status file, i.e. set mode to the requested mode
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE),
-					vmmode.toString());
-
-			// set VM state to running
-			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE), VMState.RUNNING);
+					requestedMode.toString());
 
 			// save VM state file back
 			prop.store(new FileOutputStream(new File(filename)), "");
@@ -144,5 +147,4 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 			System.exit(ERROR_CODE.get(ERROR_STATE.IO_ERR));
 		}
 	}
-
 }

@@ -16,6 +16,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class CreateVMSimulator extends HypervisorCmdSimulator {
@@ -119,6 +120,12 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 			String wdir = line.getOptionValue(CMD_FLAG_VALUE
 					.get(CMD_FLAG_KEY.WORKING_DIR));
 
+			if (HypervisorCmdSimulator.resourceExist(wdir)) {
+				logger.error(String.format(
+						"Working directory %s already exists ", wdir));
+				System.exit(ERROR_CODE.get(ERROR_STATE.VM_ALREADY_EXIST));
+			}
+
 			// copy VM image to working directory
 			FileUtils.copyFile(new File(imagePath), new File(wdir));
 
@@ -128,22 +135,28 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.IMAGE_PATH), imagePath);
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VCPU), vcpu);
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.MEM), mem);
-			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR), line
-					.getOptionValue(CMD_FLAG_VALUE
-							.get(CMD_FLAG_KEY.WORKING_DIR)));
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR), wdir);
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VNC_PORT), line
 					.getOptionValue(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VNC_PORT)));
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.SSH_PORT), line
 					.getOptionValue(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.SSH_PORT)));
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.LOGIN_USERNAME), line
+					.getOptionValue(CMD_FLAG_VALUE
+							.get(CMD_FLAG_KEY.LOGIN_USERNAME)));
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.LOGIN_PASSWD), line
+					.getOptionValue(CMD_FLAG_VALUE
+							.get(CMD_FLAG_KEY.LOGIN_PASSWD)));
 
 			// write VM state as shutdown
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE),
 					VMState.SHUTDOWN.toString());
+			// write VM mode as undefined
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE),
+					VMMode.NOT_DEFINED.toString());
 
 			prop.store(
 					new FileOutputStream(new File(HypervisorCmdSimulator
-							.cleanPath(line.getOptionValue(CMD_FLAG_VALUE
-									.get(CMD_FLAG_KEY.WORKING_DIR)))
+							.cleanPath(wdir)
 							+ HypervisorCmdSimulator.VM_INFO_FILE_NAME)), "");
 
 			// do other related settings
