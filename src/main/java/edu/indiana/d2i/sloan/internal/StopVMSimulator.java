@@ -76,7 +76,7 @@ public class StopVMSimulator extends HypervisorCmdSimulator {
 
 			// update VM status file, i.e. set state to shutdown
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE),
-					VMState.SHUTDOWN);
+					VMState.SHUTDOWN.toString());
 
 			// save VM state file back
 			prop.store(new FileOutputStream(new File(filename)), "");

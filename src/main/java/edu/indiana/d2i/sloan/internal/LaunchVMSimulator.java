@@ -80,6 +80,7 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 						"Invalid requested mode: %s, can only be %s or %s",
 						mode, VMMode.MAINTENANCE.toString(),
 						VMMode.SECURE.toString()));
+				System.exit(ERROR_CODE.get(ERROR_STATE.INVALID_VM_MODE));
 			}
 
 			if (!HypervisorCmdSimulator.resourceExist(policyFilePath)) {
@@ -123,7 +124,8 @@ public class LaunchVMSimulator extends HypervisorCmdSimulator {
 					vmmode.toString());
 
 			// set VM state to running
-			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE), VMState.RUNNING);
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE),
+					VMState.RUNNING.toString());
 
 			// save VM state file back
 			prop.store(new FileOutputStream(new File(filename)), "");

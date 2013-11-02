@@ -25,7 +25,7 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 	public CreateVMSimulator() {
 		initOptions();
 	}
-	
+
 	@Override
 	protected void initOptions() {
 		options = new Options();
@@ -141,8 +141,9 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 			Properties prop = new Properties();
 
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.IMAGE_PATH), imagePath);
-			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VCPU), vcpu);
-			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.MEM), mem);
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VCPU),
+					String.valueOf(vcpu));
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.MEM), String.valueOf(mem));
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.WORKING_DIR), wdir);
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VNC_PORT), line
 					.getOptionValue(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VNC_PORT)));
@@ -154,7 +155,7 @@ public class CreateVMSimulator extends HypervisorCmdSimulator {
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.LOGIN_PASSWD), line
 					.getOptionValue(CMD_FLAG_VALUE
 							.get(CMD_FLAG_KEY.LOGIN_PASSWD)));
-
+			
 			// write VM state as shutdown
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_STATE),
 					VMState.SHUTDOWN.toString());

@@ -42,20 +42,22 @@ public abstract class HypervisorCmdSimulator extends CommandSimulator {
 			ip = "Unavailable";
 		}
 
+		/* code 1 is reserved for uncaught runtime exception */
 		ERROR_CODE = new HashMap<ERROR_STATE, Integer>() {
 			{
-				put(ERROR_STATE.INVALID_INPUT_ARGS, 1);
-				put(ERROR_STATE.IMAGE_NOT_EXIST, 2);
-				put(ERROR_STATE.NOT_ENOUGH_CPU, 3);
-				put(ERROR_STATE.NOT_ENOUGH_MEM, 4);
-				put(ERROR_STATE.IO_ERR, 5);
-				put(ERROR_STATE.VM_NOT_EXIST, 6);
-				put(ERROR_STATE.FIREWALL_POLICY_NOT_EXIST, 7);
-				put(ERROR_STATE.INVALID_VM_MODE, 8);
-				put(ERROR_STATE.VM_STATE_FILE_NOT_FOUND, 9);
-				put(ERROR_STATE.VM_ALREADY_IN_REQUESTED_MODE, 10);
-				put(ERROR_STATE.VM_NOT_RUNNING, 11);
-				put(ERROR_STATE.VM_NOT_SHUTDOWN, 12);
+				put(ERROR_STATE.INVALID_INPUT_ARGS, 2);
+				put(ERROR_STATE.IMAGE_NOT_EXIST, 3);
+				put(ERROR_STATE.NOT_ENOUGH_CPU, 4);
+				put(ERROR_STATE.NOT_ENOUGH_MEM, 5);
+				put(ERROR_STATE.IO_ERR, 6);
+				put(ERROR_STATE.VM_NOT_EXIST, 7);
+				put(ERROR_STATE.FIREWALL_POLICY_NOT_EXIST, 8);
+				put(ERROR_STATE.INVALID_VM_MODE, 9);
+				put(ERROR_STATE.VM_STATE_FILE_NOT_FOUND, 10);
+				put(ERROR_STATE.VM_ALREADY_IN_REQUESTED_MODE, 11);
+				put(ERROR_STATE.VM_NOT_RUNNING, 12);
+				put(ERROR_STATE.VM_NOT_SHUTDOWN, 13);
+				put(ERROR_STATE.VM_ALREADY_EXIST, 14);
 			}
 		};
 

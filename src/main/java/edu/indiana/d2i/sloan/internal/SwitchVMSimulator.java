@@ -126,6 +126,10 @@ public class SwitchVMSimulator extends HypervisorCmdSimulator {
 				logger.error(e.getMessage());
 			}
 
+			// update firewall policy
+			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.POLICY_PATH),
+					policyFilePath);
+
 			// update VM status file, i.e. set mode to the requested mode
 			prop.put(CMD_FLAG_VALUE.get(CMD_FLAG_KEY.VM_MODE),
 					requestedMode.toString());
