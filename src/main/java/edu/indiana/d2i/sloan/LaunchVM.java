@@ -74,6 +74,8 @@ public class LaunchVM {
 			// nonblocking call to hypervisor
 			vmInfo.setVmState(VMState.LAUNCH_PENDING);
 			vmInfo.setRequestedVMMode(VMMode.MAINTENANCE);
+			vmInfo.setPolicypath(Configuration.getInstance().getString(
+				Configuration.PropertyName.DEFAULT_POLICY_PATH));
 			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo));
 
 			return Response.status(200).build();

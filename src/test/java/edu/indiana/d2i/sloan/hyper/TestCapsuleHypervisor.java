@@ -129,7 +129,7 @@ public class TestCapsuleHypervisor {
 		}
 	}
 	
-	@Test(expected = IOException.class)
+	@Test
 	public void testCreateVM() throws Exception {
 		int records = 3;
 		
@@ -142,12 +142,14 @@ public class TestCapsuleHypervisor {
 		testCreateVM(hyper, 1);
 		
 		// fail, throw exception
+		boolean exception = false;
 		try {
 			hyper = new FakeCapsuleHypervisor(new FailedSSHProxy());
 			testCreateVM(hyper, 1);
 		} catch (Exception e) {
-			throw new IOException(e);
+			exception = true;
 		}
+		Assert.assertTrue(exception);
 	}
 	
 	// other hyper calls are similar to the logic of create vm

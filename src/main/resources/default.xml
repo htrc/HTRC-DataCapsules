@@ -73,7 +73,7 @@
     </property>
     <property>
 		<name>user.disk.quota.in.gb</name>
-		<value>300</value>
+		<value>100</value>
     </property>
     <property>
 		<name>user.cpu.quota.in.num</name>
@@ -93,4 +93,10 @@
 		<name>scheduler.max.num.attempts</name>
 		<value>5</value>
     </property>    
+    
+    <!-- hard code policy -->
+     <property>
+		<name>policy.default.path</name>
+		<value>/path/to/policy/file</value>
+    </property>  
 </configuration>

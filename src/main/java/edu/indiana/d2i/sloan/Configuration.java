@@ -103,6 +103,10 @@ public final class Configuration {
 		public static final String RFHYPER_RANDOM_EXP_PROB = "rfhyper.random.exp.prob";
 
 		public static final String HYPERVISOR_FULL_CLASS_NAME = "hypervisor.full.class.name";
+		
+		
+		// 
+		public static final String DEFAULT_POLICY_PATH = "policy.default.path";
 	}
 	
 	public static synchronized Configuration getInstance() {

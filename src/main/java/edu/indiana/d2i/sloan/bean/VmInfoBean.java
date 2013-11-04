@@ -22,6 +22,10 @@ public class VmInfoBean {
 	public void setVmState(VMState vmstate) {
 		this.vmstate = vmstate;
 	}
+	
+	public void setPolicypath(String policypath) {
+		this.policypath = policypath;
+	}
 
 	public VmInfoBean(String vmid, String publicip, String workDir,
 			String imagepath, String policypath, int sshport, int vncport,
