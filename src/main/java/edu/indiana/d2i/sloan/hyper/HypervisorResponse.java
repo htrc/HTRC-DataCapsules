@@ -83,7 +83,8 @@ class HypervisorResponse {
 		if ((lines != null) && (lines.length > 2)) {
 			for (int i = 2; i < lines.length; i++) {
 				String[] kvpair = lines[i].split(KV_DELIMITER);
-				attributes.put(kvpair[0].trim(), kvpair[1].trim());
+				if (kvpair.length == 2)
+					attributes.put(kvpair[0].trim(), kvpair[1].trim());
 			}
 		}
 		
