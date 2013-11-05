@@ -4,8 +4,12 @@
 # It must be run by source its content to modify current environment
 #
 
+# installation dir
+this=$0
+SCRIPT_HOME=`dirname "$this"`
+
 LOCALCLASSPATH=.
-LOCALCLASSPATH=`echo lib/*.jar | tr ' ' ':'`:$LOCALCLASSPATH
+LOCALCLASSPATH=`echo $SCRIPT_HOME/lib/*.jar | tr ' ' ':'`:$LOCALCLASSPATH
 
 LOCALCLASSPATH=$LOCALCLASSPATH
 CLASSPATH=$LOCALCLASSPATH

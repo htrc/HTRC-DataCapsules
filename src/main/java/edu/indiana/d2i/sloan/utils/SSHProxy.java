@@ -63,6 +63,11 @@ public class SSHProxy {
 			return (commands == null) || (commands.size() == 0) ? "":
 				StringUtils.join(commands.iterator(), ";");
 		}
+		
+		@Override
+		public String toString() {
+			return commands.toString();
+		}
 	}
 
 	public static class CmdsExecResult {
@@ -96,6 +101,11 @@ public class SSHProxy {
 			return hostname;
 		}
 
+		@Override
+		public String toString() {
+			return String.format("[host:%s, cmd:%s, exitcode:%d, output:%s]", 
+				hostname, cmds, exitCode, screenOutput);
+		}
 	}
 	
 	public static class SSHProxyBuilder {

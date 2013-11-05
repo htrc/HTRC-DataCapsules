@@ -1,9 +1,13 @@
 #!/bin/sh
 
+# installation dir
+this=$0
+SCRIPT_HOME=`dirname "$this"`
+
 # the file path pointing to the shell script
 # that conducts error message lookup based
 # on error code
-GET_MSG_SHELL_FILEPATH="./errcode2msg.sh"
+GET_MSG_SHELL_FILEPATH="$SCRIPT_HOME/errcode2msg.sh"
 
 # VM query result file name
 QUERY_RES_FILENAME="vmstate-query-result.txt";
@@ -11,9 +15,9 @@ QUERY_RES_FILENAME="vmstate-query-result.txt";
 # should put commons-cli-1.2.jar, commons-lang-2.6.jar,
 # commons-io-2.4.jar and sloan-ws-1.0-SNAPSHOT.jar
 # under lib folder
-LOCALCLASSPATH=`/bin/sh $PWD/classpath.sh run`
+LOCALCLASSPATH=`/bin/sh $SCRIPT_HOME/classpath.sh run`
 
-LOG_FILE=log/simulator.log
+LOG_FILE=$SCRIPT_HOME/log/simulator.log
 
 java -cp $LOCALCLASSPATH edu.indiana.d2i.sloan.internal.QueryVMSimulator $@ >> $LOG_FILE 2>&1
 
