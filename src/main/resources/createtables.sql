@@ -2,11 +2,15 @@ DROP DATABASE IF EXISTS vmdb;
 CREATE DATABASE vmdb;
 USE vmdb;
 
-DROP TABLE IF EXISTS vms, users, uservm, images;
+DROP TABLE IF EXISTS vms, users, uservm, images, policies;
 
 CREATE TABLE IF NOT EXISTS images(
 	imagename VARCHAR(128) PRIMARY KEY,
 	imagepath VARCHAR(512)) ENGINE=InnoDB;
+	
+CREATE TABLE IF NOT EXISTS policies(
+	policyname VARCHAR(128) PRIMARY KEY,
+	policypath VARCHAR(512)) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS vms(
 	vmid VARCHAR(128) PRIMARY KEY, 

@@ -43,27 +43,27 @@
     </property> 
     <property>
       	<name>cmd.create.vm</name>
-		<value>XXX.sh</value>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/create_vm_script.sh</value>
     </property> 
     <property>
       	<name>cmd.launch.vm</name>
-		<value>XXX.sh</value>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/launch_vm_script.sh</value>
     </property> 
     <property>
       	<name>cmd.query.vm</name>
-		<value>XXX.sh</value>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/query_vm_script.sh</value>
     </property> 
     <property>
       	<name>cmd.switch.vm</name>
-		<value>XXX.sh</value>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/switch_vm_script.sh </value>
     </property> 
     <property>
       	<name>cmd.stop.vm</name>
-		<value>XXX.sh</value>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/stop_vm_script.sh</value>
     </property> 
     <property>
       	<name>cmd.delete.vm</name>
-		<value>XXX.sh</value>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/delete_vm_script.sh</value>
     </property> 
     
     <!-- volume size, user quota -->
@@ -93,10 +93,4 @@
 		<name>scheduler.max.num.attempts</name>
 		<value>5</value>
     </property>    
-    
-    <!-- hard code policy -->
-     <property>
-		<name>policy.default.path</name>
-		<value>/path/to/policy/file</value>
-    </property>  
 </configuration>

@@ -2,9 +2,6 @@ package edu.indiana.d2i.sloan.scheduler;
 
 import java.sql.SQLException;
 
-import org.apache.commons.io.FilenameUtils;
-
-import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
@@ -27,8 +24,7 @@ public class RoundRobinScheduler extends Scheduler {
 		PortsPool portsPool = new PortsPool();
 		int start = scheduleIndex;
 
-		String workDir = FilenameUtils.concat(
-				Constants.DEFAULT_VM_WORKINGDIR_PREFIX, request.getVmId());
+		String workDir = request.getWorkDir();
 
 		do {
 			VMPorts vmhost = portsPool

@@ -105,8 +105,7 @@ public final class Configuration {
 		public static final String HYPERVISOR_FULL_CLASS_NAME = "hypervisor.full.class.name";
 		
 		
-		// 
-		public static final String DEFAULT_POLICY_PATH = "policy.default.path";
+		public static final String DEFAULT_VM_WORKDIR_PREFIX = "sloan.ws.vm.workdir.prefix";
 	}
 	
 	public static synchronized Configuration getInstance() {

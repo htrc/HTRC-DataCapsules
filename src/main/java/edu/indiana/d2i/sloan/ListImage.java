@@ -3,7 +3,6 @@ package edu.indiana.d2i.sloan;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -24,7 +23,6 @@ public class ListImage {
 	private static Logger logger = Logger.getLogger(ListVM.class);
 
 	@POST
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResourcePost(@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {

@@ -1,12 +1,12 @@
 package edu.indiana.d2i.sloan.bean;
 
 public class CreateVmRequestBean {
-	private String userName, imageName, vmid, vmLoginID, vmLoginPasswd;
+	private String userName, imageName, vmid, vmLoginID, vmLoginPasswd, workDir;
 	private int memory, vcpu, volumeSizeInGB;
 
 	public CreateVmRequestBean(String userName, String imageName, String vmid,
 			String vmLoginID, String vmLoginPasswd, int memory, int vcpu,
-			int volumeSizeInGB) {
+			int volumeSizeInGB, String workDir) {
 		this.userName = userName;
 		this.imageName = imageName;
 		this.vmid = vmid;
@@ -15,6 +15,7 @@ public class CreateVmRequestBean {
 		this.memory = memory;
 		this.vcpu = vcpu;
 		this.volumeSizeInGB = volumeSizeInGB;
+		this.workDir = workDir;
 	}
 
 	public String getUserName() {
@@ -47,6 +48,10 @@ public class CreateVmRequestBean {
 
 	public int getVolumeSizeInGB() {
 		return volumeSizeInGB;
+	}
+	
+	public String getWorkDir() {
+		return workDir;
 	}
 
 	@Override

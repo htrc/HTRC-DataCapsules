@@ -25,8 +25,6 @@ public class Constants {
 	/* timeout in milliseconds */
 	public static final String DEFAULT_HYPERVISOR_TASK_TIMEOUT = "3000";
 
-	public static final String DEFAULT_VM_WORKINGDIR_PREFIX = "/var/instance/";
-
 	public static final String DEFAULT_HYPERVISOR_FULL_CLASS_NAME = "edu.indiana.d2i.sloan.hyper.CapsuleHypervisor";
 
 }

@@ -261,7 +261,8 @@ public class TestDBOperations {
 				null, null, null, null, 
 				Integer.valueOf(Constants.DEFAULT_USER_MEMORY_QUOTA_IN_MB),
 				Integer.valueOf(Constants.DEFAULT_USER_CPU_QUOTA_IN_NUM) - 1,
-				Integer.valueOf(Constants.DEFAULT_USER_DISK_QUOTA_IN_GB) - 1);
+				Integer.valueOf(Constants.DEFAULT_USER_DISK_QUOTA_IN_GB) - 1, 
+				"/path/to/work/dir");
 		
 		Assert.assertTrue(DBOperations.getInstance().quotasNotExceedLimit(request));
 		Assert.assertFalse(DBOperations.getInstance().quotasNotExceedLimit(request));

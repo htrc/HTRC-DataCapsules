@@ -14,6 +14,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
@@ -78,9 +79,12 @@ public class CreateVM {
 
 			// vm parameters
 			String vmid = UUID.randomUUID().toString();
+			String workDir = FilenameUtils.concat(
+				Configuration.getInstance().getString(
+					Configuration.PropertyName.DEFAULT_VM_WORKDIR_PREFIX), vmid);
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
-					vcpu, volumeSizeInGB);
+					vcpu, volumeSizeInGB, workDir);
 			logger.info(request);
 			
 			// check quota

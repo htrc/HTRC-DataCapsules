@@ -7,13 +7,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.ImageInfoBean;
+import edu.indiana.d2i.sloan.bean.PolicyInfoBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMPorts;
@@ -515,6 +518,36 @@ public class DBOperations {
 			rs = pst1.executeQuery();
 			while (rs.next()) {
 				res.add(new ImageInfoBean(rs.getString(DBSchema.ImageTable.IMAGE_NAME)));
+			} 
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst1 != null)
+				pst1.close();
+			if (pst2 != null)
+				pst2.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
+	
+	public Map<String, PolicyInfoBean> getPolicyInfo() throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst1 = null;
+		PreparedStatement pst2 = null;
+		ResultSet rs = null;
+
+		Map<String, PolicyInfoBean> res = new HashMap<String, PolicyInfoBean>();
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String queryUser = "SELECT * FROM " + DBSchema.PolicyTable.TABLE_NAME;
+			pst1 = connection.prepareStatement(queryUser);
+			rs = pst1.executeQuery();
+			while (rs.next()) {
+				res.put(rs.getString(DBSchema.PolicyTable.POLICY_NAME),
+					new PolicyInfoBean(rs.getString(DBSchema.PolicyTable.POLICY_NAME), 
+					rs.getString(DBSchema.PolicyTable.POLICY_PATH)));
 			} 
 		} finally {
 			if (rs != null)

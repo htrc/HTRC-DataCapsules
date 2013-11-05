@@ -106,7 +106,7 @@ public class TestScheduler {
 			for (int i = 0; i < scheduled; i++) {
 				CreateVmRequestBean request = new CreateVmRequestBean("user-"
 						+ i, "imagename", "vmid-" + i, "vmusername-" + i,
-						"vmpassword-" + i, 1024, 2, 10);
+						"vmpassword-" + i, 1024, 2, 10, "/path/to/work/dir");
 				SchedulerFactory.getInstance().schedule(request);
 			}
 		} catch (NoResourceAvailableException e) {
@@ -115,7 +115,7 @@ public class TestScheduler {
 
 		CreateVmRequestBean request2 = new CreateVmRequestBean("user-2",
 				"imagename", "vmid-" + scheduled, "vmusername-2",
-				"vmpassword-2", 1024, 2, 10);
+				"vmpassword-2", 1024, 2, 10, "/path/to/work/dir");
 		SchedulerFactory.getInstance().schedule(request2); // exception
 	}
 
@@ -131,7 +131,7 @@ public class TestScheduler {
 		for (int i = 0; i < scheduled; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-" + i,
 					"imagename", "vmid-" + i, "vmusername-" + i, "vmpassword-"
-							+ i, 1024, 2, 10);
+							+ i, 1024, 2, 10, "/path/to/work/dir");
 			SchedulerFactory.getInstance().schedule(request);
 		}
 
@@ -146,7 +146,7 @@ public class TestScheduler {
 		for (int i = scheduled; i < records; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-" + i,
 					"imagename", "vmid-" + i, "vmusername-" + i, "vmpassword-"
-							+ i, 1024, 2, 10);
+							+ i, 1024, 2, 10, "/path/to/work/dir");
 			SchedulerFactory.getInstance().schedule(request);
 		}
 

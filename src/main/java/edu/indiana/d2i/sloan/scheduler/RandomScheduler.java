@@ -3,8 +3,6 @@ package edu.indiana.d2i.sloan.scheduler;
 import java.sql.SQLException;
 import java.util.Random;
 
-import org.apache.commons.io.FilenameUtils;
-
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
@@ -28,8 +26,7 @@ public class RandomScheduler extends Scheduler {
 		PortsPool portsPool = new PortsPool();
 		boolean success = false;
 
-		String workDir = FilenameUtils.concat(
-				Constants.DEFAULT_VM_WORKINGDIR_PREFIX, request.getVmId());
+		String workDir = request.getWorkDir();
 
 		int scheduleIndex;
 		Random rand = new Random(System.currentTimeMillis());

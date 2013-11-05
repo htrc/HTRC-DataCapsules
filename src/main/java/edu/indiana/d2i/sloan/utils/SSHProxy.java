@@ -130,6 +130,11 @@ public class SSHProxy {
 		}
 	}
 	
+	public static SSHProxy getSSHProxyByPrivateKey(String hostname, int port, 
+		String username, String privateKeyPath) {
+		return null;
+	}
+	
 	// unit test purpose
 	protected SSHProxy() {
 		
@@ -141,6 +146,8 @@ public class SSHProxy {
 		this.username = builder.username;
 		this.passwd = builder.passwd;
 		this.privateKeyPath = builder.privateKeyPath;
+		
+		logger.info("ssh privateKeyPath: " + privateKeyPath + ", ssh passwd: " + passwd);
 		
 		jsch = new JSch();
 

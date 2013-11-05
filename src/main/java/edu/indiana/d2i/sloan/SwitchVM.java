@@ -1,5 +1,8 @@
 package edu.indiana.d2i.sloan;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -14,6 +17,7 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.PolicyInfoBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
@@ -30,8 +34,11 @@ public class SwitchVM {
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(@FormParam("vmid") String vmid,
-			@FormParam("mode") String mode, @Context HttpHeaders httpHeaders,
+	public Response getResourcePost(
+			@FormParam("vmid") String vmid,
+			@FormParam("mode") String mode, 
+			@FormParam("policyname") String policyname,
+			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 
@@ -97,11 +104,24 @@ public class SwitchVM {
 			logger.info(userName + " requests to switch VM " + vmInfo.getVmid());
 			
 			// nonblocking call to hypervisor
+			Map<String, PolicyInfoBean> policies = DBOperations.getInstance().getPolicyInfo();
+			if (policyname != null) {
+				if (!policies.containsKey(policyname)) {
+					return Response
+						.status(400)
+						.entity(new ErrorBean(400,
+							"Cannot find policy " + policyname + " in DB"))
+						.build();
+				}
+				vmInfo.setPolicypath(policies.get(policyname).getPath());
+			} else {
+				Entry<String, PolicyInfoBean> entry = policies.entrySet().iterator().next();
+				vmInfo.setPolicypath(entry.getValue().getPath());
+			}
 			vmInfo.setVmState((VMMode.MAINTENANCE.equals(target)
 					? VMState.SWITCH_TO_MAINTENANCE_PENDING
 					: VMState.SWITCH_TO_SECURE_PENDING));
-			vmInfo.setPolicypath(Configuration.getInstance().getString(
-					Configuration.PropertyName.DEFAULT_POLICY_PATH));
+
 			HypervisorProxy.getInstance().addCommand(
 					new SwitchVMCommand(vmInfo));
 

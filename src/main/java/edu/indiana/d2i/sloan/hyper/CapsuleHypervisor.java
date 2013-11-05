@@ -140,6 +140,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("-wdir", vminfo.getWorkDir())
 					.addArgument("-vnc", String.valueOf(vminfo.getVncport()))
 					.addArgument("-ssh", String.valueOf(vminfo.getSshport()))
+					.addArgument("-loginid", String.valueOf(vminfo.getVmloginId()))
+					.addArgument("-loginpwd", String.valueOf(vminfo.getVmloginPwd()))
 					.build();
 
 			Commands createVMCmd = new Commands(

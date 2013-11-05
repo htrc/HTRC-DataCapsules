@@ -18,10 +18,15 @@
 		<value>root</value>
     </property>
     
+    <property>
+      	<name>sloan.ws.vm.workdir.prefix</name>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/vm-workingdir</value>
+    </property> 
+    
     <!--  -->
     <property>
 		<name>sloan.ws.hosts</name>
-		<value>thatchpalm;silverpalm</value>
+		<value>smoketree.cs.indiana.edu</value>
     </property>
     <property>
 		<name>sloan.ws.port.range.min</name>
@@ -33,7 +38,7 @@
     </property>
     <property>
 		<name>host.ssh.username</name>
-		<value>XXX</value>
+		<value>hathitrust</value>
     </property>
     <property>
 		<name>host.ssh.passwd</name>

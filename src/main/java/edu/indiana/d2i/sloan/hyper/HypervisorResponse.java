@@ -86,12 +86,14 @@ class HypervisorResponse {
 				attributes.put(kvpair[0].trim(), kvpair[1].trim());
 			}
 		}
+		
 
 		// TODO: extra parsing is needed to convert vm state from script string to VMState string
 		
 		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
-				.getConcatenatedForm(), cmdRes.getHostname(), respCode,
-				description, VMState.valueOf(attributes.get(VM_STATUS_KEY)), attributes);
+			.getConcatenatedForm(), cmdRes.getHostname(), respCode, description, 
+			(respCode == 0) ? VMState.RUNNING: VMState.ERROR, 
+			attributes);
 		
 		return hyperResp;
 	}
