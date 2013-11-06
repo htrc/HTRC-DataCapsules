@@ -121,6 +121,7 @@ public class SwitchVM {
 			vmInfo.setVmState((VMMode.MAINTENANCE.equals(target)
 					? VMState.SWITCH_TO_MAINTENANCE_PENDING
 					: VMState.SWITCH_TO_SECURE_PENDING));
+			vmInfo.setRequestedVMMode(target);
 
 			HypervisorProxy.getInstance().addCommand(
 					new SwitchVMCommand(vmInfo));

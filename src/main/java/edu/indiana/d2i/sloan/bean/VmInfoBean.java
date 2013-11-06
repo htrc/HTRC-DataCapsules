@@ -118,8 +118,10 @@ public class VmInfoBean {
 		return String.format("[vmid=%s, publicip=%s, workDir=%s, imagename=%s, " +
 			"imagepath=%s, sshport=%d, vncport=%d, vmloginId=%s, vmloginPwd=%s, " +
 			"numCPUs=%d, memorySize=%d, volumeSize=%d, policypath=%s, vmmode=%s," +
-			"vmstate=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
+			"vmstate=%s, requestmode=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
 			vncport, vmloginId, vmloginPwd, numCPUs, memorySize, volumeSize, policypath,
-			vmmode.toString(), vmstate.toString());
+			(vmmode != null) ? vmmode.toString(): null, 
+			(vmstate != null) ? vmstate.toString(): null, 
+			(requestedVMMode != null) ? requestedVMMode.toString(): null);
 	}
 }
