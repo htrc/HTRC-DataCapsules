@@ -3,6 +3,8 @@ package edu.indiana.d2i.sloan.hyper;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.vm.VMState;
@@ -71,12 +73,14 @@ class HypervisorResponse {
 		int respCode = cmdRes.getExitCode();
 
 		if ((lines != null) && (lines.length > 0)) {
-			respCode = Integer.parseInt(lines[0].trim());
+			if (StringUtils.isNumeric(lines[0].trim())) {
+				respCode = Integer.parseInt(lines[0].trim());
+			} 			
 		}
 
 		String description = ((lines != null) && (lines.length > 1))
-				? lines[1]
-				: null;
+				? lines[1].trim()
+				: "";
 
 		// parse key-value pairs
 		Map<String, String> attributes = new HashMap<String, String>();
@@ -117,6 +121,7 @@ class HypervisorResponse {
 		return digest.toString();
 	}
 	
+	// unit test only
 	public static HypervisorResponse createTestHypervisorResp(String cmdsString, 
 			String hostname,
 			int responseCode, String description, VMState state, 
