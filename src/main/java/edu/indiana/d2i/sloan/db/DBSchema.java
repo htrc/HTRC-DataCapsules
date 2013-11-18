@@ -82,6 +82,7 @@ class DBSchema {
 		public static String TABLE_NAME = "images";
 		public static String IMAGE_NAME = "imagename";
 		public static String IMAGE_PATH = "imagepath";
+		public static String IMAGE_DESCRIPTION = "imagedescription";
 	}
 	
 	public static class PolicyTable {

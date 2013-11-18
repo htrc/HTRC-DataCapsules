@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS vms, users, uservm, images, policies;
 
 CREATE TABLE IF NOT EXISTS images(
 	imagename VARCHAR(128) PRIMARY KEY,
+	imagedescription VARCHAR(1024),
 	imagepath VARCHAR(512)) ENGINE=InnoDB;
 	
 CREATE TABLE IF NOT EXISTS policies(

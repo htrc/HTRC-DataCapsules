@@ -517,7 +517,8 @@ public class DBOperations {
 			pst1 = connection.prepareStatement(queryUser);
 			rs = pst1.executeQuery();
 			while (rs.next()) {
-				res.add(new ImageInfoBean(rs.getString(DBSchema.ImageTable.IMAGE_NAME)));
+				res.add(new ImageInfoBean(rs.getString(DBSchema.ImageTable.IMAGE_NAME),
+					rs.getString(DBSchema.ImageTable.IMAGE_DESCRIPTION)));
 			} 
 		} finally {
 			if (rs != null)
