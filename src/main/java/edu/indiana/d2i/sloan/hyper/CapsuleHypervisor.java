@@ -134,14 +134,14 @@ class CapsuleHypervisor implements IHypervisor {
 
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder()
-					.addArgument("-image", vminfo.getImagepath())
-					.addArgument("-vcpu", String.valueOf(vminfo.getNumCPUs()))
-					.addArgument("-mem", String.valueOf(vminfo.getMemorySize()))
-					.addArgument("-wdir", vminfo.getWorkDir())
-					.addArgument("-vnc", String.valueOf(vminfo.getVncport()))
-					.addArgument("-ssh", String.valueOf(vminfo.getSshport()))
-					.addArgument("-loginid", String.valueOf(vminfo.getVmloginId()))
-					.addArgument("-loginpwd", String.valueOf(vminfo.getVmloginPwd()))
+					.addArgument("--image", vminfo.getImagepath())
+					.addArgument("--vcpu", String.valueOf(vminfo.getNumCPUs()))
+					.addArgument("--mem", String.valueOf(vminfo.getMemorySize()))
+					.addArgument("--wdir", vminfo.getWorkDir())
+					.addArgument("--vnc", String.valueOf(vminfo.getVncport()))
+					.addArgument("--ssh", String.valueOf(vminfo.getSshport()))
+					.addArgument("--loginid", String.valueOf(vminfo.getVmloginId()))
+					.addArgument("--loginpwd", String.valueOf(vminfo.getVmloginPwd()))
 					.build();
 
 			Commands createVMCmd = new Commands(
@@ -177,10 +177,10 @@ class CapsuleHypervisor implements IHypervisor {
 			// TODO: should remove the -mode flag if the VM is launched in
 			// maintenance
 			String argList = new CommandUtils.ArgsBuilder()
-					.addArgument("-wdir", vminfo.getWorkDir())
-					.addArgument("-mode",
+					.addArgument("--wdir", vminfo.getWorkDir())
+					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString())
-					.addArgument("-policy", vminfo.getPolicypath()).build();
+					.addArgument("--policy", vminfo.getPolicypath()).build();
 
 			Commands launchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -212,7 +212,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().addArgument(
-					"-wdir", vminfo.getWorkDir()).build();
+					"--wdir", vminfo.getWorkDir()).build();
 
 			Commands queryVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -244,10 +244,10 @@ class CapsuleHypervisor implements IHypervisor {
 
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder()
-					.addArgument("-wdir", vminfo.getWorkDir())
-					.addArgument("-mode",
+					.addArgument("--wdir", vminfo.getWorkDir())
+					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString())
-					.addArgument("-policy", vminfo.getPolicypath()).build();
+					.addArgument("--policy", vminfo.getPolicypath()).build();
 
 			Commands switchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -279,7 +279,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().addArgument(
-					"-wdir", vminfo.getWorkDir()).build();
+					"--wdir", vminfo.getWorkDir()).build();
 
 			Commands stopVMCmd = new Commands(
 					Collections
@@ -313,7 +313,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().addArgument(
-					"-wdir", vminfo.getWorkDir()).build();
+					"--wdir", vminfo.getWorkDir()).build();
 
 			Commands deleteVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
