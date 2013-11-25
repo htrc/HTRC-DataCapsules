@@ -30,6 +30,9 @@ class DBConnections {
 			dataSource.setMinPoolSize(5);
 			dataSource.setAcquireIncrement(5);
 			dataSource.setMaxPoolSize(20);
+			
+			dataSource.setMaxIdleTime(60); // 60 seconds
+			dataSource.setIdleConnectionTestPeriod(55); // 55 seconds
 		} catch (PropertyVetoException ex) {
 			logger.error(ex.getMessage(), ex);
 			throw new RuntimeException(ex);
