@@ -66,7 +66,7 @@ public class QueryVM {
 				status.add(new VmStatusBean(vminfo));
 			}
 
-			logger.info(userName + " requests to query VM " + vmInfoList.toString());
+			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());
 			
 			for (VmInfoBean vminfo : vmInfoList) {
 				HypervisorProxy.getInstance().addCommand(

@@ -22,10 +22,7 @@ public class CreateVMCommand extends HypervisorCommand {
 	@Override
 	public void execute() throws Exception {
 		HypervisorResponse resp = hypervisor.createVM(vminfo);
-
-		if (logger.isDebugEnabled()) {
-			logger.debug(resp.toString());
-		}
+		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(
@@ -38,7 +35,7 @@ public class CreateVMCommand extends HypervisorCommand {
 				@Override
 				public Void call() throws Exception {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-							VMState.CREATE_PENDING, VMState.SHUTDOWN);
+						vminfo.getVmstate(), VMState.SHUTDOWN);
 					return null;
 				}
 			},  1000, 3, 

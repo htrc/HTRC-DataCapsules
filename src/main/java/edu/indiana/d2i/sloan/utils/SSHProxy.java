@@ -145,6 +145,8 @@ public class SSHProxy {
 		return null;
 	}
 	
+	
+	
 	// unit test purpose
 	protected SSHProxy() {
 		
@@ -156,8 +158,6 @@ public class SSHProxy {
 		this.username = builder.username;
 		this.passwd = builder.passwd;
 		this.privateKeyPath = builder.privateKeyPath;
-		
-		logger.info("ssh privateKeyPath: " + privateKeyPath + ", ssh passwd: " + passwd);
 		
 		jsch = new JSch();
 

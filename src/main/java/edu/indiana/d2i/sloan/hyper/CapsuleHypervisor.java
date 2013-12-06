@@ -84,6 +84,10 @@ class CapsuleHypervisor implements IHypervisor {
 		}
 	}
 
+	/**
+	 * It only retries SSH connection error, and script execution time out exception.
+	 * It will NOT retry script errors.
+	 */
 	private static <T> T executeRetriableTask(final Callable<T> task)
 			throws Exception {
 		if (retriable) {
@@ -124,7 +128,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
-		logger.debug(vminfo);
+		logger.debug("createvm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
 		try {
@@ -136,12 +140,13 @@ class CapsuleHypervisor implements IHypervisor {
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("--image", vminfo.getImagepath())
 					.addArgument("--vcpu", String.valueOf(vminfo.getNumCPUs()))
-					.addArgument("--mem", String.valueOf(vminfo.getMemorySize()))
+					.addArgument("--mem", String.valueOf(vminfo.getMemorySizeInMB()))
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--vnc", String.valueOf(vminfo.getVncport()))
 					.addArgument("--ssh", String.valueOf(vminfo.getSshport()))
 					.addArgument("--loginid", String.valueOf(vminfo.getVmloginId()))
 					.addArgument("--loginpwd", String.valueOf(vminfo.getVmloginPwd()))
+					.addArgument("--volsize", String.valueOf(vminfo.getVolumeSizeInGB()) + "G")
 					.build();
 
 			Commands createVMCmd = new Commands(
@@ -164,7 +169,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
-		logger.debug(vminfo);
+		logger.debug("launch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
 		try {
@@ -179,7 +184,7 @@ class CapsuleHypervisor implements IHypervisor {
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
-							vminfo.getRequestedVMMode().toString())
+							vminfo.getRequestedVMMode().toString().toLowerCase())
 					.addArgument("--policy", vminfo.getPolicypath()).build();
 
 			Commands launchVMCmd = new Commands(
@@ -201,7 +206,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse queryVM(VmInfoBean vminfo) throws Exception {
-		logger.debug(vminfo);
+		logger.debug("query vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
 
@@ -233,7 +238,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
-		logger.debug(vminfo);
+		logger.debug("switch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
 
@@ -246,7 +251,7 @@ class CapsuleHypervisor implements IHypervisor {
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
-							vminfo.getRequestedVMMode().toString())
+							vminfo.getRequestedVMMode().toString().toLowerCase())
 					.addArgument("--policy", vminfo.getPolicypath()).build();
 
 			Commands switchVMCmd = new Commands(
@@ -268,7 +273,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse stopVM(VmInfoBean vminfo) throws Exception {
-		logger.debug(vminfo);
+		logger.debug("stop vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
 
@@ -302,7 +307,7 @@ class CapsuleHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse delete(VmInfoBean vminfo) throws Exception {
-		logger.debug(vminfo);
+		logger.debug("delete vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
 

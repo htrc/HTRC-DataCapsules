@@ -65,12 +65,12 @@ public class DeleteVM {
 								+ " when it is " + vmInfo.getVmstate()))
 						.build();
 			}
+			
+			logger.info("User " + userName + " tries to delete vm " + vmid);
 
 			vmInfo.setVmState(VMState.DELETE_PENDING);
 			HypervisorProxy.getInstance().addCommand(
 					new DeleteVMCommand(userName, vmInfo));
-			
-			// delete vm from db after the script is executed
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

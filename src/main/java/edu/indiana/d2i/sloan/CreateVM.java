@@ -85,7 +85,7 @@ public class CreateVM {
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
 					vcpu, volumeSizeInGB, workDir);
-			logger.info(request);
+			logger.info("User " + userName + " tries to create vm " + request);
 			
 			// check quota
 			if (!DBOperations.getInstance().quotasNotExceedLimit(request)) {

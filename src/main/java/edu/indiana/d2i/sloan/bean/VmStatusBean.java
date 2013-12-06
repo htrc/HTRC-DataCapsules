@@ -35,10 +35,10 @@ public class VmStatusBean {
 		return vminfo.getNumCPUs();
 	}
 	public int getMemSize() {
-		return vminfo.getMemorySize();
+		return vminfo.getMemorySizeInMB();
 	}
 	public int getVolumeSize() {
-		return vminfo.getVolumeSize();
+		return vminfo.getVolumeSizeInGB();
 	}
 	public String getImageName() {
 		return vminfo.getImageName();

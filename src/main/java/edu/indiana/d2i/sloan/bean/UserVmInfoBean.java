@@ -43,8 +43,8 @@ public class UserVmInfoBean {
 				vmInfoBean.getPublicip(), vmInfoBean.getVmloginId(),
 				vmInfoBean.getVmloginPwd(), vmInfoBean.getImageName(),
 				vmInfoBean.getSshport(), vmInfoBean.getVncport(),
-				vmInfoBean.getNumCPUs(), vmInfoBean.getMemorySize(),
-				vmInfoBean.getVolumeSize(), vmInfoBean.getVmmode(),
+				vmInfoBean.getNumCPUs(), vmInfoBean.getMemorySizeInMB(),
+				vmInfoBean.getVolumeSizeInGB(), vmInfoBean.getVmmode(),
 				vmInfoBean.getVmstate());
 	}
 

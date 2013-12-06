@@ -74,7 +74,7 @@ public class LaunchVM {
 					.build();
 			}
 			
-			logger.info(userName + " requests to launch VM " + vmInfo.getVmid());
+			logger.info("User " + userName + " tries to launch VM " + vmInfo.getVmid());
 			
 			// nonblocking call to hypervisor
 			Map<String, PolicyInfoBean> policies = DBOperations.getInstance().getPolicyInfo();

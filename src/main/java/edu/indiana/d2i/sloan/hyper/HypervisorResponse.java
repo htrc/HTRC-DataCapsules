@@ -3,8 +3,6 @@ package edu.indiana.d2i.sloan.hyper;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.vm.VMState;
@@ -68,6 +66,27 @@ class HypervisorResponse {
 	}
 
 	public static HypervisorResponse commandRes2HyResp(CmdsExecResult cmdRes) {
+		int respCode = cmdRes.getExitCode();
+		String description = cmdRes.getScreenOutput().trim();
+		
+		// extract "Status"
+//		for (String line : description.split("\n")) {
+//			if (line.contains(VM_STATUS_KEY)) {
+//				String[] items = line.split("\\s");
+//				
+//			}
+//		}
+		
+		// TODO: how to set vm state as error?
+		
+		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
+			.getConcatenatedForm(), cmdRes.getHostname(), respCode, description, 
+			(respCode == 0) ? VMState.RUNNING: VMState.ERROR, 
+			new HashMap<String, String>());			
+		return hyperResp;
+		
+		
+		/*
 		String[] lines = cmdRes.getScreenOutput().split("[\\r\\n]+");
 
 		int respCode = cmdRes.getExitCode();
@@ -101,13 +120,14 @@ class HypervisorResponse {
 			attributes);
 		
 		return hyperResp;
+		*/
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder digest = new StringBuilder();
 
-		digest.append("Command(s) executed: ").append(cmdsString).append("\n")
+		digest.append("\nCommand(s) executed: ").append(cmdsString).append("\n")
 				.append("Host where commands being executed: ")
 				.append(hostname).append("\n").append("Response Code: ")
 				.append(responseCode).append("\n").append("Description: ")

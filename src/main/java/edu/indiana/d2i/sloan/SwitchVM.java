@@ -101,7 +101,7 @@ public class SwitchVM {
 						.build();
 			}
 
-			logger.info(userName + " requests to switch VM " + vmInfo.getVmid());
+			logger.info("User " + userName + " tries to switch VM " + vmInfo.getVmid());
 			
 			// nonblocking call to hypervisor
 			Map<String, PolicyInfoBean> policies = DBOperations.getInstance().getPolicyInfo();

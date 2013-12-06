@@ -93,11 +93,11 @@ public class VmInfoBean {
 		return numCPUs;
 	}
 
-	public int getMemorySize() {
+	public int getMemorySizeInMB() {
 		return memorySize;
 	}
 
-	public int getVolumeSize() {
+	public int getVolumeSizeInGB() {
 		return volumeSize;
 	}
 

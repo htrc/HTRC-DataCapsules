@@ -429,11 +429,11 @@ public class DBOperations {
 						.append(" SET ")
 						.append(String.format("%s=%d, %s=%d, %s=%d",
 								DBSchema.UserTable.DISK_LEFT_QUOTA,
-								leftDiskQuota + vmInfo.getVolumeSize(),
+								leftDiskQuota + vmInfo.getVolumeSizeInGB(),
 								DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota
 										+ vmInfo.getNumCPUs(),
 								DBSchema.UserTable.MEMORY_LEFT_QUOTA,
-								leftMemoryQuota + vmInfo.getMemorySize()))
+								leftMemoryQuota + vmInfo.getMemorySizeInMB()))
 						.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
 						.append("=").append(String.format("\"%s\"", username));
 			}

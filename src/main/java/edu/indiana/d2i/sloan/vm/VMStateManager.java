@@ -9,15 +9,12 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 
 public class VMStateManager {
 	private static Logger logger = Logger.getLogger(VMStateManager.class);
-	private static VMStateManager instance = null;
+	private static VMStateManager instance = new VMStateManager();
 	private VMStateManager() {
 
 	}
 
-	public static synchronized VMStateManager getInstance() {
-		if (instance == null) {
-			instance = new VMStateManager();
-		}
+	public static VMStateManager getInstance() {
 		return instance;
 	}
 	

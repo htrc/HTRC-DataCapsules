@@ -22,10 +22,7 @@ public class QueryVMCommand extends HypervisorCommand {
 	@Override
 	public void execute() throws Exception {
 		HypervisorResponse resp = hypervisor.queryVM(vminfo);
-
-		if (logger.isDebugEnabled()) {
-			logger.debug(resp.toString());
-		}
+		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(
