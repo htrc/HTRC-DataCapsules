@@ -127,10 +127,7 @@ if [ -e $VM_DIR/pid ]; then
     fi
   fi
 
-  if [ -e $VM_DIR/guest_cmd ] ; then
-    chmod u+w $VM_DIR/guest_cmd
-    FILES_TO_DELETE="$VM_DIR/guest_cmd"
-  fi
+  FILES_TO_DELETE=""
 
   if [ -e $VM_DIR/guest_out ] ; then
     FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/guest_out"

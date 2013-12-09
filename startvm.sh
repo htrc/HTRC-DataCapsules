@@ -184,14 +184,16 @@ fi
 
 for time in $(seq 1 $TIMEOUT); do
   if [ -e $VM_DIR/guest_out ]; then
-    break
+    if [[ `cat $VM_DIR/guest_out` = "FINISHED BOOTING" ]]; then
+      break
+    fi
   fi
   sleep 1
 done
 
 if [ ! -e $VM_DIR/guest_out ]; then
   echo "Guest start-up timeout; guest failed to boot within $TIMEOUT seconds"
-  #kill $KVM_PID
+  #$SCRIPT_DIR/stopvm.sh $VM_DIR
   exit 4
 fi
 

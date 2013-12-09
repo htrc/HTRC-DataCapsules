@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
 usage () {
 
   echo "Usage: $0 <Directory for VM>"
@@ -26,9 +28,10 @@ usage () {
 }
 
 REQUIRED_OPTS="VM_DIR"
+ALL_OPTS="$REQUIRED_OPTS FORCE_STOP"
 UNDEFINED=12345capsulesxXxXxundefined54321
 
-for var in $REQUIRED_OPTS; do
+for var in $ALL_OPTS; do
   eval $var=$UNDEFINED
 done
 
@@ -39,7 +42,7 @@ fi
 
 declare -A longoptspec
 longoptspec=( [wdir]=1 )
-optspec=":h-:d:"
+optspec=":h-:d:f"
 while getopts "$optspec" OPT; do
 
   if [[ "x${OPT}x" = "x-x" ]]; then
@@ -62,6 +65,9 @@ while getopts "$optspec" OPT; do
       usage
       exit 0
       ;;
+    f)
+      FORCE_STOP=1
+      ;;
     *)
       echo "error: Invalid argument '--${OPT}'"
       usage
@@ -83,22 +89,33 @@ if [[ $MISSING_ARGS -eq 1 ]]; then
   exit 1
 fi
 
-# TODO: Must check if VM is running before we delete it
-#if [ `./vmstatus.sh $VM_DIR` = "RUNNING" ]; then
-#  STOP_RES=$(./stopvm.sh $VM_DIR)
-#
-#  if [ $? -ne 0 ]; then
-#    echo "Error: VM is currently running and could not be stopped (reason follows):"
-#    echo "$STOP_RES"
-#fi
-
 if [ -e $VM_DIR ]; then
+
+  # Must check if VM is running before we delete it
+  if [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; then
+  
+    if [ $FORCE_STOP = 1 ]; then
+
+      STOP_RES=$($SCRIPT_DIR/stopvm.sh $VM_DIR)
+
+      if [ $? -ne 0 ]; then
+        echo "Error: VM is currently running and could not be stopped (reason follows):"
+        echo "$STOP_RES"
+        exit 2
+      fi
+
+    else
+      echo "VM is currently running.  To force deletion, add -f to delete command"
+      exit 2
+    fi
+
+  fi
 
   RM_RES=$(rm -rf $VM_DIR 2>&1)
 
   if [ $? -ne 0 ]; then
     echo "Error: Could not delete VM directory: $RM_RES"
-    exit 2
+    exit 3
   else
     exit 0
   fi
@@ -106,8 +123,6 @@ if [ -e $VM_DIR ]; then
 else
 
   echo "Error: Directory for VM, '$VM_DIR' does not exist on this machine."
-  exit 3
+  exit 4
 
 fi
-
-

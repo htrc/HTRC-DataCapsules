@@ -95,7 +95,7 @@ while getopts "$optspec" OPT; do
       MEM_SIZE=$OPTARG
       ;;
     v|vnc)
-      if ! [[ $OPTARG =~ ^[0-9]+$ && $OPTARG -gt 5900 && $OPTARG -le 65535 ]]; then
+      if ! [[ $OPTARG =~ ^[0-9]+$ && $OPTARG -ge 5900 && $OPTARG -le 65535 ]]; then
         echo "error: provided vnc port ($OPTARG) is invalid;"
         echo "note: the port value must be at least 5900"
         exit 1
@@ -148,12 +148,17 @@ if [[ $MISSING_ARGS -eq 1 ]]; then
   exit 1
 fi
 
+if [ -e $VM_DIR ]; then
+  echo "Error: VM directory already exists"
+  exit 2
+fi
+
 # Attempt to create working directory for new guest
-MKDIR_RES=$(mkdir $VM_DIR 2>&1)
+MKDIR_RES=$(mkdir -p $VM_DIR 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error creating directory for VM: $MKDIR_RES"
-  fail 2
+  fail 3
 fi
 
 # Copy image to newly created working directory
@@ -161,7 +166,7 @@ CP_RES=$(cp $IMAGE $VM_DIR 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error copying image file for VM: $CP_RES"
-  fail 3
+  fail 4
 fi
 
 # Record configuration parameters to config file
@@ -208,21 +213,14 @@ IMG_RES=$(qemu-img create -f raw $VM_DIR/$SECURE_VOL_NAME $SECURE_VOL_SIZE 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error creating secure volume for VM: $IMG_RES"
-  fail 4
+  fail 5
 fi
-
-#FDISK_RES=$(echo -e "n\np\n\n\n\nw" | fdisk $VM_DIR/$SECURE_VOL_NAME 2>&1)
-#
-#if [ $? -ne 0 ]; then
-#  echo "Error partitioning secure volume for VM: $FDISK_RES"
-#  fail 4
-#fi
 
 MKFS_RES=$(echo "y" | mkfs.ntfs -F -L "Secure Volume" $VM_DIR/$SECURE_VOL_NAME 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error formatting secure volume for VM: $MKFS_RES"
-  fail 4
+  fail 6
 fi
 
 # Return results (only reaches here if no errors occur)
