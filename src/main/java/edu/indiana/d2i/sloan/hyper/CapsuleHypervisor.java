@@ -144,8 +144,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--vnc", String.valueOf(vminfo.getVncport()))
 					.addArgument("--ssh", String.valueOf(vminfo.getSshport()))
-					.addArgument("--loginid", String.valueOf(vminfo.getVmloginId()))
-					.addArgument("--loginpwd", String.valueOf(vminfo.getVmloginPwd()))
+					.addArgument("--loginid", String.valueOf(vminfo.getVNCloginId()))
+					.addArgument("--loginpwd", String.valueOf(vminfo.getVNCloginPwd()))
 					.addArgument("--volsize", String.valueOf(vminfo.getVolumeSizeInGB()) + "G")
 					.build();
 
@@ -317,8 +317,9 @@ class CapsuleHypervisor implements IHypervisor {
 					SSHProxy.SSH_DEFAULT_PORT);
 
 			/* compose script command */
-			String argList = new CommandUtils.ArgsBuilder().addArgument(
-					"--wdir", vminfo.getWorkDir()).build();
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("-f", "").build();
 
 			Commands deleteVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils

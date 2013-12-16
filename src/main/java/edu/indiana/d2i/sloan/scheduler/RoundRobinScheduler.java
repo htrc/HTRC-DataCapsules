@@ -33,7 +33,7 @@ public class RoundRobinScheduler extends Scheduler {
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),
 						request.getVmId(), request.getImageName(),
-						request.getVmLoginID(), request.getVmLoginPasswd(),
+						request.getVncLoginID(), request.getVncLoginPasswd(),
 						vmhost, workDir, request.getVcpu(), 
 						request.getMemory(), request.getVolumeSizeInGB());
 			
@@ -43,8 +43,11 @@ public class RoundRobinScheduler extends Scheduler {
 						vmhost.sshport, vmhost.vncport, 
 						request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
 						VMMode.NOT_DEFINED, VMState.CREATE_PENDING,
-						request.getVmLoginID(), request.getVmLoginPasswd(),
-						request.getImageName(), null /* policy name */, VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */);
+						request.getVncLoginID(), request.getVncLoginPasswd(),
+						request.getImageName(), 
+						null, null, /* login username && login password */
+						null /* policy name */, 
+						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */);
 			}
 		} while (scheduleIndex != start);
 

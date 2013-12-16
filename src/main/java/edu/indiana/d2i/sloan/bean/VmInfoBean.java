@@ -4,8 +4,8 @@ import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
 public class VmInfoBean {
-	private String vmid, publicip, workDir, imagepath, policypath, vmloginId,
-			vmloginPwd, imagename, policyname;
+	private String vmid, publicip, workDir, imagepath, policypath, vncloginId,
+			vncloginPwd, imagename, policyname, vmloginid, vmloginpwd;
 	private int sshport, vncport, numCPUs, memorySize, volumeSize;
 	private VMMode vmmode;
 	private VMMode requestedVMMode;
@@ -30,7 +30,8 @@ public class VmInfoBean {
 	public VmInfoBean(String vmid, String publicip, String workDir,
 			String imagepath, String policypath, int sshport, int vncport,
 			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,
-			VMState vmstate, String vmloginId, String vmloginPwd,
+			VMState vmstate, String vncloginId, String vncloginPwd,
+			String vmloginid, String vmloginpwd,
 			String imagename, String policyname, VMMode requestedVMMode) {
 		this.vmid = vmid;
 		this.publicip = publicip;
@@ -44,11 +45,13 @@ public class VmInfoBean {
 		this.volumeSize = diskSpace;
 		this.vmmode = vmmode;
 		this.vmstate = vmstate;
-		this.vmloginId = vmloginId;
-		this.vmloginPwd = vmloginPwd;
+		this.vncloginId = vncloginId;
+		this.vncloginPwd = vncloginPwd;
 		this.imagename = imagename;
 		this.policyname = policyname;
 		this.requestedVMMode = requestedVMMode;
+		this.vmloginid = vmloginid;
+		this.vmloginpwd = vmloginpwd;
 	}
 
 	public String getVmid() {
@@ -81,12 +84,12 @@ public class VmInfoBean {
 		return policypath;
 	}
 
-	public String getVmloginId() {
-		return vmloginId;
+	public String getVNCloginId() {
+		return vncloginId;
 	}
 
-	public String getVmloginPwd() {
-		return vmloginPwd;
+	public String getVNCloginPwd() {
+		return vncloginPwd;
 	}
 
 	public int getNumCPUs() {
@@ -113,13 +116,21 @@ public class VmInfoBean {
 		return requestedVMMode;
 	}
 	
+	public String getVmLoginId() {
+		return vmloginid;
+	}
+	
+	public String getVmLoginPwd() {
+		return vmloginpwd;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("[vmid=%s, publicip=%s, workDir=%s, imagename=%s, " +
 			"imagepath=%s, sshport=%d, vncport=%d, vmloginId=%s, vmloginPwd=%s, " +
 			"numCPUs=%d, memorySize=%d, volumeSize=%d, policypath=%s, vmmode=%s," +
 			"vmstate=%s, requestmode=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
-			vncport, vmloginId, vmloginPwd, numCPUs, memorySize, volumeSize, policypath,
+			vncport, vncloginId, vncloginPwd, numCPUs, memorySize, volumeSize, policypath,
 			(vmmode != null) ? vmmode.toString(): null, 
 			(vmstate != null) ? vmstate.toString(): null, 
 			(requestedVMMode != null) ? requestedVMMode.toString(): null);

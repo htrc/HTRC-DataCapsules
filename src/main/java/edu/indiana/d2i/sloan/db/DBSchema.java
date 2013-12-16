@@ -25,8 +25,8 @@ class DBSchema {
 		 * end and user can change the credentials later in the VM if he/she
 		 * wants.
 		 */
-		public static String VM_USERNAME = "vmusername";
-		public static String VM_PASSWORD = "vmpassword";
+		public static String VNC_USERNAME = "vncusername";
+		public static String VNC_PASSWORD = "vncpassword";
 		
 		public static String NUM_CPUS = "numcpus";
 		public static String MEMORY_SIZE = "memorysize";
@@ -42,8 +42,8 @@ class DBSchema {
 				put(VNC_PORT, 6);
 				put(WORKING_DIR, 7);
 				put(IMAGE_NAME, 8);
-				put(VM_USERNAME, 9);
-				put(VM_PASSWORD, 10);
+				put(VNC_USERNAME, 9);
+				put(VNC_PASSWORD, 10);
 				put(NUM_CPUS, 11);
 				put(MEMORY_SIZE, 12);
 				put(DISK_SPACE, 13);
@@ -82,6 +82,8 @@ class DBSchema {
 		public static String TABLE_NAME = "images";
 		public static String IMAGE_NAME = "imagename";
 		public static String IMAGE_PATH = "imagepath";
+		public static String IMAGE_LOGIN_ID = "loginusername";
+		public static String IMAGE_LOGIN_PASSWORD = "loginpassword";
 		public static String IMAGE_DESCRIPTION = "imagedescription";
 	}
 	

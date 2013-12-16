@@ -25,11 +25,11 @@ public class VmStatusBean {
 	public String getVmid() {
 		return vminfo.getVmid();
 	}
-	public String getVmInitialLoginId() {
-		return vminfo.getVmloginId();
+	public String getVNCLoginId() {
+		return vminfo.getVNCloginId();
 	}
-	public String getVmInitialLoginPassword() {
-		return vminfo.getVmloginPwd();
+	public String getVNCLoginPassword() {
+		return vminfo.getVNCloginPwd();
 	}
 	public int getVCPUs() {
 		return vminfo.getNumCPUs();
@@ -42,5 +42,11 @@ public class VmStatusBean {
 	}
 	public String getImageName() {
 		return vminfo.getImageName();
+	}
+	public String getVmInitialLoginId() {
+		return vminfo.getVmLoginId();
+	}
+	public String getVmInitialLoginPassword() {
+		return vminfo.getVmLoginPwd();
 	}
 }

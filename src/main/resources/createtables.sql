@@ -7,7 +7,9 @@ DROP TABLE IF EXISTS vms, users, uservm, images, policies;
 CREATE TABLE IF NOT EXISTS images(
 	imagename VARCHAR(128) PRIMARY KEY,
 	imagedescription VARCHAR(1024),
-	imagepath VARCHAR(512)) ENGINE=InnoDB;
+	imagepath VARCHAR(512),
+	loginusername VARCHAR(32),
+	loginpassword VARCHAR(128)) ENGINE=InnoDB;
 	
 CREATE TABLE IF NOT EXISTS policies(
 	policyname VARCHAR(128) PRIMARY KEY,
@@ -22,8 +24,8 @@ CREATE TABLE IF NOT EXISTS vms(
 	vncport INT, 
 	workingdir VARCHAR(512),
 	imagename VARCHAR(128),
-	vmusername VARCHAR(128),
-	vmpassword VARCHAR(128),
+	vncusername VARCHAR(128),
+	vncpassword VARCHAR(128),
 	numcpus INT,
 	memorysize INT,
 	diskspace INT,

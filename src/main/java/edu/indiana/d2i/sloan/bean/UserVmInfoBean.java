@@ -40,8 +40,8 @@ public class UserVmInfoBean {
 	 */
 	public static UserVmInfoBean fullVmInfo2UserInfo(VmInfoBean vmInfoBean) {
 		return new UserVmInfoBean(vmInfoBean.getVmid(),
-				vmInfoBean.getPublicip(), vmInfoBean.getVmloginId(),
-				vmInfoBean.getVmloginPwd(), vmInfoBean.getImageName(),
+				vmInfoBean.getPublicip(), vmInfoBean.getVNCloginId(),
+				vmInfoBean.getVNCloginPwd(), vmInfoBean.getImageName(),
 				vmInfoBean.getSshport(), vmInfoBean.getVncport(),
 				vmInfoBean.getNumCPUs(), vmInfoBean.getMemorySizeInMB(),
 				vmInfoBean.getVolumeSizeInGB(), vmInfoBean.getVmmode(),

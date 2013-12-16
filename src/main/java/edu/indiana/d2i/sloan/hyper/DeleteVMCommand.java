@@ -10,8 +10,6 @@ import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
-import edu.indiana.d2i.sloan.vm.VMState;
-import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class DeleteVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(DeleteVMCommand.class);
@@ -24,15 +22,9 @@ public class DeleteVMCommand extends HypervisorCommand {
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.delete(vminfo);
-		logger.info(resp);
-
-		if (resp.getResponseCode() != 0) {
-			throw new ScriptCmdErrorException(String.format(
-					"Failed to excute command:\n%s ", resp));
-		}
-
-		// no need to update VM' state and mode since it is going to be deleted
+		// Update DB first, then call hypervisor. Such order guarantee that user will always
+		// see VM is removed although it might not be the case in the backend.
+		// No need to update VM' state and mode since it is going to be deleted.
 		/* Also restore user quota after deleting the VM */
 		RetriableTask<Void> r = new RetriableTask<Void>(
 			new Callable<Void>() {
@@ -44,21 +36,29 @@ public class DeleteVMCommand extends HypervisorCommand {
 			},  1000, 3, 
 			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
 		r.call();
+		
+		HypervisorResponse resp = hypervisor.delete(vminfo);
+		logger.info(resp);
+		if (resp.getResponseCode() != 0) {
+			throw new ScriptCmdErrorException(String.format(
+					"Failed to excute command:\n%s ", resp));
+		}
 	}
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		RetriableTask<Void> r = new RetriableTask<Void>(
-			new Callable<Void>() {
-				@Override
-				public Void call() throws Exception {
-					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-							vminfo.getVmstate(), VMState.ERROR);
-					return null;
-				}
-			},  1000, 3, 
-			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
-		r.call();
+		// don't mark error here because we don't want to indicate user there is an error
+//		RetriableTask<Void> r = new RetriableTask<Void>(
+//			new Callable<Void>() {
+//				@Override
+//				public Void call() throws Exception {
+//					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+//							vminfo.getVmstate(), VMState.ERROR);
+//					return null;
+//				}
+//			},  1000, 3, 
+//			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+//		r.call();
 	}
 
 	@Override

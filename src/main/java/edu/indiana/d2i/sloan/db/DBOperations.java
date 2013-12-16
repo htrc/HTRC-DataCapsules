@@ -98,8 +98,10 @@ public class DBOperations {
 								.getString(DBSchema.VmTable.VM_MODE)),
 						VMState.valueOf(rs
 								.getString(DBSchema.VmTable.STATE)),
-						rs.getString(DBSchema.VmTable.VM_USERNAME),
-						rs.getString(DBSchema.VmTable.VM_PASSWORD),
+						rs.getString(DBSchema.VmTable.VNC_USERNAME),
+						rs.getString(DBSchema.VmTable.VNC_PASSWORD),
+						rs.getString(DBSchema.ImageTable.IMAGE_LOGIN_ID),
+						rs.getString(DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD),
 						rs.getString(DBSchema.VmTable.IMAGE_NAME),
 						null, null);
 				res.add(vminfo);
@@ -246,14 +248,18 @@ public class DBOperations {
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + ","
-				+ DBSchema.VmTable.VM_USERNAME + ","
+				+ DBSchema.VmTable.VNC_PASSWORD + ","
+				+ DBSchema.VmTable.VNC_USERNAME + ","
 				+ DBSchema.VmTable.NUM_CPUS + ","
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.VmTable.DISK_SPACE + ","
-				+ DBSchema.VmTable.IMAGE_NAME
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
-				+ " FROM " + DBSchema.VmTable.TABLE_NAME;
+				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ " WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
+				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME;
 		return getVmInfoInternal(sql);
 	}
 
@@ -264,22 +270,23 @@ public class DBOperations {
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
-				+ DBSchema.VmTable.VM_PASSWORD + ","
-				+ DBSchema.VmTable.VM_USERNAME
-				+ ","
-				+ DBSchema.VmTable.NUM_CPUS
-				+ ","
-				+ DBSchema.VmTable.MEMORY_SIZE
-				+ ","
-				+ DBSchema.VmTable.DISK_SPACE
-				+ ","
-				+ DBSchema.VmTable.IMAGE_NAME
+				+ DBSchema.VmTable.VNC_PASSWORD + ","
+				+ DBSchema.VmTable.VNC_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
 				+ " FROM " + DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME + " WHERE "
-				+ DBSchema.UserVmTable.TABLE_NAME + "."
-				+ DBSchema.UserVmTable.VM_ID + "="
+				+ DBSchema.ImageTable.TABLE_NAME + ","
+				+ DBSchema.VmTable.TABLE_NAME 
+				+ " WHERE "
+				+ DBSchema.UserVmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID + "="
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
+				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
 				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\"",
 				userName);
 		return getVmInfoInternal(sql);
@@ -292,25 +299,24 @@ public class DBOperations {
 				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
-				+ DBSchema.VmTable.WORKING_DIR
-				+ ","
-				+ DBSchema.VmTable.VM_PASSWORD
-				+ ","
-				+ DBSchema.VmTable.VM_USERNAME
-				+ ","
-				+ DBSchema.VmTable.NUM_CPUS
-				+ ","
-				+ DBSchema.VmTable.MEMORY_SIZE
-				+ ","
-				+ DBSchema.VmTable.DISK_SPACE
-				+ ","
-				+ DBSchema.VmTable.IMAGE_NAME
+				+ DBSchema.VmTable.WORKING_DIR + ","
+				+ DBSchema.VmTable.VNC_PASSWORD + ","
+				+ DBSchema.VmTable.VNC_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
 				+ " FROM " + DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME + " WHERE "
+				+ DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ " WHERE "
 				+ DBSchema.UserVmTable.TABLE_NAME + "."
 				+ DBSchema.UserVmTable.VM_ID + "="
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
+				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
 				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
 				+ DBSchema.UserVmTable.VM_ID + "=\"%s\"", userName, vmid);
@@ -325,7 +331,7 @@ public class DBOperations {
 	}
 
 	public void addVM(String userName, String vmid, String imageName,
-			String vmLoginName, String vmLoginPasswd, VMPorts host,
+			String vncLoginId, String vncLoginPwd, VMPorts host,
 			String workDir, int numCPUs, int memorySize, int diskSpace)
 			throws SQLException {
 		String insertvmsql = String
@@ -348,9 +354,9 @@ public class DBOperations {
 						+ ","
 						+ DBSchema.VmTable.IMAGE_NAME
 						+ ","
-						+ DBSchema.VmTable.VM_USERNAME
+						+ DBSchema.VmTable.VNC_USERNAME
 						+ ","
-						+ DBSchema.VmTable.VM_PASSWORD
+						+ DBSchema.VmTable.VNC_PASSWORD
 						+ ","
 						+ DBSchema.VmTable.NUM_CPUS
 						+ ","
@@ -362,7 +368,7 @@ public class DBOperations {
 						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
-						vmLoginName, vmLoginPasswd, numCPUs, memorySize,
+						vncLoginId, vncLoginPwd, numCPUs, memorySize,
 						diskSpace);
 
 		String insertvmusersql = String.format("INSERT INTO "

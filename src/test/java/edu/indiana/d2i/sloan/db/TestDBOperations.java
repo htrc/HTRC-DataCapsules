@@ -31,7 +31,8 @@ public class TestDBOperations {
 		
 		try {
 			String insertTableSQL = "INSERT INTO images"
-					+ "(imagename, imagepath) VALUES (?, ?)";
+				+ "(imagename, imagepath, imagedescription, loginusername, loginpassword) " +
+				"VALUES (?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
 			int count = records;
@@ -40,6 +41,9 @@ public class TestDBOperations {
 				pst = connection.prepareStatement(insertTableSQL);
 				pst.setString(1, "imagename-" + i);
 				pst.setString(2, "/var/instance/imagename-" + i);
+				pst.setString(3, "This is " + i + " image");
+				pst.setString(4, "user" + i);
+				pst.setString(5, "pwd" + i);
 				pst.executeUpdate();
 				pst.close();
 			}
@@ -57,8 +61,8 @@ public class TestDBOperations {
 		
 		try {
 			String insertTableSQL = "INSERT INTO vms"
-					+ "(vmid, vmmode, vmstate, publicip, sshport, vncport, workingdir, imagename, vmusername, vmpassword) VALUES"
-					+ "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "(vmid, vmmode, vmstate, publicip, sshport, vncport, workingdir, imagename, vncusername, vncpassword) VALUES"
+				+ "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
 			int count = records;
@@ -169,7 +173,7 @@ public class TestDBOperations {
 			portsExpected[index*2] = 2000 + index*2;
 			portsExpected[index*2+1] = 2000 + index*2 + 1;
 			DBOperations.getInstance().addVM(userName, vmid, "imagename-"+(index%imageCnt), 
-				"vmusername", "vmpasswd", host, workDir, 2, 1024, 10);
+				"vncusername", "vncpassword", host, workDir, 2, 1024, 10);
 		}
 		
 		// trigger error
@@ -193,6 +197,10 @@ public class TestDBOperations {
 		Assert.assertEquals("192.168.0.2", vmInfo.getPublicip());
 		Assert.assertEquals("vmid-" + 0, vmInfo.getVmid());
 		Assert.assertEquals(VMMode.NOT_DEFINED, vmInfo.getVmmode());
+		Assert.assertEquals("user"+0, vmInfo.getVmLoginId());
+		Assert.assertEquals("pwd"+0, vmInfo.getVmLoginPwd());
+		Assert.assertEquals("vncusername", vmInfo.getVNCloginId());
+		Assert.assertEquals("vncpassword", vmInfo.getVNCloginPwd());
 		
 		// read 2 vm back
 		Assert.assertTrue(DBOperations.getInstance().getVmInfo("username-" + (count-2)).size() == 2);
@@ -211,7 +219,8 @@ public class TestDBOperations {
 		// delete vm
 		for (int i = 0; i < vmids.size(); i++) {
 			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null,
-				null, null, 0, 0, 2, 1024, 10, null, null, null, null, null, null, null); 
+				null, null, 0, 0, 2, 1024, 10, null, null, null, null, 
+				null, null, null, null, null); 
 			DBOperations.getInstance().deleteVMs(userNames.get(i), vinfo);
 		}		
 		
@@ -269,7 +278,7 @@ public class TestDBOperations {
 		
 		VmInfoBean vmInfo = new VmInfoBean("vmid-0", null, null, null, null, 
 			2000, 2001, request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(), 
-			null, null, null, null, null, null, null);
+			null, null, null, null, null, null, null, null, null);
 		DBOperations.getInstance().deleteVMs("username-0", vmInfo);
 		
 		Assert.assertTrue(DBOperations.getInstance().quotasNotExceedLimit(request));

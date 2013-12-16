@@ -1,17 +1,17 @@
 package edu.indiana.d2i.sloan.bean;
 
 public class CreateVmRequestBean {
-	private String userName, imageName, vmid, vmLoginID, vmLoginPasswd, workDir;
+	private String userName, imageName, vmid, vncLoginID, vncLoginPasswd, workDir;
 	private int memory, vcpu, volumeSizeInGB;
 
 	public CreateVmRequestBean(String userName, String imageName, String vmid,
-			String vmLoginID, String vmLoginPasswd, int memory, int vcpu,
+			String vncLoginID, String vncLoginPasswd, int memory, int vcpu,
 			int volumeSizeInGB, String workDir) {
 		this.userName = userName;
 		this.imageName = imageName;
 		this.vmid = vmid;
-		this.vmLoginID = vmLoginID;
-		this.vmLoginPasswd = vmLoginPasswd;
+		this.vncLoginID = vncLoginID;
+		this.vncLoginPasswd = vncLoginPasswd;
 		this.memory = memory;
 		this.vcpu = vcpu;
 		this.volumeSizeInGB = volumeSizeInGB;
@@ -30,12 +30,12 @@ public class CreateVmRequestBean {
 		return vmid;
 	}
 
-	public String getVmLoginID() {
-		return vmLoginID;
+	public String getVncLoginID() {
+		return vncLoginID;
 	}
 
-	public String getVmLoginPasswd() {
-		return vmLoginPasswd;
+	public String getVncLoginPasswd() {
+		return vncLoginPasswd;
 	}
 	
 	public int getMemory() {
@@ -58,7 +58,7 @@ public class CreateVmRequestBean {
 	public String toString() {
 		return String
 				.format("[username=%s, imagename=%s, vmid=%s, vmloginID=%s vmloginPasswd=%s memory=%d, vcpu=%d, volumesize=%dGB]",
-						userName, imageName, vmid, vmLoginID, vmLoginPasswd,
+						userName, imageName, vmid, vncLoginID, vncLoginPasswd,
 						memory, vcpu, volumeSizeInGB);
 	}
 

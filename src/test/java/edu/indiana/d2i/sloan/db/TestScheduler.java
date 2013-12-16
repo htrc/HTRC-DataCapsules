@@ -95,18 +95,46 @@ public class TestScheduler {
 				connection.close();
 		}
 	}
+	
+	private void loadDataToImageTable(int records) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		
+		try {
+			String insertTableSQL = "INSERT INTO images"
+				+ "(imagename, imagepath, imagedescription, loginusername, loginpassword) " +
+				"VALUES (?, ?, ?, ?, ?)";
+			connection = DBConnections.getInstance().getConnection();
+			
+			int count = records;
+			for (int i = 0; i < count; i++) {
+				pst = connection.prepareStatement(insertTableSQL);
+				pst.setString(1, "imagename-" + i);
+				pst.setString(2, "/var/instance/imagename-" + i);
+				pst.setString(3, "This is " + i + " image");
+				pst.setString(4, "user" + i);
+				pst.setString(5, "pwd" + i);
+				pst.executeUpdate();
+				pst.close();
+			}
+		} finally {
+			if (pst != null) pst.close();
+			if (connection != null) connection.close();
+		}
+	}
 
 	@Test(expected = NoResourceAvailableException.class)
 	public void testSequentialScheduling() throws NoResourceAvailableException,
 			SQLException {
 		int scheduled = 4;
 		loadDataToUserTable(scheduled);
+		loadDataToImageTable(scheduled);
 
 		try {
 			for (int i = 0; i < scheduled; i++) {
 				CreateVmRequestBean request = new CreateVmRequestBean("user-"
-						+ i, "imagename", "vmid-" + i, "vmusername-" + i,
-						"vmpassword-" + i, 1024, 2, 10, "/path/to/work/dir");
+						+ i, "imagename-"+i, "vmid-" + i, "vncusername-" + i,
+						"vncpassword-" + i, 1024, 2, 10, "/path/to/work/dir");
 				SchedulerFactory.getInstance().schedule(request);
 			}
 		} catch (NoResourceAvailableException e) {
@@ -126,11 +154,12 @@ public class TestScheduler {
 		int scheduled = 4;
 
 		loadDataToUserTable(records);
+		loadDataToImageTable(records);
 
 		// schedule some
 		for (int i = 0; i < scheduled; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-" + i,
-					"imagename", "vmid-" + i, "vmusername-" + i, "vmpassword-"
+					"imagename-"+i, "vmid-" + i, "vmusername-" + i, "vmpassword-"
 							+ i, 1024, 2, 10, "/path/to/work/dir");
 			SchedulerFactory.getInstance().schedule(request);
 		}
@@ -138,14 +167,14 @@ public class TestScheduler {
 		// release one
 		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null,
 				null, null, null, 0, 0, 2, 1024, 10, null, null, null, null,
-				null, null, null);
+				null, null, null, null, null);
 
 		DBOperations.getInstance().deleteVMs("user-" + (scheduled - 1), vmInfo);
 
 		// schedule even more
 		for (int i = scheduled; i < records; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-" + i,
-					"imagename", "vmid-" + i, "vmusername-" + i, "vmpassword-"
+					"imagename-"+i, "vmid-" + i, "vmusername-" + i, "vmpassword-"
 							+ i, 1024, 2, 10, "/path/to/work/dir");
 			SchedulerFactory.getInstance().schedule(request);
 		}
