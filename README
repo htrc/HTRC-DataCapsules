@@ -1,1 +1,16 @@
-This will be a readme file
+GENERAL SETUP
+--------------------------------------------------
+
+To prepare these scripts for use, give them a fixed location and, optionally,
+add them to the PATH variable of the user that will be invoking them (so that
+the full path need not be given for each invocation). Finally, run the following commands to prepare the tapinit program for use (note that these require root privilege to set up):
+
+# chown root:kvm tapinit
+# chmod ug+s tapinit
+
+
+IMAGE SETUP (Linux)
+--------------------------------------------------
+
+To set up a Linux image to work with these scripts, one must add the contents
+of "new.rc.local" to the /etc/rc.local script within the image.
