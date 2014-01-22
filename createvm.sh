@@ -117,7 +117,7 @@ while getopts "$optspec" OPT; do
       REQUIRED_OPTS="$REQUIRED_OPTS LOGIN_PWD"
       ;;
     loginpwd)
-      if [[ ${#OPTARG} -ge 8 ]] ; then
+      if [[ ${#OPTARG} -gt 8 ]] ; then
         echo "error: login passwords longer than 8 characters are not currently supported"
         exit 1
       fi
