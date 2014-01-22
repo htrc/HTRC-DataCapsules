@@ -17,7 +17,7 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 # Timeout for boot, in seconds
-TIMEOUT=20
+TIMEOUT=120
 
 usage () {
 
