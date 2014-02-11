@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
 usage () {
 
   echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy [Policy File]"
@@ -113,7 +115,11 @@ fi
 # Load config file
 . $VM_DIR/config
 
-# TODO: Check if VM is already in the mode we're switching to
+# Check if VM is already in the mode we're switching to
+if [[ `cat $VM_DIR/mode` = "Maintenance" && $SECURE_MODE -ne 0 || `cat $VM_DIR/mode` = "Secure" && $SECURE_MODE -eq 0 ]]; then
+  echo "Error: VM is already in that mode"
+  exit 3
+fi
 
 # If secure mode, sync storage, apply policy, take snapshot, mount secure volume, update modefile
 if [ $SECURE_MODE = 0 ]; then
@@ -122,8 +128,13 @@ if [ $SECURE_MODE = 0 ]; then
   echo "commit all" | nc -U $VM_DIR/monitor >/dev/null
 
   # Apply Firewall Policy
-  #iptables-save > $VM_DIR/maintenance_policy
-  #iptables-restore < $POLICY
+  sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
+  FW_RES=$?
+
+  if [ $FW_RES -ne 0 ]; then
+    echo "Error: Failed to apply firewall policy; error code ($FW_RES)"
+    exit 4
+  fi
 
   # Take Capsules Snapshot
   echo "savevm capsules" | nc -U $VM_DIR/monitor >/dev/null
@@ -145,11 +156,23 @@ else
   # Revert Capsules Snapshot
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
 
-  # Remove Filewall Policy
-  #iptables-restore > $VM_DIR/maintenance_policy
+  # Remove Firewall Policy
+  if [[ $POLICY = $UNDEFINED ]]; then
+    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR
+  else
+    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
+  fi
+
+  FW_RES=$?
+
+  if [ $FW_RES -ne 0 ]; then
+    echo "Error: Failed to apply/remove firewall policy; error code ($FW_RES)"
+    exit 5
+  fi
 
   # Update Mode File
   echo "Maintenance" > $VM_DIR/mode
 
 fi
 
+exit 0

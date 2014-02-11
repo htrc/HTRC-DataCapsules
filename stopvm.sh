@@ -14,6 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
 usage () {
 
   echo "Usage: $0 <Directory for VM>"
@@ -111,17 +113,26 @@ if [ -e $VM_DIR/pid ]; then
 
     if [[ $CUR_MODE = "Maintenance" ]] ; then
       echo "commit all" | nc -U $VM_DIR/monitor >/dev/null
+    #else
+      #echo "stop" | nc -U $VM_DIR/monitor >/dev/null
+      #$SCRIPT_DIR/switch.sh $VM_DIR --mode m
+      #SWITCH_RES=$?
+
+      #if [ $SWITCH_RES -ne 0 ]; then
+      #  echo "Error: Failed to return VM to maintenance mode; error code ($SWITCH_RES)"
+      #  exit 4
+      #fi
     fi
 
     echo "quit" | nc -U $VM_DIR/monitor >/dev/null
 
-    if ! kill -0 $VM_PID 2>&1 | grep -q "No such process" ; then
+    if pidof qemu-system_x86_64 | grep -q $VM_PID; then
       
       KILL_RES=$(kill $VM_PID 2>&1)
   
       if [ $? -ne 0 ]; then
         echo "Error killing qemu process: $KILL_RES"
-        exit 4
+        exit 5
       fi
 
     fi
@@ -137,13 +148,37 @@ if [ -e $VM_DIR/pid ]; then
     FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/pid"
   fi
 
+  if [ -e $VM_DIR/mode ] ; then
+    FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/mode"
+  fi
+
   RM_RES=$(rm -rf $FILES_TO_DELETE 2>&1)
 
   if [ $? -ne 0 ]; then
     echo "Error deleting related files: $RM_RES"
-    exit 5
+    exit 6
   fi
 
 fi
+
+# Bring down firewall and ssh port forwarding
+sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR
+FW_RES=$?
+
+if [ $FW_RES -ne 0 ]; then
+  echo "Error: Failed to remove firewall policy after stopping VM; error code ($FW_RES)"
+  exit 7
+fi
+
+sudo $SCRIPT_DIR/sshfwd.sh down $VM_MAC_ADDR $SSH_PORT
+SSH_RES=$?
+
+if [ $SSH_RES -ne 0 ]; then
+  echo "Error: Failed to remove ssh forwarding after stopping VM; error code ($SSH_RES)"
+  exit 8
+fi
+
+# Remove IP address assignment
+sed -ni '/'"$VM_MAC_ADDR"'/!p' $SCRIPT_DIR/dhcp_hosts
 
 exit 0

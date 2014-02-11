@@ -14,6 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+DD_BLOCK_SIZE=2048k
+
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
 usage () {
 
   echo "Usage: $0 <Directory for VM> --image <Image Name> --ncpu <Number of CPUs> --mem <Guest Memory Size>"
@@ -162,18 +166,23 @@ if [ $? -ne 0 ]; then
 fi
 
 # Copy image to newly created working directory
-CP_RES=$(cp $IMAGE $VM_DIR 2>&1)
+CP_RES=$(dd if=$IMAGE of=$VM_DIR/$(basename $IMAGE) bs=$DD_BLOCK_SIZE 2>&1)
+#CP_RES=$(cp $IMAGE $VM_DIR 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error copying image file for VM: $CP_RES"
   fail 4
 fi
 
+# Generate a fixed locally-administered MAC address for VM
+VM_MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+
 # Record configuration parameters to config file
 cat <<EOF > $VM_DIR/config
 
 IMG=$(basename $IMAGE)
 SECURE_VOL=$SECURE_VOL_NAME
+VM_MAC_ADDR=$VM_MAC_ADDR
 
 NUM_VCPU=$NUM_VCPU
 MEM_SIZE=$MEM_SIZE
@@ -195,14 +204,6 @@ if [[ $LOGIN_PWD != $UNDEFINED ]]; then
 VNC_LOGIN=1
 LOGIN_ID=$LOGIN_ID
 LOGIN_PWD=$LOGIN_PWD
-
-EOF
-
-else
-
-  cat <<EOF >> $VM_DIR/config
-
-VNC_LOGIN=0
 
 EOF
 

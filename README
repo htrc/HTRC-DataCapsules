@@ -3,14 +3,30 @@ GENERAL SETUP
 
 To prepare these scripts for use, give them a fixed location and, optionally,
 add them to the PATH variable of the user that will be invoking them (so that
-the full path need not be given for each invocation). Finally, run the following commands to prepare the tapinit program for use (note that these require root privilege to set up):
+the full path need not be given for each invocation). Finally, run the
+following commands to prepare the tapinit program for use (note that these
+require root privilege to set up):
 
 # chown root:kvm tapinit
 # chmod ug+s tapinit
 
+qemu-ifup must be modified so that the SCRIPT_DIR variable points to the
+directory containing the backend scripts.  Also, qemu-ifup must be moved to
+/etc/ (there may be an existing version there; it is probably safe to overwrite
+it), and the account that will be running the scripts must be able to run the
+sshfwd.sh and fw.sh scripts via sudo without a password.  To configure this,
+add the following line to the sudoers file:
 
-IMAGE SETUP (Linux)
+<USERNAME>  ALL=(ALL) NOPASSWD: <SCRIPT_DIRECTORY>/sshfwd.sh, NOPASSWD: <SCRIPT_DIRECTORY>/fw.sh
+
+Make sure this line is after any lines about the sudo and admin groups,
+otherwise those rules will supercede this one and it will not work.  This
+should not, however, be an issue since the user running the scripts should not
+require root access for anything else, and that is the recommended security
+practice.
+
+GUEST REQUIREMENTS
 --------------------------------------------------
 
-To set up a Linux image to work with these scripts, one must add the contents
-of "new.rc.local" to the /etc/rc.local script within the image.
+There are currently no special modifications required for a guest VM image.
+This may change in the future.

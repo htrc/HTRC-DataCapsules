@@ -1,4 +1,0 @@
-# Copy this into rc.local on appropriate Linux machines; This allows the
-# backend scripts to detect that the guest has booted successfully
-
-echo "FINISHED BOOTING" > /dev/ttyS0

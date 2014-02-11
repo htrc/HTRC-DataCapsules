@@ -117,18 +117,10 @@ if [ ! -d $VM_DIR ] ; then
   exit 2
 fi
 
+# TODO: check if VM is already running
+
 # Load config file
 . $VM_DIR/config
-
-if [[ $VNC_LOGIN = 1 ]]; then
-
-  VNC_LOGIN_ARGS=",password"
-  #VNC_LOGIN_ARGS=""
-  
-else
-  VNC_LOGIN_ARGS=""
-  LOGIN_ID=""
-fi
 
 if [ -e $VM_DIR/last_run ] ; then
   cat $VM_DIR/last_run >> $VM_DIR/kvm_console
@@ -145,30 +137,70 @@ cat <<EOF >> $VM_DIR/kvm_console
 
 EOF
 
+# Allocate IP Address
+IP_SUFFIX=$UNDEFINED
+
+touch $SCRIPT_DIR/dhcp_hosts
+TAKEN_ADDRS=($(sed 's/.*192\.168\.53\.\([0-9]*\).*/\1/' $SCRIPT_DIR/dhcp_hosts | sort -g))
+
+if [[ ${#TAKEN_ADDRS[@]} -eq 0 || ${TAKEN_ADDRS[0]} -gt 2 ]]; then
+  IP_SUFFIX=2
+else
+  for (( a=1; a<${#TAKEN_ADDRS[@]}; a++ )); do
+    if [[ $(( ${TAKEN_ADDRS[$a]} - ${TAKEN_ADDRS[$a-1]} )) -gt 1 ]]; then
+  	IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
+        break
+    fi
+  done
+
+  if [[ $IP_SUFFIX = $UNDEFINED ]]; then
+    IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
+  fi
+fi
+
+if [[ $IP_SUFFIX -gt 254 ]]; then
+  echo "Error: Unable to allocate IP address; IP pool is exhausted"
+  exit 3
+fi
+
+VM_IP_ADDR="192.168.53.$IP_SUFFIX"
+  
+# Add IP address assignment to dhcp_hosts configuration for dnsmasq
+cat <<EOF >> $SCRIPT_DIR/dhcp_hosts
+$VM_MAC_ADDR,$VM_IP_ADDR
+EOF
+
+if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
+  if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
+    kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
+    sleep 5
+  fi
+fi
+
 # Start guest process
-nohup qemu-system-x86_64 -enable-kvm				\
-		   -snapshot					\
-		   -no-shutdown					\
-		   -m $MEM_SIZE					\
-		   -smp $NUM_VCPU				\
-		   -pidfile $VM_DIR/pid				\
-		   -monitor unix:$VM_DIR/monitor,server		\
-		   -serial file:$VM_DIR/guest_out		\
-		   -usb						\
-		   -net nic					\
-		   -net "user,hostfwd=tcp::$SSH_PORT-:22"	\
-		   -hda $VM_DIR/$IMG				\
-		   -vnc :$(( $VNC_PORT - 5900 ))$VNC_LOGIN_ARGS	\
-		   >>$VM_DIR/last_run				\
+nohup $SCRIPT_DIR/tapinit qemu-system-x86_64					\
+		   -enable-kvm							\
+		   -snapshot							\
+		   -no-shutdown							\
+		   -m $MEM_SIZE							\
+		   -smp $NUM_VCPU						\
+		   -pidfile $VM_DIR/pid						\
+		   -monitor unix:$VM_DIR/monitor,server				\
+		   -serial file:$VM_DIR/guest_out				\
+		   -usb								\
+		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
+		   -net tap,vlan=0,fd=%FD%					\
+		   -hda $VM_DIR/$IMG						\
+		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+",password"}	\
+		   >>$VM_DIR/last_run						\
 		   2>&1 &
-#		   -monitor tcp::3232,server			\
 
 # Store the PID of the process for later
 KVM_PID=$!
 
 # For some reason, a connection to the monitor seems to be needed
 # to trigger VM startup
-sleep 1
+sleep 2
 echo "" | nc -U $VM_DIR/monitor >/dev/null
 
 if [[ $VNC_LOGIN = 1 ]] ; then
@@ -179,28 +211,63 @@ fi
 if kill -0 $KVM_PID 2>&1 | grep -q "No such process" ; then
   echo "Error starting guest VM:"
   cat $VM_DIR/last_run
-  exit 3
-fi
-
-for time in $(seq 1 $TIMEOUT); do
-  if [ -e $VM_DIR/guest_out ]; then
-    if [[ `cat $VM_DIR/guest_out` = "FINISHED BOOTING" ]]; then
-      break
-    fi
-  fi
-  sleep 1
-done
-
-if [ ! -e $VM_DIR/guest_out ]; then
-  echo "Guest start-up timeout; guest failed to boot within $TIMEOUT seconds"
-  #$SCRIPT_DIR/stopvm.sh $VM_DIR
   exit 4
 fi
 
-# Switch machine into secure mode, if needed
-if [ $BOOT_SECURE = 0 ]; then 
-  $SCRIPT_DIR/switch.sh $VM_DIR --mode s --policy $POLICY
+for time in $(seq 1 $TIMEOUT); do
+  if ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1; then
+    break
+  fi
+#  if [ -e $VM_DIR/guest_out ]; then
+#    if grep -q "FINISHED BOOTING" $VM_DIR/guest_out; then
+#      break
+#    fi
+#  fi
+#  sleep 1
+done
+
+ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1
+
+if [ $? -ne 0 ]; then
+  echo "Guest start-up timeout; guest failed to boot within $TIMEOUT seconds"
+  #$SCRIPT_DIR/stopvm.sh $VM_DIR
+  exit 5
 fi
 
-# Return results (only reaches here if no errors occur)
+# Setup SSH port forwarding
+SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh up $VM_MAC_ADDR $SSH_PORT 2>&1)
+
+if [ $? -ne 0 ]; then
+  echo "$SSH_RES"
+  exit 6
+fi
+
+# All VMs start in Maintenance mode initially
+echo "Maintenance" > $VM_DIR/mode
+
+# Switch machine into secure mode or apply firewall policy as needed
+if [[ $BOOT_SECURE = 0 ]]; then 
+  $SCRIPT_DIR/switch.sh $VM_DIR --mode s --policy $POLICY
+  SWITCH_RES=$?
+
+  if [ $SWITCH_RES -ne 0 ]; then
+    echo "Error: Failed to switch VM to security mode on startup; error code ($SWITCH_RES)"
+    exit 7
+  fi
+
+else
+
+  if [[ $POLICY != $UNDEFINED ]]; then
+    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
+    POLICY_RES=$?
+
+    if [ $POLICY_RES -ne 0 ]; then
+      echo "Error: Failed to apply firewall policy on startup; error code ($POLICY_RES)"
+      exit 8
+    fi
+  fi
+
+fi
+
+# Return successfully (only reaches here if no errors occur)
 exit 0
