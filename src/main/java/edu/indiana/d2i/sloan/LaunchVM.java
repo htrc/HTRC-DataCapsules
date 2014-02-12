@@ -61,7 +61,7 @@ public class LaunchVM {
 		
 		// launch can only start from shutdown
 		try {		
-			DBOperations.getInstance().insertUserIfNotExists(userName);
+			DBOperations.getInstance().insertUserIfNotExists(userName, "");
 			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||

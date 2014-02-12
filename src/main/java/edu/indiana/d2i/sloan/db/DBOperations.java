@@ -1,5 +1,6 @@
 package edu.indiana.d2i.sloan.db;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -162,7 +163,6 @@ public class DBOperations {
 
 				if (satisfiable) {
 					/* update user table */
-
 					StringBuilder updateSql = new StringBuilder();
 					updateSql
 							.append("UPDATE ")
@@ -199,7 +199,7 @@ public class DBOperations {
 		return satisfiable;
 	}
 
-	public void insertUserIfNotExists(String userName) throws SQLException {
+	public void insertUserIfNotExists(String userName, String userEmail) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst1 = null;
 		PreparedStatement pst2 = null;
@@ -215,17 +215,19 @@ public class DBOperations {
 			if (!rs.next()) {
 				// ignore the error if there is a duplicate
 				String insertUser = String.format(
-						"INSERT IGNORE INTO " + DBSchema.UserTable.TABLE_NAME
-								+ "(%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)",
-						DBSchema.UserTable.USER_NAME, DBSchema.UserTable.DISK_LEFT_QUOTA, 
-						DBSchema.UserTable.CPU_LEFT_QUOTA, DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+					"INSERT IGNORE INTO " + DBSchema.UserTable.TABLE_NAME
+							+ "(%s, %s, %s, %s, %s) VALUES" + "(?, ?, ?, ?, ?)",
+					DBSchema.UserTable.USER_NAME, DBSchema.UserTable.USER_EMAIL, 
+					DBSchema.UserTable.DISK_LEFT_QUOTA, DBSchema.UserTable.CPU_LEFT_QUOTA, 
+					DBSchema.UserTable.MEMORY_LEFT_QUOTA);
 				pst2 = connection.prepareStatement(insertUser);
 				pst2.setString(1, userName);
-				pst2.setInt(2, Configuration.getInstance().
-					getInt(Configuration.PropertyName.USER_DISK_QUOTA_IN_GB)); // volume size in GB
+				pst2.setString(2, userEmail);
 				pst2.setInt(3, Configuration.getInstance().
-					getInt(Configuration.PropertyName.USER_CPU_QUOTA_IN_NUM)); // vcpus
+					getInt(Configuration.PropertyName.USER_DISK_QUOTA_IN_GB)); // volume size in GB
 				pst2.setInt(4, Configuration.getInstance().
+					getInt(Configuration.PropertyName.USER_CPU_QUOTA_IN_NUM)); // vcpus
+				pst2.setInt(5, Configuration.getInstance().
 					getInt(Configuration.PropertyName.USER_MEMORY_QUOTA_IN_MB)); // memory size in MB
 				pst2.executeUpdate();
 			}
@@ -241,7 +243,7 @@ public class DBOperations {
 		}
 	}
 
-	public List<VmInfoBean> getVmInfo() throws SQLException {
+	public List<VmInfoBean> getExistingVmInfo() throws SQLException {
 		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
 				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
@@ -287,8 +289,8 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\"",
-				userName);
+				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
+				+ " AND " + DBSchema.UserVmTable.DELETED + "=0", userName);
 		return getVmInfoInternal(sql);
 	}
 
@@ -319,7 +321,8 @@ public class DBOperations {
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
 				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
-				+ DBSchema.UserVmTable.VM_ID + "=\"%s\"", userName, vmid);
+				+ DBSchema.UserVmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.UserVmTable.DELETED + "=0", userName, vmid);
 
 		logger.debug(sql);
 
@@ -399,6 +402,10 @@ public class DBOperations {
 		String deletevmsql = String.format("DELETE FROM "
 				+ DBSchema.VmTable.TABLE_NAME + " where "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"", vmInfo.getVmid());
+		
+		String markdeletedsql = String.format("UPDATE %s SET %s=%d WHERE %s=\"%s\"", 
+			DBSchema.UserVmTable.TABLE_NAME, DBSchema.UserVmTable.DELETED, 1, 
+			DBSchema.UserVmTable.VM_ID,	vmInfo.getVmid()); 
 
 		/* restore quota */
 
@@ -454,6 +461,7 @@ public class DBOperations {
 		}
 
 		updates.add(deletevmsql);
+		updates.add(markdeletedsql);
 
 		if (updateUserTableSql.length() > 0) {
 			updates.add(updateUserTableSql.toString());
@@ -567,6 +575,55 @@ public class DBOperations {
 				connection.close();
 		}
 		return res;
+	}
+	
+	public InputStream getResult(String randomid) throws SQLException, NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			String getResult = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME + 
+				" WHERE " + DBSchema.ResultTable.RANDOM_ID + "=\"" + randomid + "\"";			
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(getResult);
+			rs = pst.executeQuery();
+			
+			if (rs.next()) {
+				return rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD);
+			} else {
+				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+	
+	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String insertResult = String.format(
+				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s) VALUES" + "(?, ?, ?)", 
+				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RANDOM_ID, DBSchema.ResultTable.DATA_FIELD);
+			pst = connection.prepareStatement(insertResult);
+			
+			pst.setString(1, vmid);
+			pst.setString(2, randomid);
+			pst.setBinaryStream(3, input);
+			
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
 	}
 
 	public void close() {

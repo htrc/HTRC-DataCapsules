@@ -48,7 +48,7 @@ public class StopVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName);
+			DBOperations.getInstance().insertUserIfNotExists(userName, "");
 			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);

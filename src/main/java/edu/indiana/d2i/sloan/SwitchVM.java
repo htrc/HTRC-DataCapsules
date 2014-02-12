@@ -71,7 +71,7 @@ public class SwitchVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName);
+			DBOperations.getInstance().insertUserIfNotExists(userName, "");
 			
 			VmInfoBean vmInfo;
 			vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);

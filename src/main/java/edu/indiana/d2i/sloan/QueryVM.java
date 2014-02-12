@@ -50,7 +50,7 @@ public class QueryVM {
 		// ws periodically updates VM status??
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName);
+			DBOperations.getInstance().insertUserIfNotExists(userName, "");
 			
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
 			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();

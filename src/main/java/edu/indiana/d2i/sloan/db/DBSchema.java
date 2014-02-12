@@ -55,6 +55,7 @@ class DBSchema {
 	public static class UserTable {
 		public static String TABLE_NAME = "users";
 		public static String USER_NAME = "username";
+		public static String USER_EMAIL = "useremail";
 		
 		/* directory that hosts user's volume (disk) files */
 		public static String VOLUME_DIR = "volumedir";
@@ -76,6 +77,7 @@ class DBSchema {
 		public static String TABLE_NAME = "uservm";
 		public static String USER_NAME = "username";
 		public static String VM_ID = "vmid";
+		public static String DELETED = "deleted";
 	}
 	
 	public static class ImageTable {
@@ -91,5 +93,12 @@ class DBSchema {
 		public static String TABLE_NAME = "policies";
 		public static String POLICY_NAME = "policyname";
 		public static String POLICY_PATH = "policypath";
+	}
+	
+	public static class ResultTable {
+		public static String TABLE_NAME = "results";
+		public static String VM_ID = "vmid";
+		public static String RANDOM_ID = "randomid";
+		public static String DATA_FIELD = "datafield";
 	}
 }

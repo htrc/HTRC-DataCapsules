@@ -179,7 +179,7 @@ public class TestScheduler {
 			SchedulerFactory.getInstance().schedule(request);
 		}
 
-		Assert.assertEquals(scheduled, DBOperations.getInstance().getVmInfo()
+		Assert.assertEquals(scheduled, DBOperations.getInstance().getExistingVmInfo()
 				.size());
 	}
 }

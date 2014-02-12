@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS vms(
 
 /* More fields will be added */
 CREATE TABLE IF NOT EXISTS users(
-	username VARCHAR(128) PRIMARY KEY, 
+	username VARCHAR(128) PRIMARY KEY,
+	useremail VARCHAR(128) NOT NULL,
 	cpuleftquota INT,
 	memoryleftquota INT,
 	diskleftquota INT,
@@ -43,8 +44,17 @@ CREATE TABLE IF NOT EXISTS users(
 CREATE TABLE IF NOT EXISTS uservm(
     username VARCHAR(128),
 	vmid VARCHAR(128),
+	deleted TINYINT NOT NULL DEFAULT 0, /*0: false, 1: true*/
 	CONSTRAINT fk_users FOREIGN KEY (username)
 		REFERENCES users(username),
-	CONSTRAINT fk_vms FOREIGN KEY (vmid)
-		REFERENCES vms(vmid) ON DELETE CASCADE,
+	/*CONSTRAINT fk_vms FOREIGN KEY (vmid) REFERENCES vms(vmid) ON DELETE CASCADE,*/
 	PRIMARY KEY(username, vmid)) ENGINE=InnoDB;
+	
+/* randomid(128) tells MySQL only indexes first 128 chars. See http://bugs.mysql.com/bug.php?id=6604 */
+CREATE TABLE IF NOT EXISTS results(
+	vmid VARCHAR(128), 
+	randomid VARCHAR(256),
+	datafield LONGBLOB,
+	CONSTRAINT fk_results FOREIGN KEY (vmid)
+		REFERENCES vms(vmid),
+	PRIMARY KEY(vmid, randomid(128))) ENGINE=InnoDB;

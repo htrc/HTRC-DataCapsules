@@ -32,7 +32,7 @@ public class PortsPool {
 		
 		// load from db
 		try {
-			List<VmInfoBean> vmStatus = DBOperations.getInstance().getVmInfo();
+			List<VmInfoBean> vmStatus = DBOperations.getInstance().getExistingVmInfo();
 			for (VmInfoBean status : vmStatus) {
 				if (!portsUsed.containsKey(status.getPublicip())) {
 					portsUsed.put(status.getPublicip(), new HashSet<Integer>());

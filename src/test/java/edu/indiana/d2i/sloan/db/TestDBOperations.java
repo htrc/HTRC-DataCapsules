@@ -1,5 +1,8 @@
 package edu.indiana.d2i.sloan.db;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,6 +10,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -97,18 +101,19 @@ public class TestDBOperations {
 		
 		try {
 			String insertTableSQL = "INSERT INTO users" +
-				"(username, cpuleftquota, memoryleftquota, diskleftquota) VALUES" + 
-				"(?, ?, ?, ?)";
+				"(username, useremail, cpuleftquota, memoryleftquota, diskleftquota) VALUES" + 
+				"(?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
 			int count = records;
 			for (int i = 0; i < count; i++) {
 				pst = connection.prepareStatement(insertTableSQL);
 				pst.setString(1, "username-" + i);
-				pst.setInt(2, Integer.valueOf(Constants.DEFAULT_USER_CPU_QUOTA_IN_NUM)); // vcpus
-				pst.setInt(3, Integer.valueOf(Constants.DEFAULT_USER_MEMORY_QUOTA_IN_MB)); // memory size in MB
-				pst.setInt(4, 
-						Integer.valueOf(Constants.DEFAULT_USER_DISK_QUOTA_IN_GB)); // volume size in GB
+				pst.setString(2, "username-" + i + "@gmail.com");
+				pst.setInt(3, Integer.valueOf(Constants.DEFAULT_USER_CPU_QUOTA_IN_NUM)); // vcpus
+				pst.setInt(4, Integer.valueOf(Constants.DEFAULT_USER_MEMORY_QUOTA_IN_MB)); // memory size in MB
+				pst.setInt(5, 
+					Integer.valueOf(Constants.DEFAULT_USER_DISK_QUOTA_IN_GB)); // volume size in GB
 				
 				pst.executeUpdate();
 				pst.close();
@@ -206,7 +211,7 @@ public class TestDBOperations {
 		Assert.assertTrue(DBOperations.getInstance().getVmInfo("username-" + (count-2)).size() == 2);
 		
 		// read ports in use
-		List<VmInfoBean> vmStatus = DBOperations.getInstance().getVmInfo();
+		List<VmInfoBean> vmStatus = DBOperations.getInstance().getExistingVmInfo();
 		int[] ports = new int[vmStatus.size() * 2];
 		for (int i = 0; i < vmStatus.size(); i++) {
 			ports[i*2] = vmStatus.get(i).getSshport();
@@ -224,14 +229,14 @@ public class TestDBOperations {
 			DBOperations.getInstance().deleteVMs(userNames.get(i), vinfo);
 		}		
 		
-		vmStatus = DBOperations.getInstance().getVmInfo();
+		vmStatus = DBOperations.getInstance().getExistingVmInfo();
 		Assert.assertEquals(0, vmStatus.size());		
 	}
 	
 	@Test
 	public void testInsertUserIfNotExists() throws SQLException {
-		DBOperations.getInstance().insertUserIfNotExists("myusername-0");
-		DBOperations.getInstance().insertUserIfNotExists("myusername-0");
+		DBOperations.getInstance().insertUserIfNotExists("myusername-0", "myusername-0@gmail.com");
+		DBOperations.getInstance().insertUserIfNotExists("myusername-0", "myusername-0@gmail.com");
 	}
 	
 	@Test
@@ -244,7 +249,7 @@ public class TestDBOperations {
 			DBOperations.getInstance().updateVMState(vmid, VMState.SHUTDOWN);
 		}
 		
-		List<VmInfoBean> vmStatus = DBOperations.getInstance().getVmInfo();
+		List<VmInfoBean> vmStatus = DBOperations.getInstance().getExistingVmInfo();
 		Assert.assertEquals(count, vmStatus.size());
 		for (int i = 0; i < count; i++) {
 			Assert.assertEquals(VMState.SHUTDOWN, vmStatus.get(i).getVmstate());
@@ -295,7 +300,7 @@ public class TestDBOperations {
 		
 		boolean vm1 = false;
 		boolean vm2 = false;
-		List<VmInfoBean> vmInfos = DBOperations.getInstance().getVmInfo();
+		List<VmInfoBean> vmInfos = DBOperations.getInstance().getExistingVmInfo();
 		Assert.assertEquals(4, vmInfos.size());
 		for (VmInfoBean vmInfo : vmInfos) {
 			if (vmInfo.getVmid().equals("vmid-0")) {
@@ -308,5 +313,41 @@ public class TestDBOperations {
 			}
 		}
 		Assert.assertTrue(vm1 && vm2);
+	}
+	
+	@Test 
+	public void testPutAndGetResult() throws Exception {
+		loadDataToVmTable(3);
+
+		// generate file
+		FileOutputStream output = new FileOutputStream("tmpfile");
+		byte[] buf = new byte[1024]; // 1 KB
+		int factor = 1024; // factor * 512 Bytes = 1 MB
+		Arrays.fill(buf, (byte)1);
+		for (int i = 0; i < factor; i++) output.write(buf); 
+		output.close();
+		
+		// write result for same vm, different random id
+		List<String> randomids = new ArrayList<String>();
+		String vmid = "vmid-0";
+		for (int i = 0; i < 3; i++) {
+			String randomid = UUID.randomUUID().toString();
+			FileInputStream input = new FileInputStream("tmpfile");
+			DBOperations.getInstance().insertResult(vmid, randomid, input);
+			randomids.add(randomid);
+		}
+		
+		// read result from db
+		for (String randomid : randomids) {
+			InputStream input = DBOperations.getInstance().getResult(randomid);
+			byte[] b = new byte[1024];
+			while (input.read(b) != -1) {
+				Assert.assertArrayEquals(buf, b);
+			}
+		}
+		
+		// remove tmp file
+		java.io.File file = new java.io.File("tmpfile");
+		file.delete();
 	}
 }

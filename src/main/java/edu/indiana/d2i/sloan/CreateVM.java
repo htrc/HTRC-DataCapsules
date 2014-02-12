@@ -60,7 +60,7 @@ public class CreateVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName);
+			DBOperations.getInstance().insertUserIfNotExists(userName, "");
 			
 			// check if image name is valid
 			String imagePath = DBOperations.getInstance().getImagePath(imageName);
@@ -102,8 +102,7 @@ public class CreateVM {
 			vminfo.setImagePath(imagePath);
 			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));
 
-			return Response.status(200).entity(new CreateVmResponseBean(vmid))
-					.build();
+			return Response.status(200).entity(new CreateVmResponseBean(vmid)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
