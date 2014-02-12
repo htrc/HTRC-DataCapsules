@@ -89,7 +89,10 @@ if [[ $MISSING_ARGS -eq 1 ]]; then
   exit 1
 fi
 
-if [ -e $VM_DIR ]; then
+if [ -d $VM_DIR ]; then
+
+  # Load config file
+  . $VM_DIR/config
 
   # Must check if VM is running before we delete it
   if [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; then
@@ -117,6 +120,8 @@ if [ -e $VM_DIR ]; then
     echo "Error: Could not delete VM directory: $RM_RES"
     exit 3
   else
+    # Remove IP address assignment
+    sed -ni '/'"$VM_MAC_ADDR"'/!p' $SCRIPT_DIR/dhcp_hosts
     exit 0
   fi
 

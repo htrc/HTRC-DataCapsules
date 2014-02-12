@@ -178,7 +178,4 @@ if [ $SSH_RES -ne 0 ]; then
   exit 8
 fi
 
-# Remove IP address assignment
-sed -ni '/'"$VM_MAC_ADDR"'/!p' $SCRIPT_DIR/dhcp_hosts
-
 exit 0

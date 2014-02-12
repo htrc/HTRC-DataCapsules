@@ -137,46 +137,6 @@ cat <<EOF >> $VM_DIR/kvm_console
 
 EOF
 
-# Allocate IP Address
-IP_SUFFIX=$UNDEFINED
-
-touch $SCRIPT_DIR/dhcp_hosts
-TAKEN_ADDRS=($(sed 's/.*192\.168\.53\.\([0-9]*\).*/\1/' $SCRIPT_DIR/dhcp_hosts | sort -g))
-
-if [[ ${#TAKEN_ADDRS[@]} -eq 0 || ${TAKEN_ADDRS[0]} -gt 2 ]]; then
-  IP_SUFFIX=2
-else
-  for (( a=1; a<${#TAKEN_ADDRS[@]}; a++ )); do
-    if [[ $(( ${TAKEN_ADDRS[$a]} - ${TAKEN_ADDRS[$a-1]} )) -gt 1 ]]; then
-  	IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
-        break
-    fi
-  done
-
-  if [[ $IP_SUFFIX = $UNDEFINED ]]; then
-    IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
-  fi
-fi
-
-if [[ $IP_SUFFIX -gt 254 ]]; then
-  echo "Error: Unable to allocate IP address; IP pool is exhausted"
-  exit 3
-fi
-
-VM_IP_ADDR="192.168.53.$IP_SUFFIX"
-  
-# Add IP address assignment to dhcp_hosts configuration for dnsmasq
-cat <<EOF >> $SCRIPT_DIR/dhcp_hosts
-$VM_MAC_ADDR,$VM_IP_ADDR
-EOF
-
-if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
-  if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
-    kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
-    sleep 5
-  fi
-fi
-
 # Start guest process
 nohup $SCRIPT_DIR/tapinit qemu-system-x86_64					\
 		   -enable-kvm							\

@@ -177,12 +177,52 @@ fi
 # Generate a fixed locally-administered MAC address for VM
 VM_MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
 
+# Allocate IP Address
+IP_SUFFIX=$UNDEFINED
+
+touch $SCRIPT_DIR/dhcp_hosts
+TAKEN_ADDRS=($(sed 's/.*192\.168\.53\.\([0-9]*\).*/\1/' $SCRIPT_DIR/dhcp_hosts | sort -g))
+
+if [[ ${#TAKEN_ADDRS[@]} -eq 0 || ${TAKEN_ADDRS[0]} -gt 2 ]]; then
+  IP_SUFFIX=2
+else
+  for (( a=1; a<${#TAKEN_ADDRS[@]}; a++ )); do
+    if [[ $(( ${TAKEN_ADDRS[$a]} - ${TAKEN_ADDRS[$a-1]} )) -gt 1 ]]; then
+  	IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
+        break
+    fi
+  done
+
+  if [[ $IP_SUFFIX = $UNDEFINED ]]; then
+    IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
+  fi
+fi
+
+if [[ $IP_SUFFIX -gt 254 ]]; then
+  echo "Error: Unable to allocate IP address; IP pool is exhausted"
+  fail 5
+fi
+
+VM_IP_ADDR="192.168.53.$IP_SUFFIX"
+  
+# Add IP address assignment to dhcp_hosts configuration for dnsmasq
+cat <<EOF >> $SCRIPT_DIR/dhcp_hosts
+$VM_MAC_ADDR,$VM_IP_ADDR
+EOF
+
+if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
+  if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
+    kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
+  fi
+fi
+
 # Record configuration parameters to config file
 cat <<EOF > $VM_DIR/config
 
 IMG=$(basename $IMAGE)
 SECURE_VOL=$SECURE_VOL_NAME
 VM_MAC_ADDR=$VM_MAC_ADDR
+VM_IP_ADDR=$VM_IP_ADDR
 
 NUM_VCPU=$NUM_VCPU
 MEM_SIZE=$MEM_SIZE
@@ -214,14 +254,14 @@ IMG_RES=$(qemu-img create -f raw $VM_DIR/$SECURE_VOL_NAME $SECURE_VOL_SIZE 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error creating secure volume for VM: $IMG_RES"
-  fail 5
+  fail 6
 fi
 
 MKFS_RES=$(echo "y" | mkfs.ntfs -F -L "Secure Volume" $VM_DIR/$SECURE_VOL_NAME 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error formatting secure volume for VM: $MKFS_RES"
-  fail 6
+  fail 7
 fi
 
 # Return results (only reaches here if no errors occur)
