@@ -16,7 +16,7 @@ NETWORK=192.168.53.0
 NETMASK=255.255.255.0
 GATEWAY=192.168.53.1
 DHCPRANGE=192.168.53.2,192.168.53.254
-SCRIPT_DIR=/home/crowella/capsulescloud
+SCRIPT_DIR=/home/crowella/capsulescloud/backend
 DHCPHOSTS=$SCRIPT_DIR/dhcp_hosts
 DNSMASQ_PID=/var/run/qemu-dnsmasq-$BRIDGE.pid
 

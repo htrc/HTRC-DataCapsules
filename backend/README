@@ -29,4 +29,6 @@ GUEST REQUIREMENTS
 --------------------------------------------------
 
 There are currently no special modifications required for a guest VM image.
-This may change in the future.
+This may change in the future.  The only recommended modification is the
+installation of an SSH daemon to facilitate SSH connections over the forwarded
+port.
