@@ -16,8 +16,30 @@
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
+if [[ $# -gt 0 ]]; then
+  USERNAME=$1
+else
+  USERNAME="htrcvirt"
+fi
+
 sudo chown root:kvm $SCRIPT_DIR/tapinit
 sudo chmod ug+s $SCRIPT_DIR/tapinit
 
-sed -ni 's#SCRIPT_DIR=.*$#SCRIPT_DIR='"$SCRIPT_DIR"'#' $SCRIPT_DIR/qemu-ifup
+sed -i 's#SCRIPT_DIR=.*$#SCRIPT_DIR='"$SCRIPT_DIR"'#' $SCRIPT_DIR/qemu-ifup
 sudo cp $SCRIPT_DIR/qemu-ifup /etc/qemu-ifup
+
+if [ -e /etc/sudoers.tmp -o "$(pidof visudo)" ]; then
+  echo "/etc/sudoers busy, try again later"
+  exit 1
+fi
+
+sudo cp /etc/sudoers /etc/sudoers.bak
+sudo cp /etc/sudoers /etc/sudoers.tmp
+
+sudo chmod 0640 /etc/sudoers.tmp
+sudo echo "$USERNAME ALL=(ALL) NOPASSWD: $SCRIPT_DIR/sshfwd.sh, NOPASSWD: $SCRIPT_DIR/fw.sh" >> /etc/sudoers.tmp
+sudo chmod 0440 /etc/sudoers.tmp
+
+sudo mv /etc/sudoers.tmp /etc/sudoers
+
+exit 0
