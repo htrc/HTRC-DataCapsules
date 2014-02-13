@@ -66,6 +66,40 @@
 		<value>/u/hathitrust/htrc-sloan/script-simulator/delete_vm_script.sh</value>
     </property> 
     
+    <!-- fire wall policy -->
+    <property>
+      	<name>hypervisor.fw.maintenance</name>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/maintenance.fw</value>
+    </property> 
+    <property>
+      	<name>hypervisor.fw.secure</name>
+		<value>/u/hathitrust/htrc-sloan/script-simulator/secure.fw</value>
+    </property> 
+    
+    <!-- email setting -->
+    <property>
+      	<name>email.sendername</name>
+		<value>XX</value>
+    </property> 
+    <property>
+      	<name>email.password</name>
+		<value>XX</value>
+    </property> 
+    <property>
+      	<name>email.smtp.host</name>
+		<value>smtp.gmail.com</value>
+    </property> 
+    <property>
+      	<name>email.smtp.port</name>
+		<value>587</value>
+    </property> 
+    
+    <!-- result download url prefix -->
+    <property>
+      	<name>result.download.prefix</name>
+		<value>https://thatchpalm.pti.indiana.edu:8080/sloan-ws-1.1-SNAPSHOT/download?randomid=</value>
+    </property>     
+    
     <!-- volume size, user quota -->
     <property>
 		<name>sloan.ws.volume.size.gb</name>
@@ -93,4 +127,11 @@
 		<name>scheduler.max.num.attempts</name>
 		<value>5</value>
     </property>    
+    
+    <!-- log4j property file -->
+    <property>
+		<name>log4j.properties.path</name>
+		<value>XXX</value>
+    </property>     
+    
 </configuration>

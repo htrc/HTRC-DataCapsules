@@ -35,6 +35,8 @@ public class DeleteVM {
 
 		// check whether the user has been authorized
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		if (userEmail == null) userEmail = "";
 
 		// check input
 		if (userName == null) {
@@ -52,7 +54,7 @@ public class DeleteVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, "");
+			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);

@@ -8,16 +8,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.ImageInfoBean;
-import edu.indiana.d2i.sloan.bean.PolicyInfoBean;
+import edu.indiana.d2i.sloan.bean.UserBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMPorts;
@@ -547,35 +545,35 @@ public class DBOperations {
 		return res;
 	}
 	
-	public Map<String, PolicyInfoBean> getPolicyInfo() throws SQLException {
-		Connection connection = null;
-		PreparedStatement pst1 = null;
-		PreparedStatement pst2 = null;
-		ResultSet rs = null;
-
-		Map<String, PolicyInfoBean> res = new HashMap<String, PolicyInfoBean>();
-		try {
-			connection = DBConnections.getInstance().getConnection();
-			String queryUser = "SELECT * FROM " + DBSchema.PolicyTable.TABLE_NAME;
-			pst1 = connection.prepareStatement(queryUser);
-			rs = pst1.executeQuery();
-			while (rs.next()) {
-				res.put(rs.getString(DBSchema.PolicyTable.POLICY_NAME),
-					new PolicyInfoBean(rs.getString(DBSchema.PolicyTable.POLICY_NAME), 
-					rs.getString(DBSchema.PolicyTable.POLICY_PATH)));
-			} 
-		} finally {
-			if (rs != null)
-				rs.close();
-			if (pst1 != null)
-				pst1.close();
-			if (pst2 != null)
-				pst2.close();
-			if (connection != null)
-				connection.close();
-		}
-		return res;
-	}
+//	public Map<String, PolicyInfoBean> getPolicyInfo() throws SQLException {
+//		Connection connection = null;
+//		PreparedStatement pst1 = null;
+//		PreparedStatement pst2 = null;
+//		ResultSet rs = null;
+//
+//		Map<String, PolicyInfoBean> res = new HashMap<String, PolicyInfoBean>();
+//		try {
+//			connection = DBConnections.getInstance().getConnection();
+//			String queryUser = "SELECT * FROM " + DBSchema.PolicyTable.TABLE_NAME;
+//			pst1 = connection.prepareStatement(queryUser);
+//			rs = pst1.executeQuery();
+//			while (rs.next()) {
+//				res.put(rs.getString(DBSchema.PolicyTable.POLICY_NAME),
+//					new PolicyInfoBean(rs.getString(DBSchema.PolicyTable.POLICY_NAME), 
+//					rs.getString(DBSchema.PolicyTable.POLICY_PATH)));
+//			} 
+//		} finally {
+//			if (rs != null)
+//				rs.close();
+//			if (pst1 != null)
+//				pst1.close();
+//			if (pst2 != null)
+//				pst2.close();
+//			if (connection != null)
+//				connection.close();
+//		}
+//		return res;
+//	}
 	
 	public InputStream getResult(String randomid) throws SQLException, NoItemIsFoundInDBException {
 		Connection connection = null;
@@ -626,6 +624,37 @@ public class DBOperations {
 		}
 	}
 
+	public UserBean getUserWithVmid(String vmid) throws SQLException, 
+		NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+				"SELECT * FROM %s, %s WHERE %s=%s AND %s=\"%s\"", 
+				DBSchema.UserTable.TABLE_NAME, DBSchema.UserVmTable.TABLE_NAME,
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+				DBSchema.UserVmTable.TABLE_NAME+"."+DBSchema.UserVmTable.USER_NAME,
+				DBSchema.UserVmTable.VM_ID, vmid);
+			pst = connection.prepareStatement(query);
+			
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return new UserBean(result.getString(DBSchema.UserTable.USER_NAME), 
+					result.getString(DBSchema.UserTable.USER_EMAIL));
+			} else {
+				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
+			}
+			
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+	
 	public void close() {
 		DBConnections.getInstance().close();
 	}

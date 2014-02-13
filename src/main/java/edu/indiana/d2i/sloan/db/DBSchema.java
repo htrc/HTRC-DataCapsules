@@ -89,11 +89,11 @@ class DBSchema {
 		public static String IMAGE_DESCRIPTION = "imagedescription";
 	}
 	
-	public static class PolicyTable {
-		public static String TABLE_NAME = "policies";
-		public static String POLICY_NAME = "policyname";
-		public static String POLICY_PATH = "policypath";
-	}
+//	public static class PolicyTable {
+//		public static String TABLE_NAME = "policies";
+//		public static String POLICY_NAME = "policyname";
+//		public static String POLICY_PATH = "policypath";
+//	}
 	
 	public static class ResultTable {
 		public static String TABLE_NAME = "results";

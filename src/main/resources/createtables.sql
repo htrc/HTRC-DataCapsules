@@ -10,10 +10,6 @@ CREATE TABLE IF NOT EXISTS images(
 	imagepath VARCHAR(512),
 	loginusername VARCHAR(32),
 	loginpassword VARCHAR(128)) ENGINE=InnoDB;
-	
-CREATE TABLE IF NOT EXISTS policies(
-	policyname VARCHAR(128) PRIMARY KEY,
-	policypath VARCHAR(512)) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS vms(
 	vmid VARCHAR(128) PRIMARY KEY, 
@@ -55,6 +51,7 @@ CREATE TABLE IF NOT EXISTS results(
 	vmid VARCHAR(128), 
 	randomid VARCHAR(256),
 	datafield LONGBLOB,
+	valid TINYINT NOT NULL DEFAULT 1, /*0: false, 1: true*/
 	CONSTRAINT fk_results FOREIGN KEY (vmid)
 		REFERENCES vms(vmid),
 	PRIMARY KEY(vmid, randomid(128))) ENGINE=InnoDB;

@@ -33,6 +33,9 @@ public class StopVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		if (userEmail == null) userEmail = "";
+		
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
 			return Response
@@ -48,7 +51,7 @@ public class StopVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, "");
+			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);

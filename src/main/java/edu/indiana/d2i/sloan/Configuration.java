@@ -80,6 +80,10 @@ public final class Configuration {
 		public static final String CMD_SWITCH_VM = "cmd.switch.vm";
 		public static final String CMD_STOP_VM = "cmd.stop.vm";
 		public static final String CMD_DELETE_VM = "cmd.delete.vm";
+		
+		/* hypervisor fire wall policy */
+		public static final String MAINTENANCE_FIREWALL_POLICY = "hypervisor.fw.maintenance";
+		public static final String SECURE_FIREWALL_POLICY = "hypervisor.fw.secure";
 
 		/* delimiter used for the key-value pair by internal API response */
 		public static final String RESP_KV_DELIMITER = "resp.kv.delimiter";
@@ -104,8 +108,17 @@ public final class Configuration {
 
 		public static final String HYPERVISOR_FULL_CLASS_NAME = "hypervisor.full.class.name";
 		
-		
+		/* vm working directory prefix */
 		public static final String DEFAULT_VM_WORKDIR_PREFIX = "sloan.ws.vm.workdir.prefix";
+		
+		/* email setting */
+		public static final String EMAIL_SENDERNAME = "email.sendername";
+		public static final String EMAIL_PASSWORD = "email.password";
+		public static final String EMAIL_SMTP_HOST = "email.smtp.host";
+		public static final String EMAIL_SMTP_PORT = "email.smtp.port";
+		
+		/* result download url prefix */
+		public static final String RESULT_DOWNLOAD_URL_PREFIX = "result.download.prefix";
 	}
 	
 	public static synchronized Configuration getInstance() {

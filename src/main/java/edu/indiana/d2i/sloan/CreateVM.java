@@ -33,7 +33,8 @@ public class CreateVM {
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(@FormParam("imagename") String imageName,
+	public Response getResourcePost(
+			@FormParam("imagename") String imageName,
 			@FormParam("loginusername") String loginusername,
 			@FormParam("loginpassword") String loginpassword,
 			@DefaultValue("1024") @FormParam("memory") int memory,
@@ -41,6 +42,8 @@ public class CreateVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		if (userEmail == null) userEmail = "";
 
 		// check input
 		if (userName == null) {
@@ -60,7 +63,7 @@ public class CreateVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, "");
+			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			
 			// check if image name is valid
 			String imagePath = DBOperations.getInstance().getImagePath(imageName);

@@ -3,6 +3,7 @@ package edu.indiana.d2i.sloan;
 public class Constants {
 	/** http header */
 	public static final String USER_NAME = "htrc-remote-user";
+	public static final String USER_EMAIL = "htrc-remote-user-email";
 
 	/** hypervisor relative variables */
 	public static final String DEFAULT_HYPER_WORKERS = "1024";

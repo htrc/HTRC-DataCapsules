@@ -320,7 +320,7 @@ public class TestDBOperations {
 		loadDataToVmTable(3);
 
 		// generate file
-		FileOutputStream output = new FileOutputStream("tmpfile");
+		FileOutputStream output = new FileOutputStream("./tmpfile");
 		byte[] buf = new byte[1024]; // 1 KB
 		int factor = 1024; // factor * 512 Bytes = 1 MB
 		Arrays.fill(buf, (byte)1);
@@ -332,7 +332,7 @@ public class TestDBOperations {
 		String vmid = "vmid-0";
 		for (int i = 0; i < 3; i++) {
 			String randomid = UUID.randomUUID().toString();
-			FileInputStream input = new FileInputStream("tmpfile");
+			FileInputStream input = new FileInputStream("./tmpfile");
 			DBOperations.getInstance().insertResult(vmid, randomid, input);
 			randomids.add(randomid);
 		}
@@ -347,7 +347,6 @@ public class TestDBOperations {
 		}
 		
 		// remove tmp file
-		java.io.File file = new java.io.File("tmpfile");
-		file.delete();
+		org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File("./tmpfile"));
 	}
 }

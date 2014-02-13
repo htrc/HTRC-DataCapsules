@@ -30,14 +30,17 @@ public class SloanWSApplication extends Application {
 		s.add(SwitchVM.class);
 		s.add(ListImage.class);
 		
+		s.add(DownloadResult.class);
+		s.add(UploadResult.class);
+		
 		s.add(HelloWorld.class);
 		return s;
 	}
 
 	@PostConstruct
 	private void init() {
-		configureLogger(servletConfig);
 		Configuration.getInstance(); // load configurations at first
+		configureLogger(servletConfig);
 	}
 
 	@PreDestroy
@@ -46,8 +49,7 @@ public class SloanWSApplication extends Application {
 	}
 
 	private void configureLogger(ServletConfig servletConfig) {
-		String log4jPropertiesPath = (String) servletConfig
-				.getInitParameter("log4j.properties.path");
+		String log4jPropertiesPath = Configuration.getInstance().getString("log4j.properties.path"); 
 		PropertyConfigurator.configure(log4jPropertiesPath);
 		logger.info("logger configured as " + log4jPropertiesPath);
 	}
