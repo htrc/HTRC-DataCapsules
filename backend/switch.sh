@@ -25,7 +25,8 @@ usage () {
   echo "--mode    Boot to Secure Mode: One of 's(ecure)' or 'm(aintenance)', denotes whether the"
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
-  echo "--policy  Policy File: The file that contains the policy for restricting this VM when in the Secure state"
+  echo "--policy  Policy File: The file that contains the policy for restricting this VM."
+  echo "                       This policy is optional when booting into maintenance mode." 
 
 }
 
