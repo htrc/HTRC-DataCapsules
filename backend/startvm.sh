@@ -25,7 +25,7 @@ usage () {
   echo ""
   echo "Launches a VM instance for the VM in the given directory."
   echo ""
-  echo "(--wdir)  Directory: The directory where this VM's data will be held?"
+  echo "(--wdir)  Directory: The directory where this VM's data will be held"
   echo ""
   echo "--mode    Boot to Secure Mode: One of 's(ecure)' or 'm(aintenance)', denotes whether the"
   echo "          guest being started should be booted into maintenance or secure mode"

@@ -20,7 +20,7 @@ usage () {
 
   echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy [Policy File]"
   echo ""
-  echo "(--wdir)  Directory: The directory where this VM's data will be held?"
+  echo "(--wdir)  Directory: The directory where this VM's data will be held"
   echo ""
   echo "--mode    Boot to Secure Mode: One of 's(ecure)' or 'm(aintenance)', denotes whether the"
   echo "          guest being started should be booted into maintenance or secure mode"

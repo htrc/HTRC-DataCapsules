@@ -24,7 +24,7 @@ usage () {
   echo " corresponding qemu process.  To the end user, this has the same effect as"
   echo " 'pulling the plug' on the guest machine."
   echo ""
-  echo "(--wdir)  Directory: The directory where this VM's data will be held?"
+  echo "(--wdir)  Directory: The directory where this VM's data will be held"
 
 }
 

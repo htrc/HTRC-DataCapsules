@@ -14,35 +14,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-STAT="Status: "
-STAT_RUNNING="$STAT Running"
-STAT_NOT_RUNNING="$STAT Not_Running"
-
 usage () {
 
-  echo "Usage: $0 <Directory for VM>"
+  echo "Usage: $0 <qemu Disk Image File> --cdrom <CD-ROM Image> --vnc <VNC Port>"
   echo ""
-  echo "Determines the operational status of the VM in the given directory."
+  echo "Launches a VM, allowing for administration and creation of guest images."
   echo ""
-  echo "(--wdir)  Directory: The directory where this VM's data is held."
+  echo "--img     The guest hard disk image file being booted"
+  echo ""
+  echo "--cdrom   (optional) The CD-ROM image, for instance of an installation disk for the"
+  echo "          operating system being installed on the disk image"
+  echo ""
+  echo "--vnc     The VNC port to be used for administration"
 
 }
 
-REQUIRED_OPTS="VM_DIR"
+REQUIRED_OPTS="VM_IMG"
+ALL_OPTS="$REQUIRED_OPTS CD_ROM VNC_PORT"
 UNDEFINED=12345capsulesxXxXxundefined54321
 
-for var in $REQUIRED_OPTS; do
+for var in $ALL_OPTS; do
   eval $var=$UNDEFINED
 done
 
 if [[ $1 && $1 != -* ]]; then
-  VM_DIR=$1
+  VM_IMG=$1
   shift
 fi
 
 declare -A longoptspec
-longoptspec=( [wdir]=1 )
-optspec=":h-:d:"
+longoptspec=( [img]=1 [cdrom]=1 [vnc]=1 )
+optspec=":h-:v:"
 while getopts "$optspec" OPT; do
 
   if [[ "x${OPT}x" = "x-x" ]]; then
@@ -58,11 +60,22 @@ while getopts "$optspec" OPT; do
   fi
 
   case "${OPT}" in
-    d|wdir)
-      VM_DIR=$OPTARG
+    i|img)
+      VM_IMG=$OPTARG
+      ;;
+    c|cdrom)
+      CD_ROM=$OPTARG
+      ;;
+    v|vnc)
+      if ! [[ $OPTARG =~ ^[0-9]+$ && $OPTARG -ge 5900 && $OPTARG -le 65535 ]]; then
+        echo "error: provided vnc port ($OPTARG) is invalid;"
+        echo "note: the port value must be at least 5900"
+        exit 1
+      fi
+      VNC_PORT=$OPTARG
       ;;
     h|help)
-      usage
+      usage;
       exit 0
       ;;
     *)
@@ -86,22 +99,25 @@ if [[ $MISSING_ARGS -eq 1 ]]; then
   exit 1
 fi
 
-if [ -e $VM_DIR/pid ]; then
-
-  VM_PID=`cat $VM_DIR/pid`
- 
-  # If no process is running with that pid, then it probably shut down naturally
-  if pidof qemu-system-x86_64 | grep -q $VM_PID; then
-    echo "$STAT_RUNNING"
-  else
-    echo "$STAT_NOT_RUNNING"
-  fi
-
-else
-
-  # If pid file doesn't exist, then VM isn't running;
-  echo "$STAT_NOT_RUNNING"
-
+if [ ! -e $VM_IMG ] ; then
+  echo "Error: Invalid disk image specified!"
+  exit 2
 fi
+
+if [[ $CD_ROM = $UNDEFINED ]]; then
+  CD_ROM=
+fi
+
+# Start guest process
+nohup qemu-system-x86_64				\
+		   -enable-kvm				\
+		   -m 2G				\
+		   -smp 1				\
+		   -usb					\
+		   -hda $VM_IMG				\
+		   ${CD_ROM:+-cdrom $CD_ROM}		\
+		   -vnc :$(( $VNC_PORT - 5900 ))	\
+		   >>/dev/null				\
+		   2>&1 &
 
 exit 0
