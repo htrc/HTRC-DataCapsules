@@ -48,7 +48,6 @@ public class SloanWSApplication extends Application {
 		s.add(DownloadResult.class);
 		s.add(UploadResult.class);
 		
-		s.add(HelloWorld.class);
 		return s;
 	}
 
