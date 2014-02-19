@@ -257,7 +257,7 @@ if [ $? -ne 0 ]; then
   fail 6
 fi
 
-MKFS_RES=$(echo "y" | mkfs.ntfs -F -L "Secure Volume" $VM_DIR/$SECURE_VOL_NAME 2>&1)
+MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "Secure Volume" $VM_DIR/$SECURE_VOL_NAME 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error formatting secure volume for VM: $MKFS_RES"
