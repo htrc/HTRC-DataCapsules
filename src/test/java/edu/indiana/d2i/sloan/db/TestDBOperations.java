@@ -1,3 +1,18 @@
+/*******************************************************************************
+ * Copyright 2014 The Trustees of Indiana University
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ******************************************************************************/
 package edu.indiana.d2i.sloan.db;
 
 import java.io.FileInputStream;
@@ -317,7 +332,19 @@ public class TestDBOperations {
 	
 	@Test 
 	public void testPutAndGetResult() throws Exception {
-		loadDataToVmTable(3);
+		loadDataToImageTable(3);
+		loadDataToUserTable(3);		
+		
+		// add vm to uservm table
+		int count = 3;
+		String userName = "username-0";
+		for (int index = 0; index < count; index++) {			
+			String vmid = "vmid-" + index;
+			VMPorts host = new VMPorts("192.168.0." + (index+2), 2000 + index*2, 2000 + index*2 + 1);
+			String workDir = "/var/instance/" + "vmid-" + index;
+			DBOperations.getInstance().addVM(userName, vmid, "imagename-0", 
+				"vncusername", "vncpassword", host, workDir, 2, 1024, 10);
+		}
 
 		// generate file
 		FileOutputStream output = new FileOutputStream("./tmpfile");
@@ -335,6 +362,14 @@ public class TestDBOperations {
 			FileInputStream input = new FileInputStream("./tmpfile");
 			DBOperations.getInstance().insertResult(vmid, randomid, input);
 			randomids.add(randomid);
+		}
+		
+		// delete vm
+		for (int i = 0; i < 3; i++) {
+			VmInfoBean vinfo = new VmInfoBean("vmid-"+i, null, null,
+					null, null, 0, 0, 2, 1024, 10, null, null, null, null, 
+					null, null, null, null, null); 
+			DBOperations.getInstance().deleteVMs(userName, vinfo);
 		}
 		
 		// read result from db

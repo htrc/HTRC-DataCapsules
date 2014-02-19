@@ -52,6 +52,5 @@ CREATE TABLE IF NOT EXISTS results(
 	randomid VARCHAR(256),
 	datafield LONGBLOB,
 	valid TINYINT NOT NULL DEFAULT 1, /*0: false, 1: true*/
-	CONSTRAINT fk_results FOREIGN KEY (vmid)
-		REFERENCES vms(vmid),
+	/* CONSTRAINT fk_results FOREIGN KEY (vmid) REFERENCES uservm(vmid), */
 	PRIMARY KEY(vmid, randomid(128))) ENGINE=InnoDB;
