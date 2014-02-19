@@ -41,7 +41,7 @@ if [[ "$ACTION" = "up" ]]; then
   iptables -t nat -A POSTROUTING -j MASQUERADE
 
   if [ $? -ne 0 ]; then
-    echo "Error: iptables ssh rules failed to execute"
+    echo "Error: iptables ssh rules failed to execute (error code $?)"
     exit 3
   fi
 
@@ -51,7 +51,7 @@ else
   iptables -t nat -D POSTROUTING -j MASQUERADE
 
   if [ $? -ne 0 ]; then
-    echo "Error: iptables ssh rule removal failed to execute"
+    echo "Error: iptables ssh rule removal failed to execute (error code $?)"
     exit 4
   fi
 

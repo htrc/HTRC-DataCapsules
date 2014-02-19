@@ -86,6 +86,11 @@ if [[ $MISSING_ARGS -eq 1 ]]; then
   exit 1
 fi
 
+if [ ! -d $VM_DIR ] ; then
+  echo "Error: Specified VM does not exist"
+  exit 2
+fi
+
 if [ -e $VM_DIR/pid ]; then
 
   VM_PID=`cat $VM_DIR/pid`
