@@ -250,18 +250,33 @@ EOF
 fi
 
 # Create the VM's secure volume
-IMG_RES=$(qemu-img create -f raw $VM_DIR/$SECURE_VOL_NAME $SECURE_VOL_SIZE 2>&1)
+IMG_RES=$(qemu-img create -f raw $VM_DIR/${SECURE_VOL_NAME}.tmp $SECURE_VOL_SIZE 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error creating secure volume for VM: $IMG_RES"
   fail 6
 fi
 
-MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "Secure Volume" $VM_DIR/$SECURE_VOL_NAME 2>&1)
+MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "Secure Volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error formatting secure volume for VM: $MKFS_RES"
   fail 7
+fi
+
+# This conversion to qcow2 format saves significant disk space (for example, 10GB file -> 53MB file)
+CONVERT_RES=$(qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/$SECURE_VOL_NAME 2>&1)
+
+if [ $? -ne 0 ]; then
+  echo "Error converting secure volume for VM to qcow2 format: $CONVERT_RES"
+  fail 7
+fi
+
+RM_RES=$(rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
+
+if [ $? -ne 0 ]; then
+  echo "Warning: failed to delete temporary file for secure volume: $RM_RES"
+  exit 8
 fi
 
 # Return results (only reaches here if no errors occur)
