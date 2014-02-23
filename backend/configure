@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Copyright 2013 University of Michigan
+# 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+
+if [[ $# -gt 0 ]]; then
+  USERNAME=$1
+else
+  USERNAME="htrcvirt"
+fi
+
+sudo chown root:kvm $SCRIPT_DIR/tapinit
+sudo chmod ug+s $SCRIPT_DIR/tapinit
+
+sed -i 's#SCRIPT_DIR=.*$#SCRIPT_DIR='"$SCRIPT_DIR"'#' $SCRIPT_DIR/qemu-ifup
+sudo cp $SCRIPT_DIR/qemu-ifup /etc/qemu-ifup
+
+if [ -e /etc/sudoers.tmp -o "$(pidof visudo)" ]; then
+  echo "/etc/sudoers busy, try again later"
+  exit 1
+fi
+
+sudo cp /etc/sudoers /etc/sudoers.bak
+sudo cp /etc/sudoers /etc/sudoers.tmp
+
+sudo chmod 0640 /etc/sudoers.tmp
+sudo echo "$USERNAME ALL=(ALL) NOPASSWD: $SCRIPT_DIR/sshfwd.sh, NOPASSWD: $SCRIPT_DIR/fw.sh" >> /etc/sudoers.tmp
+sudo chmod 0440 /etc/sudoers.tmp
+
+sudo mv /etc/sudoers.tmp /etc/sudoers
+
+exit 0

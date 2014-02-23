@@ -1,0 +1,54 @@
+GENERAL SETUP
+--------------------------------------------------
+
+To prepare these scripts for use, give them a fixed location and, optionally,
+add them to the PATH variable of the user that will be invoking them (so that
+the full path need not be given for each invocation). Finally, run the
+following commands to prepare the tapinit program for use (note that these
+require root privilege to set up):
+
+# chown root:kvm tapinit
+# chmod ug+s tapinit
+
+qemu-ifup must be modified so that the SCRIPT_DIR variable points to the
+directory containing the backend scripts.  Also, qemu-ifup must be moved to
+/etc/ (there may be an existing version there; it is probably safe to overwrite
+it), and the account that will be running the scripts must be able to run the
+sshfwd.sh and fw.sh scripts via sudo without a password.  To configure this,
+add the following line to the sudoers file:
+
+<USERNAME>  ALL=(ALL) NOPASSWD: <SCRIPT_DIRECTORY>/sshfwd.sh, NOPASSWD: <SCRIPT_DIRECTORY>/fw.sh
+
+Make sure this line is after any lines about the sudo and admin groups,
+otherwise those rules will supercede this one and it will not work.  This
+should not, however, be an issue since the user running the scripts should not
+require root access for anything else, and that is the recommended security
+practice.
+
+GUEST REQUIREMENTS
+--------------------------------------------------
+
+There are currently no special modifications required for a guest VM image.
+This may change in the future.  The only recommended modifications are the
+installation of an SSH daemon to facilitate SSH connections over the forwarded
+port, and adding any domain names that will be needed in secure mode to the
+hosts file, as there is no DNS access in secure mode.
+
+GUEST IMAGE CONFIGURATION
+--------------------------------------------------
+
+To create a guest disk image, run the command:
+
+qemu-img create -t qcow2 <FILENAME> <DISK SIZE>
+
+where the desired filename and disk image size are substituted.  Disk size may
+be expressed with a suffix (i.e. 20G or 500M).  Once an image has been created,
+it can then be booted and configured using the vmadmin.sh script.  This script
+will start a VM using that disk image and allow you to install operating
+systems and configure them by supplying an iso image with the --cdrom option.
+For example (where <DISK IMAGE> is the image file created in the previous step):
+
+vmadmin.sh <DISK IMAGE> --vnc 5900 --cdrom ubuntu-10-04.iso
+
+After shutting down this VM, the image file will be fully configured and ready
+for distribution.
