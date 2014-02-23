@@ -24,6 +24,10 @@ public class TestConfiguration {
 	@Test
 	public void testConfiguration() {
 		Configuration.getInstance();
+		
+		System.out.println(Configuration.getInstance().getString(
+			Configuration.PropertyName.RESOURCES_NAMES));
+		
 		Assert.assertEquals("edu.indiana.d2i.sloan.hyper.CapsuleHypervisor", 
 			Configuration.getInstance().getString(Configuration.PropertyName.HYPERVISOR_FULL_CLASS_NAME));
 		Assert.assertEquals(20480, Integer.valueOf(Configuration.getInstance().

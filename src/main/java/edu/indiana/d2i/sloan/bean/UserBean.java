@@ -33,6 +33,6 @@ public class UserBean {
 	
 	@Override
 	public String toString() {
-		return String.format("[username: %s]", username, useremail);
+		return String.format("[username: %s, useremail: %s]", username, useremail);
 	}
 }

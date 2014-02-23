@@ -104,16 +104,12 @@ class DBSchema {
 		public static String IMAGE_DESCRIPTION = "imagedescription";
 	}
 	
-//	public static class PolicyTable {
-//		public static String TABLE_NAME = "policies";
-//		public static String POLICY_NAME = "policyname";
-//		public static String POLICY_PATH = "policypath";
-//	}
-	
 	public static class ResultTable {
 		public static String TABLE_NAME = "results";
 		public static String VM_ID = "vmid";
-		public static String RANDOM_ID = "randomid";
+		public static String RESULT_ID = "resultid";
 		public static String DATA_FIELD = "datafield";
+		public static String NOTIFIED = "notified";
+		public static String STARTTIME = "starttime";
 	}
 }

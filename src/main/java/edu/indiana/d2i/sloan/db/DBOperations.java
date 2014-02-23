@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,7 +31,9 @@ import org.apache.log4j.Logger;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.ImageInfoBean;
+import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.bean.UserBean;
+import edu.indiana.d2i.sloan.bean.UserResultBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMPorts;
@@ -40,6 +43,9 @@ import edu.indiana.d2i.sloan.vm.VMState;
 public class DBOperations {
 	private static Logger logger = Logger.getLogger(DBOperations.class);
 	private static DBOperations instance = null;
+	
+	private final java.text.SimpleDateFormat DATE_FORMATOR = 
+		     new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private DBOperations() {
 
@@ -560,50 +566,22 @@ public class DBOperations {
 		return res;
 	}
 	
-//	public Map<String, PolicyInfoBean> getPolicyInfo() throws SQLException {
-//		Connection connection = null;
-//		PreparedStatement pst1 = null;
-//		PreparedStatement pst2 = null;
-//		ResultSet rs = null;
-//
-//		Map<String, PolicyInfoBean> res = new HashMap<String, PolicyInfoBean>();
-//		try {
-//			connection = DBConnections.getInstance().getConnection();
-//			String queryUser = "SELECT * FROM " + DBSchema.PolicyTable.TABLE_NAME;
-//			pst1 = connection.prepareStatement(queryUser);
-//			rs = pst1.executeQuery();
-//			while (rs.next()) {
-//				res.put(rs.getString(DBSchema.PolicyTable.POLICY_NAME),
-//					new PolicyInfoBean(rs.getString(DBSchema.PolicyTable.POLICY_NAME), 
-//					rs.getString(DBSchema.PolicyTable.POLICY_PATH)));
-//			} 
-//		} finally {
-//			if (rs != null)
-//				rs.close();
-//			if (pst1 != null)
-//				pst1.close();
-//			if (pst2 != null)
-//				pst2.close();
-//			if (connection != null)
-//				connection.close();
-//		}
-//		return res;
-//	}
-	
-	public InputStream getResult(String randomid) throws SQLException, NoItemIsFoundInDBException {
+	public ResultBean getResult(String randomid) throws 
+		SQLException, NoItemIsFoundInDBException, ParseException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 
 		try {
 			String getResult = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME + 
-				" WHERE " + DBSchema.ResultTable.RANDOM_ID + "=\"" + randomid + "\"";			
+				" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";			
 			connection = DBConnections.getInstance().getConnection();
 			pst = connection.prepareStatement(getResult);
 			rs = pst.executeQuery();
 			
 			if (rs.next()) {
-				return rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD);
+				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), 
+					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.STARTTIME)));
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
 			}
@@ -620,15 +598,19 @@ public class DBOperations {
 		PreparedStatement pst = null;
 
 		try {
-			connection = DBConnections.getInstance().getConnection();
+			java.util.Date dt = new java.util.Date();
+			String currentTime = DATE_FORMATOR.format(dt);
 			String insertResult = String.format(
-				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s) VALUES" + "(?, ?, ?)", 
-				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RANDOM_ID, DBSchema.ResultTable.DATA_FIELD);
-			pst = connection.prepareStatement(insertResult);
+				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)", 
+				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RESULT_ID, 
+				DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.STARTTIME);
 			
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(insertResult);
 			pst.setString(1, vmid);
 			pst.setString(2, randomid);
 			pst.setBinaryStream(3, input);
+			pst.setString(4, currentTime);
 			
 			pst.executeUpdate();
 		} finally {
@@ -638,7 +620,71 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+	
+	public List<UserResultBean> getResultsUnnotified() throws SQLException {
+		List<UserResultBean> res = new ArrayList<UserResultBean>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
 
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format("SELECT %s, %s, %s FROM %s, %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
+				// selected fields
+				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME, 
+				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL,
+				DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID,
+				// selected tables
+				DBSchema.UserTable.TABLE_NAME, DBSchema.UserVmTable.TABLE_NAME, DBSchema.ResultTable.TABLE_NAME,
+				// where clause
+				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME,
+					DBSchema.UserVmTable.TABLE_NAME + "." + DBSchema.UserVmTable.USER_NAME,
+				DBSchema.UserVmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID,
+					DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.VM_ID,
+				DBSchema.ResultTable.NOTIFIED, "0");
+			logger.debug(query);
+			
+			pst = connection.prepareStatement(query);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				UserResultBean bean = new UserResultBean(
+					rs.getString(DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME), 
+					rs.getString(DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL), 
+					rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID));
+				res.add(bean);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
+	
+	public void updateResultAsNotified(String resultId) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+				"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+				DBSchema.ResultTable.NOTIFIED, "1", DBSchema.ResultTable.RESULT_ID, "\""+ resultId + "\"");
+			logger.debug(updateResult);
+			
+			pst = connection.prepareStatement(updateResult);			
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+	
 	public UserBean getUserWithVmid(String vmid) throws SQLException, 
 		NoItemIsFoundInDBException {
 		Connection connection = null;

@@ -32,8 +32,10 @@ import javax.ws.rs.core.StreamingOutput;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.ResultExpireException;
 
 @Path("/download")
 public class DownloadResult {
@@ -57,7 +59,6 @@ public class DownloadResult {
 		}
 	}
 	
-	
 	@GET
 	public Response getResourcePost(
 		@QueryParam("randomid") String randomid,
@@ -69,20 +70,29 @@ public class DownloadResult {
 		}		
 		
 		try {
-			InputStream input = DBOperations.getInstance().getResult(randomid);
+			ResultBean result = DBOperations.getInstance().getResult(randomid);
 			logger.info("Result with " + randomid + " is being downloaded.");
 			
-			return Response.ok(new ResultOutputStream(input)).
+			// check if result expires
+			long currentT = new java.util.Date().getTime();
+			long startT = result.getStartdate().getTime();
+			long span = Configuration.getInstance().getLong(
+				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
+			if (span > 0 && ((currentT-startT)/1000) > span) 
+				throw new ResultExpireException(randomid + " expires!");			
+			
+			return Response.ok(new ResultOutputStream(result.getInputstream())).
 				header("Content-Type", "application/zip").
 				header("Content-Disposition", "filename=\"result.zip\"").build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error("Invalid " + randomid + " attempts", e);
-			return Response.status(400)
-				.entity(new ErrorBean(400, "Invalid download URL!")).build();
+			return Response.status(404).entity("Invalid download URL!").build();
+		} catch (ResultExpireException e) {
+			logger.error(e.getMessage(), e);
+			return Response.status(404).entity("Result expires!").build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(500)
-					.entity(new ErrorBean(500, e.getMessage())).build();
+			return Response.status(500).entity("Internal error.").build();
 		}
 	}
 }

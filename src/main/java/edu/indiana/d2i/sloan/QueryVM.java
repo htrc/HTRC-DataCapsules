@@ -49,7 +49,7 @@ public class QueryVM {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getResourcePost(@FormParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
-			@Context HttpServletRequest httpServletRequest) {
+			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";

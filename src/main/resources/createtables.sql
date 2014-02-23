@@ -49,8 +49,9 @@ CREATE TABLE IF NOT EXISTS uservm(
 /* randomid(128) tells MySQL only indexes first 128 chars. See http://bugs.mysql.com/bug.php?id=6604 */
 CREATE TABLE IF NOT EXISTS results(
 	vmid VARCHAR(128), 
-	randomid VARCHAR(256),
+	resultid VARCHAR(256),
 	datafield LONGBLOB,
-	valid TINYINT NOT NULL DEFAULT 1, /*0: false, 1: true*/
+	starttime DATETIME,
+	notified TINYINT NOT NULL DEFAULT 0, /*0: false, 1: true*/
 	/* CONSTRAINT fk_results FOREIGN KEY (vmid) REFERENCES uservm(vmid), */
-	PRIMARY KEY(vmid, randomid(128))) ENGINE=InnoDB;
+	PRIMARY KEY(vmid, resultid(128))) ENGINE=InnoDB;

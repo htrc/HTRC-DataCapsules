@@ -21,7 +21,8 @@ import java.util.concurrent.Callable;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.bean.UserBean;
+import edu.indiana.d2i.sloan.bean.UserResultBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 
@@ -29,23 +30,56 @@ public class UploadPostprocess {
 	private static Logger logger = Logger.getLogger(UploadPostprocess.class);
 	public final static UploadPostprocess instance = new UploadPostprocess();
 	
-	private final Queue<UserResult> resultsQueue = new LinkedList<UserResult>();
-	
-	private class UserResult {
-		public final String appellation;
-		public final String useremail;
-		public final String resultid;
-		
-		public UserResult(String appellation, String useremail, String itemid) {
-			this.appellation = appellation;
-			this.useremail = useremail;
-			this.resultid = itemid;
-		}
-	}
+	private final Queue<UserResultBean> resultsQueue = new LinkedList<UserResultBean>();
 	
 	private class ResultDeliverThread implements Runnable {
 		private EmailUtil emailUtil = new EmailUtil();
 		private final String EMAIL_SUBJECT = "HTRC Data Capsule Result Download URL";
+		
+		private void notifyUser(final UserResultBean item) throws Exception {
+			// generate url
+			String url = Configuration.getInstance().getString(
+				Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX) + 
+				item.getResultId();
+
+			// message 
+			final String content = String.format(
+				"Dear %s, \n\nThank you for using HTRC Data Capsule! " +
+				"You can download your result from the link below. \n%s", 
+				item.getUsername(), url);
+			
+			logger.debug(String.format("url: %s, content: %s", url, content));
+			
+			// send email
+			RetriableTask<Void> r = new RetriableTask<Void>(
+				new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						emailUtil.sendEMail(item.getUseremail(), EMAIL_SUBJECT, content);
+						return null;
+					}
+				},  2000, 3);
+			r.call();
+			
+			// mark result as notified
+			DBOperations.getInstance().updateResultAsNotified(item.getResultId());
+			
+			logger.info(String.format("Email has been sent to %s, " +
+				"with username %s, url %s", item.getUseremail(), item.getUsername(), url));
+		}
+		
+		public ResultDeliverThread() {
+			try {
+				List<UserResultBean> resultsUnnotified = DBOperations.getInstance().getResultsUnnotified();
+				for (UserResultBean bean : resultsUnnotified) {
+					notifyUser(bean);
+				}
+				logger.info("Deliver " + resultsUnnotified.size() + " result notifications from last run.");
+			} catch (Exception e) {
+				logger.error(e.getMessage(), e);
+				throw new RuntimeException(e); // cannot deliver remaining notifications in DB, do start at all
+			}
+		}
 		
 		@Override
 		public void run() {
@@ -55,29 +89,8 @@ public class UploadPostprocess {
 						if (resultsQueue.isEmpty()) {
 							resultsQueue.wait();
 						} else {
-							final UserResult item = resultsQueue.poll();
-							String url = Configuration.getInstance().getString(
-								Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX) + 
-								item.resultid;
-							final String content = String.format(
-								"Dear %s, \n\nThank you for using HTRC Data Capsule! " +
-								"You can download your result from the link below. \n%s", 
-								item.appellation, url);
-							
-							logger.debug(String.format("url: %s, content: %s", url, content));
-							
-							RetriableTask<Void> r = new RetriableTask<Void>(
-								new Callable<Void>() {
-									@Override
-									public Void call() throws Exception {
-										emailUtil.sendEMail(item.useremail, EMAIL_SUBJECT, content);
-										return null;
-									}
-								},  2000, 3);
-							r.call();
-							
-							logger.info(String.format("Email has been sent to %s, " +
-								"with username %s, url %s", item.useremail, item.appellation, url));
+							final UserResultBean item = resultsQueue.poll();
+							notifyUser(item);							
 						}
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
@@ -103,9 +116,9 @@ public class UploadPostprocess {
 		
 	}
 	
-	public void addPostprocessingItem(UserBean user, String itemId) {
+	public void addPostprocessingItem(UserResultBean userresult) {
 		synchronized (resultsQueue) {
-			resultsQueue.add(new UserResult(user.getUserName(), user.getUserEmail(), itemId));
+			resultsQueue.add(userresult);
 			resultsQueue.notify();
 		}
 	}

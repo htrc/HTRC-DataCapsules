@@ -36,6 +36,7 @@ import org.junit.Test;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
+import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -373,13 +374,23 @@ public class TestDBOperations {
 		}
 		
 		// read result from db
+		long currentT = new java.util.Date().getTime();
+		System.out.println(currentT);
+		
 		for (String randomid : randomids) {
-			InputStream input = DBOperations.getInstance().getResult(randomid);
+			ResultBean result = DBOperations.getInstance().getResult(randomid);
+			InputStream input = result.getInputstream();
 			byte[] b = new byte[1024];
 			while (input.read(b) != -1) {
 				Assert.assertArrayEquals(buf, b);
 			}
+			
+			System.out.println(result.getStartdate().getTime());
+			
+			// mark result as notified
+			DBOperations.getInstance().updateResultAsNotified(randomid);
 		}
+		Assert.assertEquals(0, DBOperations.getInstance().getResultsUnnotified().size());
 		
 		// remove tmp file
 		org.apache.commons.io.FileUtils.deleteQuietly(new java.io.File("./tmpfile"));

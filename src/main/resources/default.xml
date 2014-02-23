@@ -1,5 +1,11 @@
 <?xml version="1.0"?>
 <configuration>
+	<!-- classes that serve as resources, separated by semicolon -->
+    <property>
+      	<name>sloan.ws.resources.names</name>
+		<value>edu.indiana.d2i.sloan.CreateVM;edu.indiana.d2i.sloan.QueryVM;edu.indiana.d2i.sloan.LaunchVM;edu.indiana.d2i.sloan.DeleteVM;edu.indiana.d2i.sloan.StopVM;edu.indiana.d2i.sloan.SwitchVM;edu.indiana.d2i.sloan.ListImage;edu.indiana.d2i.sloan.DownloadResult;edu.indiana.d2i.sloan.UploadResult</value>
+    </property>	
+
 	<!-- hypervisor -->
     <property>
       	<name>sloan.ws.hyper.workers</name>
@@ -21,12 +27,6 @@
       	<name>use.retry.task</name>
 		<value>true</value>
     </property>  
-    <!-- 
-    <property>
-      	<name>retry.task.retriable.exps</name>
-		<value>java.lang.Exception</value>
-    </property> 
-     -->
     <property>
       	<name>hypervisor.full.class.name</name>
 		<value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value>
@@ -99,6 +99,11 @@
       	<name>result.download.prefix</name>
 		<value>https://thatchpalm.pti.indiana.edu:8080/sloan-ws-1.1-SNAPSHOT/download?randomid=</value>
     </property>     
+    <property>
+    	<!-- -1 means never expire -->
+		<name>result.expire.sec</name>
+		<value>43200</value>
+    </property>
     
     <!-- volume size, user quota -->
     <property>

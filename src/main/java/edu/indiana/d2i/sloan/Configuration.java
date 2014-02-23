@@ -53,6 +53,9 @@ public final class Configuration {
 	private Map<String, String> properties = null;
 
 	public static class PropertyName {
+		// classes serve as resources
+		public static final String RESOURCES_NAMES = "sloan.ws.resources.names";
+		
 		// optional properties
 		public static final String WORKER_POOL_SIZE = "sloan.ws.hyper.workers";
 		public static final String MAX_RETRY = "sloan.ws.hyper.maxretry";
@@ -132,8 +135,9 @@ public final class Configuration {
 		public static final String EMAIL_SMTP_HOST = "email.smtp.host";
 		public static final String EMAIL_SMTP_PORT = "email.smtp.port";
 		
-		/* result download url prefix */
+		/* result relative */
 		public static final String RESULT_DOWNLOAD_URL_PREFIX = "result.download.prefix";
+		public static final String RESULT_EXPIRE_IN_SECOND = "result.expire.sec";
 	}
 	
 	public static synchronized Configuration getInstance() {
@@ -158,6 +162,14 @@ public final class Configuration {
 	
 	public int getInt(String name, int defaultVal) {
 		return Integer.valueOf(getString(name, String.valueOf(defaultVal)));
+	}
+	
+	public long getLong(String name) {
+		return Long.valueOf(getString(name));
+	}
+	
+	public long getLong(String name, long defaultVal) {
+		return Long.valueOf(getString(name, String.valueOf(defaultVal)));
 	}
 	
 	public boolean getBoolean(String name) {

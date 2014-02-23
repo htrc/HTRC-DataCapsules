@@ -35,18 +35,27 @@ public class SloanWSApplication extends Application {
 
 	@Override
 	public Set<Class<?>> getClasses() {
-		// TODO: get rid of the hard code loading!
 		Set<Class<?>> s = new HashSet<Class<?>>();
-		s.add(CreateVM.class);
-		s.add(QueryVM.class);
-		s.add(LaunchVM.class);
-		s.add(DeleteVM.class);
-		s.add(StopVM.class);
-		s.add(SwitchVM.class);
-		s.add(ListImage.class);
+		String[] names = Configuration.getInstance().getString(
+			Configuration.PropertyName.RESOURCES_NAMES).split(";");
+		for (String name : names) {
+			try {
+				s.add(Class.forName(name));
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			} 
+		}
 		
-		s.add(DownloadResult.class);
-		s.add(UploadResult.class);
+//		s.add(CreateVM.class);
+//		s.add(QueryVM.class);
+//		s.add(LaunchVM.class);
+//		s.add(DeleteVM.class);
+//		s.add(StopVM.class);
+//		s.add(SwitchVM.class);
+//		s.add(ListImage.class);
+//		
+//		s.add(DownloadResult.class);
+//		s.add(UploadResult.class);
 		
 		return s;
 	}

@@ -33,6 +33,7 @@ import com.sun.jersey.multipart.FormDataParam;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.UserBean;
+import edu.indiana.d2i.sloan.bean.UserResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.result.UploadPostprocess;
 
@@ -61,14 +62,17 @@ public class UploadResult {
 			
 			// check if vmid is associated with a user in uservm table
 			UserBean userbean = DBOperations.getInstance().getUserWithVmid(vmid);	
-			logger.info("Upload result for " + vmid + ", " + userbean);
+			logger.info("Prepare to upload result for " + vmid + ", " + userbean);
 			
 			// write to DB
 			String randomid = UUID.randomUUID().toString();
-			DBOperations.getInstance().insertResult(vmid, randomid, input);
+			DBOperations.getInstance().insertResult(vmid, randomid, input);			
 			
 			// add to post-process
-			UploadPostprocess.instance.addPostprocessingItem(userbean, randomid);
+			UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
+				userbean.getUserName(), userbean.getUserEmail(), randomid));
+			
+			logger.info("Upload result for " + vmid + ", " + userbean + " successfully.");
 			
 			return Response.status(200).build();
 		} catch (Exception e) {
