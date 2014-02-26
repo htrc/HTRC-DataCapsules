@@ -39,17 +39,29 @@
 
 \maketitle
 \begin{abstract}
-As the amount of digitized archives grows, compute technology plays an increasing important role in digital humanities research. The advent of cloud computing offers researcher computation capabilities to process tens of thousands of archives which goes beyond their desktop machines can process. However, for copyrighted archives, it poses security challenges to the compute platform. In this paper, we investigate non-consumptive research, a research that allows user access copyrighted archives while prevents archives reconstruction during user access, in cloud computing. We build an infrastructure as a service (IaaS) cloud framework that makes use of data capsule to enforce non-consumptive research policy in virtual machine. This paper presents our architecture design and implementation details, and outlines next steps for future development.
+As the number of digitized archives grows, computing technology is playing an
+increasingly important role in digital humanities research. The advent of cloud
+computing offers researchers the ability to quickly process tens of thousands
+of archives, going far beyond the capabilities of their desktop machines.
+However, copyrighted archives pose a crucial security challenge to this
+otherwise promising computational research platform. In this paper, we
+investigate \emph{non-consumptive research}, that is, research that allows
+users access to copyrighted archives via cloud computing, while preventing the
+release of the archive data during user access. We have built an infrastructure
+as a service (IaaS) cloud framework that makes use of storage capsules to
+enforce a non-consumptive research policy within a virtual machine.  This paper
+presents our architecture, design, and implementation details, and outlines the
+next steps for future development.
 \end{abstract}
 
 % A category with the (minimum) three required fields
-\category{H.3.4}{Systems and Software}{Distributed systems}[cloud computing, data capsule]
+\category{H.3.4}{Systems and Software}{Distributed Systems}[Cloud Computing, Storage Capsules]
 %A category including the fourth, optional field follows...
-\category{K.6.m}{Miscellaneous}{Security}[non-consumptive research]
+\category{K.6.m}{Miscellaneous}{Security}[Non-consumptive Research]
 
 \terms{Architecture, Design, Implementation}
 
-\keywords{Cloud computing, Non-consumptive research, data capsule} % NOT required for Proceedings
+\keywords{Cloud computing, Non-consumptive Research, Storage Capsules} % NOT required for Proceedings
 
 \section{Introduction}
 As the amount of digitized archives keeps growing, researchers of digital humanities are facing with materials that they could ever hope to read in life time. For example, some researchers checked some of Ian Watt's claims against 3,600 novels between 18th and 19th century \cite{Example}. It is tedious, if possible, for human being to do this task by hitting the library stacks, checking out books and examining book contents. Therefore, digitized archives with computer access significantly changes the way digital humanities researchers perform research. Computer technology has been applied to facilitate digital humanities research on massive digitized materials. For instance, researchers run topic modeling algorithm on a set of digitized books to identify common topics among books \cite{LDA}, which cannot be discovered easily by just reading the books.
@@ -69,8 +81,22 @@ Researchers have already leveraged the power of cloud computing in digital archi
 
 Generally speaking, cloud computing can be categories as SaaS (software as a service), PaaS (platform as a service), and IaaS (infrastructure as a service) \cite{Armbrust:EECS-2009-28}. Our cloud framework intends to provide a weaker form of IaaS (infrastructure as a service). That is user can configure some of the VM specs, e.g., operation system, number of CPU, memory, and disk, but not the network, nor the volume. There are numbers of existing cloud platforms support IaaS, either in a commercial way or in an open source way. Amazon EC2 \cite{EC2} is probably the most well-known IaaS platform.  On regard to open source cloud platform, Eucalyptus \cite{Nurmi:2009:EOC:1577849.1577895} is an open source IaaS platform that provides Amazon compatible cloud environment. OpenStack \cite{OpenStack} is another open source IaaS platform that gains increasing popularity. Researchers investigated different cloud platforms \cite{Sempolinski:cloud,vonLaszewski:2012:CMC:2353730.2353779}. The reasons we do not build our system on existing open source platforms are two folds. First, existing cloud platforms introduce numerous complexities for the data capsule which enforces non-consumptive research policy in VM. Those complexities are from unnecessary features for digital humanities researchers. For example, researcher does not need to configure a software defined network to run her text mining algorithms. Second, existing cloud platforms are designed for general purpose and expose many vulnerable channels. For example, allowing user to configure network would pose significant threats to our systems. Therefore, instead of using existing cloud platform, we build a cloud framework around data capsule, which satisfies digital humanities researchers\rq need and non-consumptive research requirement. Our research also illuminates the path that data capsule could potentially be applied to more general cloud platforms.
 
-Related work of Data Capsule.
-
+Storage Capsules \cite{Borders:2009:PCD:1855768.1855791} is a mechanism for
+containing sensitive data within a virtualized environment with the goal of
+minimizing the available channels to leak that data.  Although Capsules
+provides no guarantees on the integrity of the stored data -- which could be
+modified or deleted by an attacker -- this poses little issue when Capsules is
+applied to non-consumptive research, where the copyrighted source data can
+simply be made read-only.  Capsules uses virtual machine snapshotting and
+simple policy-based restriction mechanisms to allow a user to enter a
+restricted ``secure'' mode, where network and other data channels are
+restricted in exchange for access to the data being protected.  After using the
+protected data, when the user returns to normal use of the system, all changes
+to the system except those made to the designated secure data are forgotten,
+and the system returns to the state it was in before the switch to secure mode.
+This use model is readily applicable to non-consumptive research, in that a
+researcher can administer their system (e.g. install any required software
+tools) and then switch to ``secure'' mode to perform their analysis.  
 
 
 \section{Overview} \label{title:overview}
@@ -86,15 +112,54 @@ HTRC consists of number of services that facilitate nonprofit and educational us
   \label{fig:htrc}
 \end{figure}
 
-\subsection{Threat Model}
-
-The system is designed to allow user to access copyrighted data in a compromised operating system which runs in a virtual machine (VM). Neither the operating system, the driver, nor the applications (except for user’s application running against HTRC Data service) are trusted. Although our system allows arbitrary behaviors in VM, it does require some trusted components. The virtual machine monitor (VMM) that runs virtual machines is part of the trusted computing base (TCB). The hosts where VMM locates are also part of the TCB. The internal network among VMs is part of the TCB, i.e., firewall policy is sufficient to prevent attack from one VM to another one. User’s application that runs against HTRC Data service is considered trustworthy, although it could potentially encode the copyrighted data and deliver it as final result. We require user to sign a legal agreement before she uses our system. We intend to add some result analysis to automatically detect data leakage and leave this as future work.
-
 \subsection{Data Capsule}
 
-The data capsule was developed by Borders et al. \cite{Borders:2009:PCD:1855768.1855791}. It enforces two modes on a single virtual machine, i.e., maintenance mode and secure mode, to provide secure access to sensitive data. In maintenance mode, user is free to access internet and install software in VM. While in secure mode, sensitive data stored in a secure volume will be attached to the VM and become visible to user. The network access is blocked in secure mode to prevent data leakage by network. When user switches from secure mode to maintenance mode, changes made to places other than volume are wiped out so that sensitive data cannot leak through copying to local disk neither. Only changes made to volume is persistent. Therefore, in data capsule, user can access sensitive data and leakage cannot take place neither through network channel nor through disk.
+Storage Capsules was developed by Borders et al.
+\cite{Borders:2009:PCD:1855768.1855791}. It enforces two modes on a single
+virtual machine, i.e., maintenance mode and secure mode, to provide secure
+access to sensitive data. In maintenance mode, user is free to access internet
+and install software in VM. While in secure mode, sensitive data stored in a
+secure volume will be attached to the VM and become visible to user. The
+network access is blocked in secure mode to prevent data leakage by network.
+When user switches from secure mode to maintenance mode, changes made to places
+other than volume are wiped out so that sensitive data cannot leak through
+copying to local disk neither. Only changes made to volume is persistent.
+Therefore, in data capsule, user can access sensitive data and leakage cannot
+take place neither through network channel nor through disk.
 
-Data capsule was mainly developed for general usage in single machine. We adapt and extend data capsule based on the context of HTRC. Sensitive data in HTRC is copyrighted text which is exposed through a API in Restful web service instead of staying in volume. Data capsule needs to enable the network channel between web service serving data and virtual machine. On regard to future HTRC services, data capsule should have a flexible network control mechanism. Besides, to carry out analysis tasks, researchers need persistent storage to store temporal results for iterative analysis purpose. Thus, the role of secure volume in data capsule is changed from mainly serving read to mainly serving write. In addition, data capsule is designed to work in single machine. To provide a cloud environment across multiple machines to multiple researcher, we need another layer on top of data capsule to coordinate different machines. We propose a web service layer, which is responsible for management effects e.g., resource allocation, request scheduling, status maintenance, and etc, on top of the data capsule to implement the cloud environment. Section \ref{title:design} gives details of design and implementation of data capsule in HTRC context.
+Data capsule was mainly developed for general usage in single machine. We adapt
+and extend data capsule based on the context of HTRC. Sensitive data in HTRC is
+copyrighted text which is exposed through a API in Restful web service instead
+of staying in volume. Data capsule needs to enable the network channel between
+web service serving data and virtual machine. On regard to future HTRC
+services, data capsule should have a flexible network control mechanism.
+Besides, to carry out analysis tasks, researchers need persistent storage to
+store temporal results for iterative analysis purpose. Thus, the role of secure
+volume in data capsule is changed from mainly serving read to mainly serving
+write. In addition, data capsule is designed to work in single machine. To
+provide a cloud environment across multiple machines to multiple researcher, we
+need another layer on top of data capsule to coordinate different machines. We
+propose a web service layer, which is responsible for management effects e.g.,
+resource allocation, request scheduling, status maintenance, and etc, on top of
+the data capsule to implement the cloud environment. Section \ref{title:design}
+gives details of design and implementation of data capsule in HTRC context.
+
+\subsection{Threat Model}
+
+The system is designed to allow users to access copyrighted data in a potentially
+compromised operating system which runs in a virtual machine (VM). Neither the
+operating system, the driver, nor the applications (except for user’s
+application running against HTRC Data service) are trusted. Although our system
+allows arbitrary behaviors in VM, it does require some trusted components. The
+virtual machine monitor (VMM) that runs virtual machines is part of the trusted
+computing base (TCB). The hosts where VMM locates are also part of the TCB. The
+internal network among VMs is part of the TCB, i.e., firewall policy is
+sufficient to prevent attack from one VM to another one. User’s application
+that runs against HTRC Data service is considered trustworthy, although it
+could potentially encode the copyrighted data and deliver it as final result.
+We require user to sign a legal agreement before she uses our system. We intend
+to add some result analysis to automatically detect data leakage and leave this
+as future work.
 
 \subsection{Design Requirements} \label{subtitle:requirement}
 Our non-consumptive cloud framework falls into the second category mentioned in section \ref{subtitle:background} through provisioning a secure environment for user to conduct research against our data, probably copyrighted. We target digital humanities researchers and aim at providing a user friendly environment for user to access copyrighted text while preventing copyrighted text leakage. We identify following design requirements.
