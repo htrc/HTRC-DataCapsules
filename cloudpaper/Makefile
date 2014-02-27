@@ -1,20 +1,19 @@
-SHELL=/bin/bash
+SHELL= /bin/bash
 
-LATEX=pdflatex
+LATEX= pdflatex
 
-LFLAGS=-file-line-error -halt-on-error -shell-escape
+LFLAGS= -file-line-error -halt-on-error -shell-escape
 #LFLAGS=
 
-QUIET= 2>&1 | grep -iE "warning|error" -C 2 || true
-SILENT= 2>&1 >/dev/null
-#QUIET=
-#SILENT=
+Q=1
+QUIET= $(if $(Q),2>&1 | grep -iE "warning|error" -C 2 || true)
+SILENT= $(if $(Q),2>&1 >/dev/null)
 
-TARGET=paper
-TARGETBIB=$(wildcard *.bib)
-FIGURES=figures
-EPSFIGURES=$(wildcard ${FIGURES}/*.eps)
-PDFFIGURES=$(EPSFIGURES:%.eps=%-eps-converted-to.pdf)
+TARGET= paper
+TARGETBIB= $(wildcard *.bib)
+FIGURES= figures
+EPSFIGURES= $(wildcard ${FIGURES}/*.eps)
+PDFFIGURES= $(EPSFIGURES:%.eps=%-eps-converted-to.pdf)
 
 # make pdf by default
 all: ${TARGET}.pdf
