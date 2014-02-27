@@ -77,13 +77,13 @@ research policy using virtual machines.
 
 
 % A category with the (minimum) three required fields
-\category{H.3.4}{Systems and Software}{Distributed Systems}[Cloud Computing, Storage Capsules]
+\category{H.3.4}{Systems and Software}{Distributed Systems}[Cloud Computing, Data Capsules]
 %A category including the fourth, optional field follows...
 \category{K.6.m}{Miscellaneous}{Security}[Non-consumptive Research]
 
 \terms{Architecture, Design, Implementation}
 
-\keywords{Cloud computing, Large-scale Text Mining, Non-consumptive Research, Storage Capsules} % NOT required for Proceedings
+\keywords{Cloud computing, Large-scale Text Mining, Non-consumptive Research, Data Capsules} % NOT required for Proceedings
 
 \section{Introduction}
 As increasing amounts of digitized text become available from sources such as university libraries, researchers encounter access to more material than they could ever hope to read in life time, creating opportunities for new forms of research. For example, research has checked literary critic Ian Watts' claims against 3,600 novels written between the 18th and 19th centuries \cite{Example}. While this tedious task could be carried out by hand, digitized texts coupled with text mining tools, enables new discoveries.  One can apply topic modeling such as Latent Dirichlet allocation (LDA)~\cite{LDA}) at the book level to narrow from millions of texts to a few thousand, then page level LDA to zero down to relevant pages, effectively expanding the reach of research investigation of the informatics or digital humanities researcher.
@@ -121,20 +121,20 @@ Research that leverages the power of cloud computing for text analysis has been 
 
 There are numerous cloud platforms that support IaaS, either commercially or in open source. Amazon EC2 \cite{EC2} is probably the most well-known IaaS platform, but there is Eucalyptus \cite{Nurmi:2009:EOC:1577849.1577895}, and OpenStack \cite{OpenStack}. Researchers investigated different cloud platforms \cite{Sempolinski:cloud,vonLaszewski:2012:CMC:2353730.2353779}. We do not build our system on existing open source cloud platforms for two reasons: first, existing cloud platforms introduce numerous complexities for the data capsule which has to enforce the non-consumptive research policy in the VM. The complexities stem from avoiding imposing unnecessary burdens on the digital humanities researcher. For example, the researcher should not need to configure a software defined network to run her text mining algorithms. Second, existing cloud platforms are designed for general purpose and expose many vulnerable channels. For example, allowing user to configure network would pose significant threats to our systems. Therefore, instead of using existing cloud platform, we build a cloud framework around data capsule, which satisfies digital humanities researchers\rq need and non-consumptive research requirement. Our research also illuminates the path that data capsule could potentially be applied to more general cloud platforms.
 
-Storage capsules \cite{Borders:2009:PCD:1855768.1855791} is a mechanism for
+Data capsules \cite{Borders:2009:PCD:1855768.1855791} is a mechanism for
 containing sensitive data within a virtualized environment with the goal of
-minimizing the available channels to leak that data.  Although storage capsules
+minimizing the available channels to leak that data.  Although data capsules
 provide no guarantees on the integrity of the stored data -- which could be
-modified or deleted by an attacker -- this poses little issue when storage
+modified or deleted by an attacker -- this poses little issue when data 
 capsules is applied to non-consumptive research, where the copyrighted source
-data can simply be made read-only.  Additionally, the storage capsules design
+data can simply be made read-only.  Additionally, the data capsules design
 is well-suited to non-consumptive research, in that it is able to maintain
 strong security guarantees on the sensitive data while being highly permissive
 to users, who may need to install custom software or perform other actions that
 would require the granting of many privileges in a normal environment.  The
-application of storage capsules we present in this paper currently does not
+application of data capsules we present in this paper currently does not
 provide the same level of protection against covert channels that is provided
-in the original storage capsules system, but improvements in the implementation
+in the original data capsules system, but improvements in the implementation
 are being made that will eventually provide greater protection than that given
 in the original work.
 
@@ -155,9 +155,9 @@ The HTRC architecture uses OAuth2 authentication and has an auditing service.   
   \label{fig:htrc}
 \end{figure}
 
-\subsection{Storage Capsules}
+\subsection{Data Capsules}
 
-Storage capsules is a system developed by Borders et al.
+Data capsules is a system developed by Borders et al.
 \cite{Borders:2009:PCD:1855768.1855791} that allows privileged access to
 sensitive data while also restricting the channels through which that data can
 be released.  Capsules uses virtual machine snapshotting and simple
@@ -174,22 +174,22 @@ data.  This usage model is readily applicable to non-consumptive research, in
 that a researcher can administer their system (e.g. install any required
 software tools) and then switch to ``secure'' mode to perform their analysis.  
 
-Because storage capsules was originally developed with use on a personal
+Because data capsules was originally developed with use on a personal
 machine in mind, it had to be adapted and extended to work within the HTRC
 cloud environment. In HTRC, sensitive data is copyrighted text that is exposed
-through a Restful web service API instead of within a machine. Storage capsules
+through a Restful web service API instead of within a machine. Data capsules
 manages the network channel between virtual machines and the web services
 serving data to them. In consideration of potential future HTRC services,
-storage capsules has a flexible network control mechanism that allows network
+data capsules has a flexible network control mechanism that allows network
 policies for different modes to be written by administrators. 
 
 Additionally, in order to provide a cloud environment across multiple machines
 and to a large number of researchers, there is a need for another layer on top
-of storage capsules that coordinates different machines. We therefore
+of data capsules that coordinates different machines. We therefore
 implemented a web service layer that is responsible for management of virtual
 machines (e.g., resource allocation, request scheduling, status maintenance)
-above the storage capsules layer.  Section \ref{title:design} gives details of
-the design and implementation of storage capsules and the web service layer in
+above the data capsules layer.  Section \ref{title:design} gives details of
+the design and implementation of data capsules and the web service layer in
 the context of HTRC.
 
 \subsection{Threat Model}
@@ -306,10 +306,10 @@ First, the web front end and web service use OAuth 2.0 to authenticate user whic
 
 The backend that manages virtual machines is implemented as a set of Linux
 shell scripts that manage the \texttt{qemu} VMM in order to implement the
-functionality of storage capsules.  These scripts are remotely run by the web
+functionality of data capsules.  These scripts are remotely run by the web
 service via a secure shell (SSH) connection.  \texttt{qemu} provides live
 snapshotting functionality that serves an important role in realizing our
-storage capsules implementation.  When a user transitions to secure mode, a
+data capsules implementation.  When a user transitions to secure mode, a
 snapshot is taken of the entire virtual machine state via the backend scripts,
 and any further use of the system is recorded in memory and does not persist
 upon shutdown or any other operation.  Upon return to maintenance mode, the
