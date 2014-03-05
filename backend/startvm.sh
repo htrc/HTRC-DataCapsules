@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+DD_BLOCK_SIZE=2048k
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 # Timeout for boot, in seconds
@@ -118,17 +119,43 @@ if [ ! -d $VM_DIR ] ; then
   exit 2
 fi
 
-# TODO: check if VM is already running
+# Check if VM is already running
+if [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; then
+  echo "Error: VM is already running!"
+  exit 10
+fi
 
 # Load config file
 . $VM_DIR/config
+
+# Check if full disk image is done copying
+if [[ "$IMAGE" = *.diff  && -e $VM_DIR/${IMAGE%.diff} && -s $VM_DIR/${IMAGE%.diff}.newsum ]]; then
+  if [[   $(cat $VM_DIR/${IMAGE%.diff}.newsum | awk '{print $1}') \
+        = $(cat $VM_DIR/${IMAGE%.diff}.sum | awk '{print $1}') ]]; then
+    # integrate diff file to new image
+    IMAGE=${IMAGE%.diff}
+    qemu-img rebase -u -b $(readlink -f $VM_DIR/$IMAGE) $VM_DIR/${IMAGE}.diff
+    qemu-img commit $VM_DIR/${IMAGE}.diff 2>&1 >/dev/null
+    sed -i 's#IMAGE=.*$#IMAGE='"$IMAGE"'#' $VM_DIR/config
+    rm $VM_DIR/${IMAGE}.{diff,sum,newsum}
+  else
+    BASE_IMAGE=$(qemu-img info $VM_DIR/$IMAGE | sed -n 's/backing file: \(.*\)$/\1/p')
+    if [[ $(md5sum $BASE_IMAGE | awk '{print $1}') \
+          = $(cat $VM_DIR/${IMAGE%.diff}.sum | awk '{print $1}') ]]; then
+      nohup dd if=$BASE_IMAGE of=$VM_DIR/$IMAGE bs=$DD_BLOCK_SIZE 2>&1 >$VM_DIR/kvm_console &
+    else
+      echo "Error: Unable to copy base image; it has been changed since the VM was created!"
+      exit 11
+    fi
+  fi
+fi
 
 if [ -e $VM_DIR/last_run ] ; then
   cat $VM_DIR/last_run >> $VM_DIR/kvm_console
   rm $VM_DIR/last_run
 fi
 
-cat <<EOF >> $VM_DIR/kvm_console
+cat <<EOF >> $VM_DIR/last_run
 
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 -------------------------------------------------------------------------------
@@ -151,7 +178,7 @@ nohup $SCRIPT_DIR/tapinit qemu-system-x86_64					\
 		   -usb								\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
-		   -hda $VM_DIR/$IMG						\
+		   -hda $VM_DIR/$IMAGE						\
 		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+",password"}	\
 		   >>$VM_DIR/last_run						\
 		   2>&1 &
@@ -162,29 +189,29 @@ KVM_PID=$!
 # For some reason, a connection to the monitor seems to be needed
 # to trigger VM startup
 sleep 2
-echo "" | nc -U $VM_DIR/monitor >/dev/null
+for time in $(seq 1 $TIMEOUT); do
+  if echo "" | nc -U $VM_DIR/monitor >/dev/null; then
+
+    break
+  fi
+done
 
 if [[ $VNC_LOGIN = 1 ]] ; then
   echo "set_password vnc $LOGIN_PWD" | nc -U $VM_DIR/monitor >/dev/null
 fi
 
 # Make sure VM actually started
-if kill -0 $KVM_PID 2>&1 | grep -q "No such process" ; then
-  echo "Error starting guest VM:"
-  cat $VM_DIR/last_run
-  exit 4
-fi
 
 for time in $(seq 1 $TIMEOUT); do
   if ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1; then
     break
+  else
+    if kill -0 $KVM_PID 2>&1 | grep -q "No such process" ; then
+      echo "Error starting guest VM:"
+      cat $VM_DIR/last_run
+      exit 4
+    fi
   fi
-#  if [ -e $VM_DIR/guest_out ]; then
-#    if grep -q "FINISHED BOOTING" $VM_DIR/guest_out; then
-#      break
-#    fi
-#  fi
-#  sleep 1
 done
 
 ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1
