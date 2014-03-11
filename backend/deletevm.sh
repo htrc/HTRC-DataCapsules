@@ -120,8 +120,8 @@ if [ -d $VM_DIR ]; then
     echo "Error: Could not delete VM directory: $RM_RES"
     exit 3
   else
-    # Remove IP address assignment
-    sed -ni '/'"$VM_MAC_ADDR"'/!p' $SCRIPT_DIR/dhcp_hosts
+    # Return IP address to free pool
+    echo "$VM_IP_ADDR" >> $SCRIPT_DIR/free_hosts
     exit 0
   fi
 

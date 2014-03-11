@@ -165,47 +165,38 @@ if [ $? -ne 0 ]; then
   fail 3
 fi
 
-# Generate a fixed locally-administered MAC address for VM
-VM_MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+# This should only happen on the first use of the scripts;
+# Be sure these files are initialized before opening system to real users!
+if [[ ! (-e $SCRIPT_DIR/dhcp_hosts && -e $SCRIPT_DIR/free_hosts) ]]; then
+  rm -f $SCRIPT_DIR/{dhcp_hosts,free_hosts}
 
-# Allocate IP Address
-IP_SUFFIX=$UNDEFINED
+  for SUFFIX in $(seq 2 254); do
+    # Generate a locally-administered MAC address
+    MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+    IP_ADDR="192.168.53.$SUFFIX"
 
-touch $SCRIPT_DIR/dhcp_hosts
-TAKEN_ADDRS=($(sed 's/.*192\.168\.53\.\([0-9]*\).*/\1/' $SCRIPT_DIR/dhcp_hosts | sort -g))
-
-if [[ ${#TAKEN_ADDRS[@]} -eq 0 || ${TAKEN_ADDRS[0]} -gt 2 ]]; then
-  IP_SUFFIX=2
-else
-  for (( a=1; a<${#TAKEN_ADDRS[@]}; a++ )); do
-    if [[ $(( ${TAKEN_ADDRS[$a]} - ${TAKEN_ADDRS[$a-1]} )) -gt 1 ]]; then
-  	IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
-        break
-    fi
+    echo "$MAC_ADDR,$IP_ADDR" >> $SCRIPT_DIR/dhcp_hosts
+    echo "$IP_ADDR" >> $SCRIPT_DIR/free_hosts
   done
 
-  if [[ $IP_SUFFIX = $UNDEFINED ]]; then
-    IP_SUFFIX=$(( ${TAKEN_ADDRS[$a-1]} + 1 ))
+  # Push dhcp_hosts configuration to dnsmasq
+  if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
+    if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
+      kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
+    fi
   fi
 fi
 
-if [[ $IP_SUFFIX -gt 254 ]]; then
+# Allocate IP Address
+VM_IP_ADDR=$(head -n1 $SCRIPT_DIR/free_hosts)
+
+if [[ -z $VM_IP_ADDR ]]; then
   echo "Error: Unable to allocate IP address; IP pool is exhausted"
   fail 5
 fi
 
-VM_IP_ADDR="192.168.53.$IP_SUFFIX"
-  
-# Add IP address assignment to dhcp_hosts configuration for dnsmasq
-cat <<EOF >> $SCRIPT_DIR/dhcp_hosts
-$VM_MAC_ADDR,$VM_IP_ADDR
-EOF
-
-if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
-  if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
-    kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
-  fi
-fi
+VM_MAC_ADDR=$(awk -F, '/'"${VM_IP_ADDR}"'$/{print $1}' $SCRIPT_DIR/dhcp_hosts)
+sed -ni '/'"$VM_IP_ADDR"'/!p' $SCRIPT_DIR/free_hosts
 
 # Copy temporary delta image to newly created working directory
 CP_RES=$(qemu-img create -o backing_file=$(readlink -f $IMAGE) -f qcow2 $VM_DIR/$(basename $IMAGE).diff)
@@ -216,9 +207,9 @@ if [ $? -ne 0 ]; then
 fi
 
 # Copy the full image asynchronously, so that we can return quickly
-(nohup md5sum $IMAGE >$VM_DIR/$(basename $IMAGE).sum 2>>$VM_DIR/kvm_console; \
-       dd if=$IMAGE of=$VM_DIR/$(basename $IMAGE) bs=$DD_BLOCK_SIZE 2>&1 >>$VM_DIR/kvm_console; \
-       md5sum $VM_DIR/$(basename $IMAGE) >$VM_DIR/$(basename $IMAGE).newsum 2>>$VM_DIR/kvm_console) &
+nohup /usr/bin/nice -n 10 md5sum $IMAGE >$VM_DIR/$(basename $IMAGE).sum 2>>$VM_DIR/kvm_console &
+(nohup /usr/bin/nice -n 10 dd if=$IMAGE of=$VM_DIR/$(basename $IMAGE) bs=$DD_BLOCK_SIZE 2>>$VM_DIR/kvm_console >>$VM_DIR/kvm_console; \
+       /usr/bin/nice -n 10 md5sum $VM_DIR/$(basename $IMAGE) >$VM_DIR/$(basename $IMAGE).newsum 2>>$VM_DIR/kvm_console) &
 
 # Record configuration parameters to config file
 cat <<EOF > $VM_DIR/config
