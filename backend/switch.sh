@@ -125,6 +125,19 @@ fi
 # If secure mode, sync storage, apply policy, take snapshot, mount secure volume, update modefile
 if [ $SECURE_MODE = 0 ]; then
 
+  # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
+  for time in $(seq 1 30); do
+    if [ -e $VM_DIR/$SECURE_VOL ]; then
+      break
+    fi
+    sleep 1
+  done
+
+  if [ ! -e $VM_DIR/$SECURE_VOL ]; then
+    echo "Error: CreateVM failed to create secure volume; unable to enter secure mode!"
+    exit 6
+  fi
+
   # Sync storage
   echo "commit all" | nc -U $VM_DIR/monitor >/dev/null
 

@@ -260,19 +260,9 @@ if [ $? -ne 0 ]; then
 fi
 
 # This conversion to qcow2 format saves significant disk space (for example, 10GB file -> 53MB file)
-CONVERT_RES=$(qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/$SECURE_VOL_NAME 2>&1)
-
-if [ $? -ne 0 ]; then
-  echo "Error converting secure volume for VM to qcow2 format: $CONVERT_RES"
-  fail 7
-fi
-
-RM_RES=$(rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
-
-if [ $? -ne 0 ]; then
-  echo "Warning: failed to delete temporary file for secure volume: $RM_RES"
-  exit 8
-fi
+(nohup qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}.done 2>$VM_DIR/kvm_console >/dev/null \
+    && rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>$VM_DIR/kvm_console >/dev/null \
+    && mv $VM_DIR/${SECURE_VOL_NAME}.done $VM_DIR/$SECURE_VOL_NAME 2>$VM_DIR/kvm_console >/dev/null ) &
 
 # Return results (only reaches here if no errors occur)
 exit 0
