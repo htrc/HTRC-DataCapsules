@@ -155,7 +155,7 @@ if [ -e $VM_DIR/last_run ] ; then
   rm $VM_DIR/last_run
 fi
 
-cat <<EOF >> $VM_DIR/last_run
+cat <<EOF >> $VM_DIR/kvm_console
 
 |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 -------------------------------------------------------------------------------
@@ -174,7 +174,7 @@ nohup $SCRIPT_DIR/tapinit qemu-system-x86_64					\
 		   -smp $NUM_VCPU						\
 		   -pidfile $VM_DIR/pid						\
 		   -monitor unix:$VM_DIR/monitor,server				\
-		   -serial file:$VM_DIR/guest_out				\
+		   -serial file:$VM_DIR/release_mon 				\
 		   -usb								\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
@@ -191,10 +191,12 @@ KVM_PID=$!
 sleep 2
 for time in $(seq 1 $TIMEOUT); do
   if echo "" | nc -U $VM_DIR/monitor >/dev/null; then
-
     break
   fi
+  sleep 1
 done
+
+TIMEOUT=$(( $TIMEOUT - $time ))
 
 if [[ $VNC_LOGIN = 1 ]] ; then
   echo "set_password vnc $LOGIN_PWD" | nc -U $VM_DIR/monitor >/dev/null
@@ -217,9 +219,9 @@ done
 ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1
 
 if [ $? -ne 0 ]; then
-  echo "Guest start-up timeout; guest failed to boot within $TIMEOUT seconds"
-  #$SCRIPT_DIR/stopvm.sh $VM_DIR
-  exit 5
+  if pidof qemu-system-x86_64 | grep -q $VM_PID; then
+    echo "Warning: guest failed to obtain IP address within $TIMEOUT seconds; may have failed to boot"
+  fi
 fi
 
 # Setup SSH port forwarding

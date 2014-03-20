@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Copyright 2013 University of Michigan
 # 
@@ -17,9 +17,7 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 DB_URL=http://thatchpalm.pti.indiana.edu:9001/sloan-ws-1.1-SNAPSHOT/upload
-
-LISTEN_IP=192.168.53.1
-LISTEN_PORT=6235
+#DB_URL=http://toronto.eecs.umich.edu:9001/upload
 
 usage () {
 
@@ -107,34 +105,35 @@ mkdir $VM_DIR/release
 
 while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
 
-  timeout 60 nc -l $LISTEN_IP $LISTEN_PORT > $VM_DIR/release/release.data
+  timeout 60 /bin/bash -c "tail -F -n0 $VM_DIR/release_mon | head -n0"
 
   # timeout returns 124 if it times out
-  if [[ $? -ne 0 ]]; then
+  if [[ $? -ne 0 || `cat $VM_DIR/mode` =~ "Maintenance" ]]; then
     continue
   fi
 
-  RES_FILENAME=$(head -n 1 $VM_DIR/release/release.data)
+  RES_FILENAME=$(tail -n1 $VM_DIR/release_mon | sed -e 's/^[ \r\n]*//' -e 's/[ \r\n]*$//')
 
   echo "$RES_FILENAME" | grep -q "^[0-9A-Za-z_-]*\.zip$"
-  #echo "$RES_FILENAME" | grep -q "^[0-9A-Za-z_-]*\.[0-9A-Za-z]*$"
 
   if [[ $? -ne 0 || $(echo "$RES_FILENAME" | wc -c) -gt 256 ]]; then
-    rm -rf $VM_DIR/release/release.data
     continue
   fi
 
-  sed '1d' $VM_DIR/release/release.data > $VM_DIR/release/$RES_FILENAME
+  sudo mount -o loop,ro $VM_DIR/spool_volume $VM_DIR/release/
 
   # Connect to sql server and upload file
   curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" $DB_URL
+  UPLOAD_RES=$?
 
-  if [[ $? -eq 0 ]]; then
-    echo "Complete" | nc $VM_IP_ADDR $LISTEN_PORT
-  else
-    echo "Failed" | nc $VM_IP_ADDR $LISTEN_PORT
+  sudo umount $VM_DIR/release/
+
+  if [[ $UPLOAD_RES -ne 0 ]]; then
+    echo "Failed to release file '$RES_FILENAME' (error code $UPLOAD_RES)" >> $VM_DIR/last_run
   fi
 
 done
+
+rm -rf $VM_DIR/release_pid $VM_DIR/release
 
 exit 0

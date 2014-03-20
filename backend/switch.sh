@@ -125,6 +125,14 @@ fi
 # If secure mode, sync storage, apply policy, take snapshot, mount secure volume, update modefile
 if [ $SECURE_MODE = 0 ]; then
 
+  # Take down SSH port forwarding
+  SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh down $VM_MAC_ADDR $SSH_PORT 2>&1)
+  
+  if [ $? -ne 0 ]; then
+    echo "$SSH_RES"
+    exit 4
+  fi
+
   # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
   for time in $(seq 1 30); do
     if [ -e $VM_DIR/$SECURE_VOL ]; then
@@ -135,7 +143,7 @@ if [ $SECURE_MODE = 0 ]; then
 
   if [ ! -e $VM_DIR/$SECURE_VOL ]; then
     echo "Error: CreateVM failed to create secure volume; unable to enter secure mode!"
-    exit 6
+    exit 5
   fi
 
   # Sync storage
@@ -147,7 +155,7 @@ if [ $SECURE_MODE = 0 ]; then
 
   if [ $FW_RES -ne 0 ]; then
     echo "Error: Failed to apply firewall policy; error code ($FW_RES)"
-    exit 4
+    exit 6
   fi
 
   # Take Capsules Snapshot
@@ -157,6 +165,16 @@ if [ $SECURE_MODE = 0 ]; then
   echo "drive_add 0 id=secure_volume,if=none,file=$VM_DIR/$SECURE_VOL" | nc -U $VM_DIR/monitor >/dev/null
   echo "device_add usb-storage,id=secure_volume,drive=secure_volume" | nc -U $VM_DIR/monitor >/dev/null
 
+  # Mount Spool Volume
+  echo "drive_add 1 id=spool,if=none,file=$VM_DIR/spool_volume" | nc -U $VM_DIR/monitor >/dev/null
+  echo "device_add usb-storage,id=spool,drive=spool" | nc -U $VM_DIR/monitor >/dev/null
+
+  # Start release daemon if not already running
+  if [ ! -e $VM_DIR/release_pid ]; then
+    nohup $SCRIPT_DIR/released.sh $VM_DIR 2>>$VM_DIR/release_log >>$VM_DIR/release_log &
+    echo "$!" > $VM_DIR/release_pid
+  fi
+
   # Update Mode File
   echo "Secure" > $VM_DIR/mode
 
@@ -164,8 +182,9 @@ if [ $SECURE_MODE = 0 ]; then
 # If maintenance, unmount secure volume, revert snapshot, remove policy, update modefile
 else
 
-  # Unmount Secure Volume
+  # Unmount Secure Volume and Spool Volume
   echo "device_del secure_volume" | nc -U $VM_DIR/monitor >/dev/null
+  echo "device_del spool" | nc -U $VM_DIR/monitor >/dev/null
 
   # Revert Capsules Snapshot
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
@@ -181,7 +200,15 @@ else
 
   if [ $FW_RES -ne 0 ]; then
     echo "Error: Failed to apply/remove firewall policy; error code ($FW_RES)"
-    exit 5
+    exit 7
+  fi
+
+  # Restart SSH port forwarding
+  SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh up $VM_MAC_ADDR $SSH_PORT 2>&1)
+  
+  if [ $? -ne 0 ]; then
+    echo "$SSH_RES"
+    exit 8
   fi
 
   # Update Mode File

@@ -259,6 +259,20 @@ if [ $? -ne 0 ]; then
   fail 7
 fi
 
+SPOOL_IMG_RES=$(qemu-img create -f raw $VM_DIR/spool_volume 100M 2>&1)
+
+if [ $? -ne 0 ]; then
+  echo "Error creating spool volume for VM: $SPOOL_IMG_RES"
+  fail 8
+fi
+
+SPOOL_MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "release_spool" $VM_DIR/spool_volume 2>&1)
+
+if [ $? -ne 0 ]; then
+  echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"
+  fail 9
+fi
+
 # This conversion to qcow2 format saves significant disk space (for example, 10GB file -> 53MB file)
 (nohup qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}.done 2>$VM_DIR/kvm_console >/dev/null \
     && rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>$VM_DIR/kvm_console >/dev/null \
