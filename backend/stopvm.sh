@@ -140,7 +140,7 @@ if [ -e $VM_DIR/pid ]; then
 
   FILES_TO_DELETE=""
 
-  if [ -e $VM_DIR/release_mon] ; then
+  if [ -e $VM_DIR/release_mon ] ; then
     FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/release_mon"
   fi
 
