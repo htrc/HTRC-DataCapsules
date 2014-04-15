@@ -1,6 +1,11 @@
 GENERAL SETUP
 --------------------------------------------------
 
+The scripts require that qemu and dnsmasq be installed on your system in order
+to function.  On Ubuntu, these can be installed with the following command:
+
+(sudo) apt-get install qemu dnsmasq
+
 To prepare these scripts for use, give them a fixed location and, optionally,
 add them to the PATH variable of the user that will be invoking them (so that
 the full path need not be given for each invocation). Finally, run the

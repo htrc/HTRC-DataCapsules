@@ -207,9 +207,9 @@ if [ $? -ne 0 ]; then
 fi
 
 # Copy the full image asynchronously, so that we can return quickly
-nohup /usr/bin/nice -n 10 md5sum $IMAGE >$VM_DIR/$(basename $IMAGE).sum 2>>$VM_DIR/kvm_console &
+nohup /usr/bin/nice -n 10 md5sum $IMAGE </dev/null >$VM_DIR/$(basename $IMAGE).sum 2>>$VM_DIR/kvm_console &
 (nohup /usr/bin/nice -n 10 dd if=$IMAGE of=$VM_DIR/$(basename $IMAGE) bs=$DD_BLOCK_SIZE 2>>$VM_DIR/kvm_console >>$VM_DIR/kvm_console; \
-       /usr/bin/nice -n 10 md5sum $VM_DIR/$(basename $IMAGE) >$VM_DIR/$(basename $IMAGE).newsum 2>>$VM_DIR/kvm_console) &
+       /usr/bin/nice -n 10 md5sum $VM_DIR/$(basename $IMAGE) >$VM_DIR/$(basename $IMAGE).newsum 2>>$VM_DIR/kvm_console) </dev/null >/dev/null 2>/dev/null &
 
 # Record configuration parameters to config file
 cat <<EOF > $VM_DIR/config
@@ -276,7 +276,7 @@ fi
 # This conversion to qcow2 format saves significant disk space (for example, 10GB file -> 53MB file)
 (nohup qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}.done 2>$VM_DIR/kvm_console >/dev/null \
     && rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>$VM_DIR/kvm_console >/dev/null \
-    && mv $VM_DIR/${SECURE_VOL_NAME}.done $VM_DIR/$SECURE_VOL_NAME 2>$VM_DIR/kvm_console >/dev/null ) &
+    && mv $VM_DIR/${SECURE_VOL_NAME}.done $VM_DIR/$SECURE_VOL_NAME 2>$VM_DIR/kvm_console >/dev/null ) </dev/null >/dev/null 2>/dev/null &
 
 # Return results (only reaches here if no errors occur)
 exit 0
