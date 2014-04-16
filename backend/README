@@ -39,6 +39,10 @@ installation of an SSH daemon to facilitate SSH connections over the forwarded
 port, and adding any domain names that will be needed in secure mode to the
 hosts file, as there is no DNS access in secure mode.
 
+If a results release script is available for your guest's platform, it can be
+added to the guest.  You can identify if such a script already exists in the
+format release.<platform> in the release-scripts directory.
+
 GUEST IMAGE CONFIGURATION
 --------------------------------------------------
 
