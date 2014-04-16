@@ -120,17 +120,19 @@ while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
     continue
   fi
 
-  sudo mount -o loop,ro $VM_DIR/spool_volume $VM_DIR/release/
+  sudo mount -o loop,rw $VM_DIR/spool_volume $VM_DIR/release/
 
   # Connect to sql server and upload file
   curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" $DB_URL
   UPLOAD_RES=$?
 
-  sudo umount $VM_DIR/release/
-
   if [[ $UPLOAD_RES -ne 0 ]]; then
     echo "Failed to release file '$RES_FILENAME' (error code $UPLOAD_RES)" >> $VM_DIR/last_run
+  else
+    touch $VM_DIR/release/done
   fi
+
+  sudo umount $VM_DIR/release/
 
 done
 

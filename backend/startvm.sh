@@ -165,6 +165,8 @@ cat <<EOF >> $VM_DIR/kvm_console
 
 EOF
 
+rm -rf $VM_DIR/release_mon
+
 # Start guest process
 nohup $SCRIPT_DIR/tapinit qemu-system-x86_64					\
 		   -enable-kvm							\

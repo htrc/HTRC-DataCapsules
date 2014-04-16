@@ -44,14 +44,15 @@ GUEST IMAGE CONFIGURATION
 
 To create a guest disk image, run the command:
 
-qemu-img create -t qcow2 <FILENAME> <DISK SIZE>
+qemu-img create -f qcow2 <FILENAME> <DISK SIZE>
 
 where the desired filename and disk image size are substituted.  Disk size may
 be expressed with a suffix (i.e. 20G or 500M).  Once an image has been created,
 it can then be booted and configured using the vmadmin.sh script.  This script
 will start a VM using that disk image and allow you to install operating
 systems and configure them by supplying an iso image with the --cdrom option.
-For example (where <DISK IMAGE> is the image file created in the previous step):
+For example, after downloading the installation iso image for Ubuntu 10.04, we
+can run (where <DISK IMAGE> is the image file created in the previous step):
 
 vmadmin.sh <DISK IMAGE> --vnc 5900 --cdrom ubuntu-10-04.iso
 
