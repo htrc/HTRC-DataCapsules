@@ -72,7 +72,7 @@ if [[ "$ACTION" = "done" ]]; then
     fi
    fi
 
-  echo -n "results.zip" >> /dev/ttyS0
+  echo "results.zip" >> /dev/ttyS0
 
   for time in $(seq 1 $TIMEOUT); do
     if [ -e /media/release_spool/done ]; then
