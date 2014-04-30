@@ -31,14 +31,16 @@ sourceSets {
 }
 
 repositories {
-	flatDir {
-		dirs 'src/libs/'
-	}
+	//flatDir {
+	//	dirs 'src/libs/'
+	//}
+	mavenCentral()
 }
 
 dependencies {
-    viewerSwingCompile group: 'com.jcraft', name: 'jsch', version: '0.1.+', ext: 'jar'
-    viewerSwingRuntime configurations.viewerSwingCompile
+    //viewerSwingCompile group: 'com.jcraft', name: 'jsch', version: '0.1.50', ext: 'jar'
+    //viewerSwingRuntime configurations.viewerSwingCompile
+	compile group: 'com.jcraft', name: 'jsch', version: '0.1.50', ext: 'jar'
     testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
