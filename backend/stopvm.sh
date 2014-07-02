@@ -15,6 +15,7 @@
 # limitations under the License.
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
 
 usage () {
 
@@ -126,7 +127,7 @@ if [ -e $VM_DIR/pid ]; then
 
     echo "quit" | nc -U $VM_DIR/monitor >/dev/null
 
-    if pidof qemu-system_x86_64 | grep -q $VM_PID; then
+    if pidof `basename $QEMU` | grep -q $VM_PID; then
       
       KILL_RES=$(kill $VM_PID 2>&1)
   

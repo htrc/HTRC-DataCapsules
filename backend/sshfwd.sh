@@ -15,6 +15,7 @@
 # limitations under the License.
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
 
 ACTION=$1
 VM_MAC_ADDR=$2

@@ -15,9 +15,7 @@
 # limitations under the License.
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
-
-DB_URL=http://thatchpalm.pti.indiana.edu:9001/sloan-ws-1.1-SNAPSHOT/upload
-#DB_URL=http://toronto.eecs.umich.edu:9001/upload
+. $SCRIPT_DIR/capsules.cfg
 
 usage () {
 
@@ -31,7 +29,7 @@ usage () {
 
 }
 
-REQUIRED_OPTS="VM_DIR"
+REQUIRED_OPTS="VM_DIR DB_URL"
 ALL_OPTS="$REQUIRED_OPTS DB_SERVER"
 UNDEFINED=12345capsulesxXxXxundefined54321
 

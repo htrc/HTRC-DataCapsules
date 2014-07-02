@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
+
 usage () {
 
   echo "Usage: $0 <qemu Disk Image File> --cdrom <CD-ROM Image> --vnc <VNC Port>"
@@ -109,7 +112,7 @@ if [[ $CD_ROM = $UNDEFINED ]]; then
 fi
 
 # Start guest process
-nohup qemu-system-x86_64				\
+nohup $QEMU						\
 		   -enable-kvm				\
 		   -m 2G				\
 		   -smp 1				\

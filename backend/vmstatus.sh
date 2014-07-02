@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
+
 STAT="Status: "
 STAT_RUNNING="$STAT Running"
 STAT_NOT_RUNNING="$STAT Not_Running"
@@ -96,7 +99,7 @@ if [ -e $VM_DIR/pid ]; then
   VM_PID=`cat $VM_DIR/pid`
  
   # If no process is running with that pid, then it probably shut down naturally
-  if pidof qemu-system-x86_64 | grep -q $VM_PID; then
+  if pidof `basename $QEMU` | grep -q $VM_PID; then
     echo "$STAT_RUNNING"
   else
     echo "$STAT_NOT_RUNNING"

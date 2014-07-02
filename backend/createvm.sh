@@ -17,6 +17,7 @@
 DD_BLOCK_SIZE=2048k
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
 
 usage () {
 

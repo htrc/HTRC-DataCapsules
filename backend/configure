@@ -37,7 +37,7 @@ sudo cp /etc/sudoers /etc/sudoers.bak
 sudo cp /etc/sudoers /etc/sudoers.tmp
 
 sudo chmod 0640 /etc/sudoers.tmp
-sudo echo "$USERNAME ALL=(ALL) NOPASSWD: $SCRIPT_DIR/sshfwd.sh, NOPASSWD: $SCRIPT_DIR/fw.sh, NOPASSWD: /bin/mount, NOPASSWD: /bin/umount" >> /etc/sudoers.tmp
+sudo echo "$USERNAME ALL=(ALL) NOPASSWD: $SCRIPT_DIR/sshfwd.sh, NOPASSWD: $SCRIPT_DIR/fw.sh, NOPASSWD: $SCRIPT_DIR/launchkvm.sh, NOPASSWD: /bin/mount, NOPASSWD: /bin/umount" >> /etc/sudoers.tmp
 sudo chmod 0440 /etc/sudoers.tmp
 
 sudo mv /etc/sudoers.tmp /etc/sudoers

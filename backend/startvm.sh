@@ -16,6 +16,7 @@
 
 DD_BLOCK_SIZE=2048k
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
 
 # Timeout for boot, in seconds
 TIMEOUT=120
@@ -167,15 +168,17 @@ EOF
 
 rm -rf $VM_DIR/release_mon
 
+sudo $SCRIPT_DIR/launchkvm.sh
+
 # Start guest process
-nohup $SCRIPT_DIR/tapinit qemu-system-x86_64					\
+nohup $SCRIPT_DIR/tapinit $QEMU							\
 		   -enable-kvm							\
 		   -snapshot							\
 		   -no-shutdown							\
 		   -m $MEM_SIZE							\
 		   -smp $NUM_VCPU						\
 		   -pidfile $VM_DIR/pid						\
-		   -monitor unix:$VM_DIR/monitor,server				\
+		   -monitor unix:$VM_DIR/monitor,server,nowait			\
 		   -serial file:$VM_DIR/release_mon 				\
 		   -usb								\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
@@ -221,7 +224,7 @@ done
 ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1
 
 if [ $? -ne 0 ]; then
-  if pidof qemu-system-x86_64 | grep -q $VM_PID; then
+  if pidof `basename $QEMU` | grep -q $VM_PID; then
     echo "Warning: guest failed to obtain IP address within $TIMEOUT seconds; may have failed to boot"
   fi
 fi
