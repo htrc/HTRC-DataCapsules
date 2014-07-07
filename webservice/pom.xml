@@ -11,27 +11,15 @@
 
 	<repositories>
 		<repository>
-			<id>htrc.archiva.internal</id>
-			<name>HTRC Archiva Internal Repository</name>
-			<url>http://htrc.illinois.edu:8080/archiva/repository/internal</url>
+			<id>nexus</id>
+            <name>HTRC Nexus Repository</name>
+            <url>http://htrc.illinois.edu/nexus/content/groups/public/</url>
 			<releases>
 				<enabled>true</enabled>
 				<updatePolicy>daily</updatePolicy>
 			</releases>
 			<snapshots>
 				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		<repository>
-			<id>htrc.archiva.snapshots</id>
-			<name>HTRC Archiva Snapshots Repository</name>
-			<url>http://htrc.illinois.edu:8080/archiva/repository/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
 		<repository>
