@@ -1,0 +1,143 @@
+\documentclass{acm_proc_article-sp}
+
+\usepackage{epstopdf}
+
+\begin{document}
+
+\title{Securing Remote Access to Sensitive Data}
+
+%\numberofauthors{2} 
+%
+%\author{
+%\alignauthor Alexander Crowell \\
+%       \affaddr{Computer Science and Engineering Division}\\
+%       \affaddr{University of Mighigan}\\
+%       \affaddr{Ann Arbor, MI, USA}\\
+%       \email{crowella@umich.edu}
+%\alignauthor Atul Prakash \\
+%       \affaddr{Computer Science and Engineering Division}\\
+%       \affaddr{University of Mighigan}\\
+%       \affaddr{Ann Arbor, MI, USA}\\
+%       \email{aprakash@umich.edu}
+%}
+
+\maketitle
+\begin{abstract}
+
+As we enter an era of ``big data", where analysis of large-scale data is
+revealing important insights into a variety of fields, there is an ever greater
+demand for access to new data wherein the potential for new insights may lie.
+However, in many cases, this need for access conflicts with the desire to
+protect data privacy.  Indeed, many types of important data present just such a
+dilemma, including copyrighted data, personal information of individuals, and
+data containing state or corporate secrets.
+
+In this paper, we propose Data Capsules, a system that is designed to enable
+more secure access to sensitive data while maintaining reasonable guarantees of
+data privacy.  Data Capsules uses virtualization to provide remote users with a
+secure, privileged environment in which they can access and analyze sensitive
+data using software of their choice, while minimizing the available channels for
+data leaks, including covert channels.  Our early implementation realizes most
+of this protection, with the exception of the end user's remote desktop
+connection.
+
+\end{abstract}
+
+\category{D.4.6}{Operating Systems}{Security and Protection}
+\category{H.3.4}{Systems and Software}{Distributed Systems}[cloud computing, data capsules]
+
+\keywords{data capsules, data privacy}
+
+\section{Introduction}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent eget
+tristique dolor, sit amet volutpat lacus. Curabitur nec enim id sapien molestie
+feugiat\cite{clark:pct}. Integer adipiscing sapien urna, rhoncus vehicula elit pellentesque at.
+Aliquam pulvinar feugiat dui quis porta. Cras et erat justo. Phasellus at neque
+sed nisl tincidunt consectetur ut eget ante. Donec porta urna ut bibendum
+cursus. Aenean euismod pellentesque turpis vitae placerat. Nam orci turpis,
+pharetra et lacus sit amet, accumsan semper massa. 
+
+%Morbi metus nulla, tristique
+%nec arcu a, ornare fermentum lectus. Curabitur interdum libero non massa
+%laoreet commodo. Morbi porta, risus sit amet rhoncus egestas, felis diam
+%sollicitudin massa, eu iaculis purus sem in turpis. Duis commodo facilisis
+%purus non volutpat. Ut ullamcorper metus in ultrices tempus. Integer nec quam
+%vitae justo dictum vehicula a non augue. Proin sit amet gravida libero.
+%
+Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
+magna. Sed convallis pulvinar eros sed consequat. Pellentesque posuere orci id
+leo molestie, ac rutrum dolor pretium. In orci lectus, sollicitudin nec tellus
+non, dictum egestas ante. Ut venenatis libero risus, sed auctor lorem
+scelerisque at. Suspendisse porta elementum magna, id ornare erat placerat at.
+In tincidunt dolor porta justo rhoncus elementum.
+
+Nullam viverra turpis nisi, id consequat urna pulvinar eu. Praesent ac pulvinar
+nisl. Integer vel est a libero molestie mollis id vel tortor. Morbi ante odio,
+cursus et volutpat a, pharetra at erat. Pellentesque habitant morbi tristique
+senectus et netus et malesuada fames ac turpis egestas. Curabitur dignissim,
+purus at auctor laoreet, magna mi auctor nulla, et mollis eros nisl vel lectus.
+Integer bibendum purus ac adipiscing bibendum.
+
+Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
+magna. Sed convallis pulvinar eros sed consequat. Pellentesque posuere orci id
+leo molestie, ac rutrum dolor pretium. In orci lectus, sollicitudin nec tellus
+non, dictum egestas ante. Ut venenatis libero risus, sed auctor lorem
+scelerisque at. Suspendisse porta elementum magna, id ornare erat placerat at.
+In tincidunt dolor porta justo rhoncus elementum.
+
+Nullam viverra turpis nisi, id consequat urna pulvinar eu. Praesent ac pulvinar
+nisl. Integer vel est a libero molestie mollis id vel tortor. Morbi ante odio,
+cursus et volutpat a, pharetra at erat. Pellentesque habitant morbi tristique
+senectus et netus et malesuada fames ac turpis egestas. Curabitur dignissim,
+purus at auctor laoreet, magna mi auctor nulla, et mollis eros nisl vel lectus.
+Integer bibendum purus ac adipiscing bibendum.
+
+\section{Related Work}
+Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
+magna. Sed convallis pulvinar eros sed consequat. Pellentesque posuere orci id
+leo molestie, ac rutrum dolor pretium. In orci lectus, sollicitudin nec tellus
+non, dictum egestas ante. Ut venenatis libero risus, sed auctor lorem
+scelerisque at. Suspendisse porta elementum magna, id ornare erat placerat at.
+In tincidunt dolor porta justo rhoncus elementum.
+
+\section{Background}
+Nullam viverra turpis nisi, id consequat urna pulvinar eu. Praesent ac pulvinar
+nisl. Integer vel est a libero molestie mollis id vel tortor. Morbi ante odio,
+cursus et volutpat a, pharetra at erat. Pellentesque habitant morbi tristique
+senectus et netus et malesuada fames ac turpis egestas. Curabitur dignissim,
+purus at auctor laoreet, magna mi auctor nulla, et mollis eros nisl vel lectus.
+Integer bibendum purus ac adipiscing bibendum.
+
+\section{Design and Implementation}
+Suspendisse potenti. Donec ornare metus sem, vel semper arcu fermentum in. Nunc
+vehicula eros turpis, ut rhoncus nunc sodales pulvinar. Duis sed est interdum,
+semper mi a, cursus sapien. Nulla elementum congue purus, eu faucibus nibh
+congue et. Ut diam metus, euismod ac quam in, gravida dictum turpis. Vivamus
+hendrerit facilisis tempor. Curabitur hendrerit orci ac libero vestibulum, sit
+amet dictum enim viverra. Nulla rutrum dolor ligula, nec rutrum massa suscipit
+volutpat. Aliquam id mi at velit aliquet imperdiet at nec mi. Integer in massa
+nec augue dapibus ullamcorper. Aliquam nec sollicitudin elit.
+
+\section{Discussion and Future Work}
+In eu gravida ligula, sit amet tincidunt nisi. Interdum et malesuada fames ac
+ante ipsum primis in faucibus.  Vestibulum venenatis non sem vitae hendrerit.
+Cras accumsan vel mauris ut vestibulum. Pellentesque auctor quam ut nisl
+commodo malesuada. Phasellus adipiscing placerat tortor, in convallis massa
+cursus eu. Vestibulum ullamcorper lorem vel nunc dictum, elementum pretium
+nulla tincidunt.
+
+\section{Conclusions}
+
+Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilisi.
+Etiam viverra condimentum accumsan. Mauris sed dolor sed mi dignissim
+vulputate. Duis pharetra purus purus, eu ultricies ligula dignissim vel. Sed
+nec mauris a turpis luctus placerat id ut ipsum. Fusce quis tincidunt dolor.
+Nunc mattis ornare sem, vel consectetur ipsum iaculis ac. Aenean nulla lacus,
+iaculis sed tempor nec, euismod suscipit dui.
+
+% References
+\bibliographystyle{abbrv}
+\bibliography{paper}
+
+%\balancecolumns
+\end{document}
