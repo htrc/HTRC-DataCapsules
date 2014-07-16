@@ -33,7 +33,7 @@ dilemma, including copyrighted data, personal information of individuals, and
 data containing state or corporate secrets.
 
 In this paper, we propose Data Capsules, a system that is designed to enable
-more secure access to sensitive data while maintaining reasonable guarantees of
+flexible access to sensitive data while maintaining reasonable guarantees of
 data privacy.  Data Capsules uses virtualization to provide remote users with a
 secure, privileged environment in which they can access and analyze sensitive
 data using software of their choice, while minimizing the available channels for
@@ -49,48 +49,19 @@ connection.
 \keywords{data capsules, data privacy}
 
 \section{Introduction}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent eget
-tristique dolor, sit amet volutpat lacus. Curabitur nec enim id sapien molestie
-feugiat\cite{clark:pct}. Integer adipiscing sapien urna, rhoncus vehicula elit pellentesque at.
-Aliquam pulvinar feugiat dui quis porta. Cras et erat justo. Phasellus at neque
-sed nisl tincidunt consectetur ut eget ante. Donec porta urna ut bibendum
-cursus. Aenean euismod pellentesque turpis vitae placerat. Nam orci turpis,
-pharetra et lacus sit amet, accumsan semper massa. 
 
-%Morbi metus nulla, tristique
-%nec arcu a, ornare fermentum lectus. Curabitur interdum libero non massa
-%laoreet commodo. Morbi porta, risus sit amet rhoncus egestas, felis diam
-%sollicitudin massa, eu iaculis purus sem in turpis. Duis commodo facilisis
-%purus non volutpat. Ut ullamcorper metus in ultrices tempus. Integer nec quam
-%vitae justo dictum vehicula a non augue. Proin sit amet gravida libero.
-%
-Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
-magna. Sed convallis pulvinar eros sed consequat. Pellentesque posuere orci id
-leo molestie, ac rutrum dolor pretium. In orci lectus, sollicitudin nec tellus
-non, dictum egestas ante. Ut venenatis libero risus, sed auctor lorem
-scelerisque at. Suspendisse porta elementum magna, id ornare erat placerat at.
-In tincidunt dolor porta justo rhoncus elementum.
+In the age of the Internet, new data is being created at incredible rates
+\cite{digital-universe}.  Along with these waves of new data, new tools have
+in turn been created to help analyze and gain insight from it. Unfortunately,
+access to data is not always a simple matter.  Some types of data may be
+sensitive, including data protected by copyright, data representing the personal
+information of individuals, as well as any data that may contain secrets that
+its owner does not wish to have revealed, for example corporate or state secrets.
 
-Nullam viverra turpis nisi, id consequat urna pulvinar eu. Praesent ac pulvinar
-nisl. Integer vel est a libero molestie mollis id vel tortor. Morbi ante odio,
-cursus et volutpat a, pharetra at erat. Pellentesque habitant morbi tristique
-senectus et netus et malesuada fames ac turpis egestas. Curabitur dignissim,
-purus at auctor laoreet, magna mi auctor nulla, et mollis eros nisl vel lectus.
-Integer bibendum purus ac adipiscing bibendum.
-
-Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
-magna. Sed convallis pulvinar eros sed consequat. Pellentesque posuere orci id
-leo molestie, ac rutrum dolor pretium. In orci lectus, sollicitudin nec tellus
-non, dictum egestas ante. Ut venenatis libero risus, sed auctor lorem
-scelerisque at. Suspendisse porta elementum magna, id ornare erat placerat at.
-In tincidunt dolor porta justo rhoncus elementum.
-
-Nullam viverra turpis nisi, id consequat urna pulvinar eu. Praesent ac pulvinar
-nisl. Integer vel est a libero molestie mollis id vel tortor. Morbi ante odio,
-cursus et volutpat a, pharetra at erat. Pellentesque habitant morbi tristique
-senectus et netus et malesuada fames ac turpis egestas. Curabitur dignissim,
-purus at auctor laoreet, magna mi auctor nulla, et mollis eros nisl vel lectus.
-Integer bibendum purus ac adipiscing bibendum.
+One good example of a system for access to sensitive data is the data for the
+United States Census.  The federal government established the Census Research
+Data Centers to enable researchers access to unpublished Census data for the
+purpose of conducting research that could provide guidance on public policy.
 
 \section{Related Work}
 Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
@@ -130,7 +101,7 @@ nulla tincidunt.
 
 Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilisi.
 Etiam viverra condimentum accumsan. Mauris sed dolor sed mi dignissim
-vulputate. Duis pharetra purus purus, eu ultricies ligula dignissim vel. Sed
+vulputate. Duis \cite{clark:pct }pharetra purus purus, eu ultricies ligula dignissim vel. Sed
 nec mauris a turpis luctus placerat id ut ipsum. Fusce quis tincidunt dolor.
 Nunc mattis ornare sem, vel consectetur ipsum iaculis ac. Aenean nulla lacus,
 iaculis sed tempor nec, euismod suscipit dui.
