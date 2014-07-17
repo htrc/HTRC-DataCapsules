@@ -33,13 +33,13 @@ dilemma, including copyrighted data, personal information of individuals, and
 data containing state or corporate secrets.
 
 In this paper, we propose Data Capsules, a system that is designed to enable
-flexible access to sensitive data while maintaining reasonable guarantees of
-data privacy.  Data Capsules uses virtualization to provide remote users with a
-secure, privileged environment in which they can access and analyze sensitive
-data using software of their choice, while minimizing the available channels for
-data leaks, including covert channels.  Our early implementation realizes most
-of this protection, with the exception of the end user's remote desktop
-connection.
+access to sensitive data for analysis by trusted remote users, while
+maintaining reasonable guarantees of data security.  Data Capsules uses
+virtualization to provide remote users with a privileged, but secure
+environment into which they can bring arbitrary, and even potentially
+malicious, software or data in order to analyze sensitive data, while
+minimizing the available channels for data leaks.  Our early implementation
+realizes much of this protection, providing a basic framework for secure analysis of data that addresses many aspects of network, storage, and covert channel security.
 
 \end{abstract}
 
@@ -101,7 +101,7 @@ nulla tincidunt.
 
 Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilisi.
 Etiam viverra condimentum accumsan. Mauris sed dolor sed mi dignissim
-vulputate. Duis \cite{clark:pct }pharetra purus purus, eu ultricies ligula dignissim vel. Sed
+vulputate. Duis \cite{clark:pct} pharetra purus purus, eu ultricies ligula dignissim vel. Sed
 nec mauris a turpis luctus placerat id ut ipsum. Fusce quis tincidunt dolor.
 Nunc mattis ornare sem, vel consectetur ipsum iaculis ac. Aenean nulla lacus,
 iaculis sed tempor nec, euismod suscipit dui.
