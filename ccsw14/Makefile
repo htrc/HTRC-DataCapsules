@@ -5,7 +5,7 @@ LATEX= pdflatex
 LFLAGS= -file-line-error -halt-on-error -shell-escape
 #LFLAGS=
 
-#Q=1
+Q=1
 QUIET= $(if $(Q),2>&1 | grep -iE "warning|error" -C 2 || true)
 SILENT= $(if $(Q),2>&1 >/dev/null)
 

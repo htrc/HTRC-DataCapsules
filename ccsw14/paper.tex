@@ -59,9 +59,38 @@ information of individuals, as well as any data that may contain secrets that
 its owner does not wish to have revealed, for example corporate or state secrets.
 
 One good example of a system for access to sensitive data is the data for the
-United States Census.  The federal government established the Census Research
-Data Centers to enable researchers access to unpublished Census data for the
-purpose of conducting research that could provide guidance on public policy.
+United States Census.  The federal government established Census Research Data
+Centers (RDCs) to enable researchers access to unpublished Census data for the
+purpose of conducting research that could provide beneficial guidance to public
+policy.  Once granted access, a researcher must visit one of the CRDCs in
+person, and will then be permitted to use preallocated machines with preloaded
+software in order to conduct their research.  Upon completion of their research,
+their results are human-audited to protect confidentiality, and then released.
+While this system provides access to Census data, and seems robust to data
+leaks, it is also highly restrictive, requiring researchers to relocate and use
+foreign hardware to conduct research.
+
+More recently, the Centers for Medicare and Medicaid Services began providing
+Medicare and Medicaid data using the CMS Virtual Research Data Center (VRDC) in
+2013.  VRDC provides a more flexible model by allowing researchers to remotely
+access desktop environments provided by a cloud infrastructure.  This model
+relieves researchers of the need to travel to a physical location, and also
+avoids the security risk of researchers having to receive and safeguard physical
+copies of the data, while they are conducting their research.
+
+However, even this remote access model is still restrictive, in that researchers
+are largely limited to the data analysis tools and software that are made
+available to them in their virtual environments, and any new data or software
+one wishes to upload to a research environment must first undergo a review
+process. To solve this substantial inconvenience, we propose a new system which
+we call Data Capsules.  While, to an end user, a Data Capsules environment will
+minimally differ from the type of environment provided by the CMS Virtual
+Research Data Center, its design grants end users privileged access to install
+software of their choice --- even down to the virtualization-compatible
+operating system of their choice --- without requiring a review process and
+without any compromise to the security of the data being provided.
+
+
 
 \section{Related Work}
 Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
