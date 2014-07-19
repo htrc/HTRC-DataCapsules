@@ -4,7 +4,7 @@
 
 \begin{document}
 
-\title{Securing Remote Access to Sensitive Data}
+\title{Improving the Usability of Remote Access to Sensitive Data}
 
 \author{
 Draft Copy
@@ -132,22 +132,93 @@ the data from the secure mode environment.
 In the following sections, we discuss related work, elaborate on the design and implementation of the Data Capsules system, and discuss the current state of the project and potential directions for future work.
 
 \section{Related Work}
-Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
-magna. Sed convallis pulvinar eros sed consequat. Pellentesque posuere orci id
-leo molestie, ac rutrum dolor pretium. In orci lectus, sollicitudin nec tellus
-non, dictum egestas ante. Ut venenatis libero risus, sed auctor lorem
-scelerisque at. Suspendisse porta elementum magna, id ornare erat placerat at.
-In tincidunt dolor porta justo rhoncus elementum.
 
-\section{Background}
-Nullam viverra turpis nisi, id consequat urna pulvinar eu. Praesent ac pulvinar
-nisl. Integer vel est a libero molestie mollis id vel tortor. Morbi ante odio,
-cursus et volutpat a, pharetra at erat. Pellentesque habitant morbi tristique
-senectus et netus et malesuada fames ac turpis egestas. Curabitur dignissim,
-purus at auctor laoreet, magna mi auctor nulla, et mollis eros nisl vel lectus.
-Integer bibendum purus ac adipiscing bibendum.
 
-\section{Design and Implementation}
+\section{Design}
+
+We now discuss the design of the Data Capsules system.  This includes the
+functional requirements for the two modes of operation and a discussion of how
+the system avoids various channels for leaking data.
+
+\subsection{Security Guarantees and Threat Model}
+
+The goal of the Data Capsules system is to provide a usable environment for data
+analysis that also provides a reasonably strong (as we elaborate on below)
+guarantee of data privacy from parties other than the end user to whom a VM
+belongs.  Data Capsules is not designed to provide any protection to the
+integrity of sensitive data.  This is assumed trivial, as the sensitive data is
+presumably unchanging, so that making it read-only and creating appropriate
+backup copies should be a sufficient practice to ensure the data's integrity.
+
+The end user is assumed to be largely trustworthy, since they have presumably
+undergone a vetting process before receiving permission to analyze the sensitive
+data.  However, we do recognize the possibility that others could gain temporary
+access to a VM, for example by using a researcher's machine after they
+momentarily step away.  If the device through which an end user accesses their
+remote VM becomes compromised, this could also open the possibility of long-term
+access to the VM.  While the current implementation does not fully address
+either of these possibilities, we discuss the paths we are investigating in
+Section \ref{sec:Discussion}. 
+
+Within a user's VM, we make no assumptions about the software environment and
+treat everything as untrusted, down to the operating system.  Data Capsules is
+designed so that malicious software may succeed in accessing the sensitive data,
+but will be incapable of reliably exfiltrating it from the virtual machine.
+Under this design, we consider the following potential channels for data leaks:
+
+\textbf{Storage Channels} It should not be possible for data that is produced
+as the result of an operation whose input includes sensitive data to be stored
+in such a way that it is accessible outside of secure mode.
+
+\textbf{Network Channels} When a VM has access to sensitive data, e.g. when it
+is in secure mode, it should not be able to access any other machine over the
+network, with the exception of machines that are serving the sensitive data.
+
+\textbf{Virtual Machine Access Channels} End users must access their VMs
+through some network channel that connects a physical device (e.g. the user's
+laptop) to the Data Capsules infrastructure.  This could be a remote terminal
+connection such as SSH, or a remote desktop connection such as VNC or RDP.  In
+both cases, steps must be taken to limit or eliminate channel bandwidth in order
+to protect against the consequences of short and long-term compromises.
+
+\textbf{Intramachine Covert Channels} If there are multiple VMs sharing a
+single physical machine, Data Capsules must ensure that it is not possible for
+one VM running in secure mode (and hence with access to sensitive data) to then
+leak that data to a separate coresident VM running in maintenance mode, which
+could then easily relay that data through any of the aforementioned channels.
+
+\textbf{Intermachine Covert Channels} If there are multiple physical machines
+serving VMs, there may be unexpected covert channels between them that could
+allow similar data leaks from secure to maintenance VMs.  Although such attacks
+are likely somewhat difficult to implement and unlikely to have very high
+bandwidth, steps should be taken to minimize any such known channels to the
+highest degree possible without substantially impacting performance.
+
+The virtual machine infrastructure that underlies the Data Capsules system is
+trusted and assumed to be well implemented.  While such an assumption may be
+somewhat controversial, we note its use in prior work~\cite{capsules}, and also
+note the existence of microkernels such as seL4 and OKL4~\cite{sel4, OKL4},
+which serve as a proof of concept that it is possible to create a lightweight
+hypervisor with a reasonable degree of trustworthiness.  However, the
+development of such a hypervisor lies outside the scope of this paper.
+
+\subsection{Design Overview}
+
+Data Capsules makes heavy use of virtualization.  For each system user, there
+are one or more corresponding VMs.  Multiple VMs per user may be useful in
+situations where there is a large repository of data that is separated into
+multiple corpora each with their own access permissions.  In this case, a user
+could potentially have multiple VMs, each with access to a different corpus.
+However, the handling of such an access permissions system is outside the scope
+of this paper.
+
+The fundamental element that provides the guarantees
+
+\subsection{Maintenance Mode}
+
+
+
+\section{Implementation}
 Suspendisse potenti. Donec ornare metus sem, vel semper arcu fermentum in. Nunc
 vehicula eros turpis, ut rhoncus nunc sodales pulvinar. Duis sed est interdum,
 semper mi a, cursus sapien. Nulla elementum congue purus, eu faucibus nibh
@@ -158,6 +229,7 @@ volutpat. Aliquam id mi at velit aliquet imperdiet at nec mi. Integer in massa
 nec augue dapibus ullamcorper. Aliquam nec sollicitudin elit.
 
 \section{Discussion and Future Work}
+\label{sec:Discussion}
 In eu gravida ligula, sit amet tincidunt nisi. Interdum et malesuada fames ac
 ante ipsum primis in faucibus.  Vestibulum venenatis non sem vitae hendrerit.
 Cras accumsan vel mauris ut vestibulum. Pellentesque auctor quam ut nisl
