@@ -6,6 +6,10 @@
 
 \title{Securing Remote Access to Sensitive Data}
 
+\author{
+Draft Copy
+}
+
 %\numberofauthors{2} 
 %
 %\author{
@@ -90,7 +94,42 @@ software of their choice --- even down to the virtualization-compatible
 operating system of their choice --- without requiring a review process and
 without any compromise to the security of the data being provided.
 
+Data Capsules makes use of virtualization as a key element in achieving this
+security and usability goal.  Under the Data Capsules use model, a researcher
+would be allocated a virtual machine (henceforth abbreviated as VM, or guest
+VM), which they could then prepare and maintain with whatever software and
+underlying operating system is best suited to the intended purpose.  Each Data
+Capsules VM is endowed with two modes of operation.  In \emph{maintenance} mode,
+the researcher is endowed with full Internet access, which enables them to
+easily configure and maintain the software environment almost as if they were
+using a their own personal machine; however, in maintenance mode, the researcher
+does not have access to the sensitive data.  In order to gain access to this
+data, the user must switch their VM to the second mode, which we call
+\emph{security} mode.  In security mode, the user's VM state is saved, and
+execution continues on an alternate machine that is firewalled to prevent
+Internet access, but which does have access to the sensitive data.
 
+In this manner, once a user has configured their system and is prepared to
+run their analysis on the data, they simply switch to security mode and start
+the analysis.  Any results obtained from this analysis can then be stored in a
+designated \emph{secure storage volume}, which is only attached to the VM in
+secure mode.  Since this result data is only accessible in secure mode, it
+follows that data can only be released from the virtual environment when in
+secure mode.
+
+When a user wishes to further change their software environment in order to
+continue data analysis, they may then switch back to maintenance mode, after
+which the secure storage volume will detatch, and all VM state since the
+previous switch to secure mode is discarded, with the VM continuing to run from
+the point it left off at when last in maintenance mode.  In this way, every
+trace of the operations performed on the sensitive data is erased and forgotten.
+
+Furthermore, assuming any sensitive data is read-only, and is properly backed
+up, Data Capsules functionality means that there is no need to audit installed
+software for malware, as even infected software would be unable to exfiltrate
+the data from the secure mode environment.
+
+In the following sections, we discuss related work, elaborate on the design and implementation of the Data Capsules system, and discuss the current state of the project and potential directions for future work.
 
 \section{Related Work}
 Donec ornare iaculis nisl, sit amet luctus metus varius ac. Nam eget tincidunt
