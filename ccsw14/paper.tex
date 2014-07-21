@@ -1,13 +1,16 @@
 \documentclass{acm_proc_article-sp}
 
 \usepackage{epstopdf}
+\usepackage{datetime}
+\usdate
+\settimeformat{ampmtime}
 
 \begin{document}
 
 \title{Improving Usability of Remote Access to Sensitive Data}
 
 \author{
-Draft Copy: \today
+Draft Copy: \today\ \currenttime
 }
 
 %\numberofauthors{2} 
@@ -43,7 +46,9 @@ virtualization to provide remote users with a privileged, but secure
 environment into which they can bring arbitrary, and even potentially
 malicious, software or data in order to analyze sensitive data, while
 minimizing the available channels for data leaks.  Our early implementation
-realizes much of this protection, providing a basic framework for secure analysis of data that addresses many aspects of network, storage, and covert channel security.
+realizes much of this protection, providing a basic framework for secure
+analysis of data that addresses many aspects of network, storage, and covert
+channel security.
 
 \end{abstract}
 
@@ -62,14 +67,16 @@ sensitive, including data protected by copyright, data representing the personal
 information of individuals, as well as any data that may contain secrets that
 its owner does not wish to have revealed, for example corporate or state secrets.
 
-% Mention state of the art for supervised research
+Current state-of-the-art systems developed for the purpose of enabling access to
+these types of data use remotely accessed machines, which can then be used by
+researchers without the need for travel to conduct their analysis. But beyond
+this apparent convenience, rules for using such systems are often highly
+restrictive, with researchers limited to using predefined software environments,
+and being subject to strict auditing requirements for all software and data that
+is uploaded to these software environments.  
 
-However, even this remote access model is still restrictive, in that researchers
-are largely limited to the data analysis tools and software that are made
-available to them in their virtual environments, and any new data or software
-one wishes to upload to a research environment must first undergo a review
-process. To solve this substantial inconvenience, we propose a new system which
-we call Data Capsules.  While, to an end user, a Data Capsules environment will
+To solve this substantial inconvenience, we propose a new system which we call
+Data Capsules.  While, to an end user, a Data Capsules environment will
 minimally differ from the type of environment provided by the CMS Virtual
 Research Data Center, its design grants end users privileged access to install
 software of their choice --- even down to the virtualization-compatible
@@ -87,12 +94,12 @@ easily configure and maintain the software environment almost as if they were
 using a their own personal machine; however, in maintenance mode, the researcher
 does not have access to the sensitive data.  In order to gain access to this
 data, the user must switch their VM to the second mode, which we call
-\emph{security} mode.  In security mode, the user's VM state is saved, and
+\emph{secure} mode.  In secure mode, the user's VM state is saved, and
 execution continues on an alternate machine that is firewalled to prevent
 Internet access, but which does have access to the sensitive data.
 
 In this manner, once a user has configured their system and is prepared to
-run their analysis on the data, they simply switch to security mode and start
+run their analysis on the data, they simply switch to secure mode and start
 the analysis.  Any results obtained from this analysis can then be stored in a
 designated \emph{secure storage volume}, which is only attached to the VM in
 secure mode.  Since this result data is only accessible in secure mode, it
@@ -111,11 +118,16 @@ up, Data Capsules functionality means that there is no need to audit installed
 software for malware, as even infected software would be unable to exfiltrate
 the data from the secure mode environment.
 
-In the following sections, we discuss related work, elaborate on the design and implementation of the Data Capsules system, and discuss the current state of the project and potential directions for future work.
+In the following sections, we discuss related work, elaborate on the design and
+implementation of the Data Capsules system, and discuss the current state of
+the project and potential directions for future work.
 
 \section{Related Work}
 
-
+As mentioned, in addition to research systems for securing data, there are
+several real-world systems that address the issue of securing sensitive data.
+In this section, we discuss a selection of both real-world implementations of
+such systems as well as systems proposed by the academic community.
 
 \subsection{Real-World Systems}
 
@@ -160,11 +172,57 @@ environment, while providing strong guarantees of data privacy by design.
 
 \subsection{Systems Using Virtualization}
 
-% storage capsules, QubesOS
+QubesOS \cite{qubes} is a system for isolating a user's desktop environment into
+secure compartments, called ``Qubes," which are intended to prevent malicious
+code from compromising the entire system by restricting its effect to the
+compartment in which it resides.  Although Qubes is very effective for this 
+purpose, it would not serve as a particularly secure tool for data access, as it
+suffers from the same challenge of how to move data from one compartment, which
+is presumably unrestricted, into another compartment containing the sensitive
+data to be operated on.  Data Capsules offers a clear design for allowing the
+import of data and code into an environment that can still offer secure access
+to sensitive data.
+
+Storage Capsules \cite{capsules-borders} is a virtualization-based system for
+protecting data privacy on individual machines.  Under Storage Capsules, a
+machine runs a virtual machine manager (VMM) system, which in turn runs the
+user's operating system environment within a VM.  On the same machine, there is
+a second VM running an interface that serves as a ``storage capsule" for
+sensitive data.  The user's main VM is endowed with two modes of operation,
+\emph{normal} and \emph{secure} mode, and similar to Data Capsules, normal mode
+grants full network priviliges while secure mode grants access to the sensitive
+data, via communication with the storage capsule VM.
+
+While our work shares the dual-mode user interface of Storage Capsules, the
+differences largely end there.  Our system is designed under a significantly
+different usage model, in which end users are accessing the VM remotely and
+operating on data stored outside of the machine a VM resides on. This different
+environment substantially alters the threat model, and provides a different set
+of channels for potential data leaks.  As a result, Data Capsules offers the
+potential to provide an environment for data access that is faster and more
+robust to data leaks.
 
 \subsection{Information Flow Control}
 
-% HiStar
+Mandatory access control systems, such as SELinux \cite{selinux}, offer the
+ability to place strict controls on how a system is used.  It is conceivable
+that a machine could be configured with a policy that would enable users to
+analyze sensitive data without a high risk of data leakage.  However, such a
+policy would have to be written and maintained by an expert, in order to account
+for each piece of software that is to operate on the data, and the policy would
+likely be so large and complex that it would be hard to avoid at least some
+security errors.  Because of this, it is not a particularly flexible solution,
+and would still require manual action before a user could begin using their own
+custom software in such an environment.
+
+Specialized operating systems that enforce information flow control, such as
+HiStar \cite{histar}, offer low-level operating system primitives that allow
+developers to design programs in such a way that data leaks are not possible.
+As with SELinux, there is still a substantial burden of having to craft policies
+that prevent these malicious data flows.  Additionally, programs must be
+specifically developed for compatibility with HiStar, creating an even greater
+burden on users so long as that system is not widely supported by the software
+community.
 
 \section{Design}
 
@@ -251,6 +309,7 @@ The fundamental element that provides the guarantees
 
 
 \section{Implementation}
+
 Suspendisse potenti. Donec ornare metus sem, vel semper arcu fermentum in. Nunc
 vehicula eros turpis, ut rhoncus nunc sodales pulvinar. Duis sed est interdum,
 semper mi a, cursus sapien. Nulla elementum congue purus, eu faucibus nibh
@@ -262,6 +321,7 @@ nec augue dapibus ullamcorper. Aliquam nec sollicitudin elit.
 
 \section{Discussion and Future Work}
 \label{sec:Discussion}
+
 In eu gravida ligula, sit amet tincidunt nisi. Interdum et malesuada fames ac
 ante ipsum primis in faucibus.  Vestibulum venenatis non sem vitae hendrerit.
 Cras accumsan vel mauris ut vestibulum. Pellentesque auctor quam ut nisl
@@ -273,14 +333,13 @@ nulla tincidunt.
 
 Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilisi.
 Etiam viverra condimentum accumsan. Mauris sed dolor sed mi dignissim
-vulputate. Duis \cite{clark:pct} pharetra purus purus, eu ultricies ligula dignissim vel. Sed
-nec mauris a turpis luctus placerat id ut ipsum. Fusce quis tincidunt dolor.
-Nunc mattis ornare sem, vel consectetur ipsum iaculis ac. Aenean nulla lacus,
-iaculis sed tempor nec, euismod suscipit dui.
+vulputate. Duis \cite{clark:pct} pharetra purus purus, eu ultricies ligula
+dignissim vel. Sed nec mauris a turpis luctus placerat id ut ipsum. Fusce quis
+tincidunt dolor.  Nunc mattis ornare sem, vel consectetur ipsum iaculis ac.
+Aenean nulla lacus, iaculis sed tempor nec, euismod suscipit dui.
 
 % References
 \bibliographystyle{abbrv}
 \bibliography{paper}
 
-%\balancecolumns
 \end{document}
