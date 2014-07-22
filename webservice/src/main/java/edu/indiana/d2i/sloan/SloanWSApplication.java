@@ -44,19 +44,7 @@ public class SloanWSApplication extends Application {
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException(e);
 			} 
-		}
-		
-//		s.add(CreateVM.class);
-//		s.add(QueryVM.class);
-//		s.add(LaunchVM.class);
-//		s.add(DeleteVM.class);
-//		s.add(StopVM.class);
-//		s.add(SwitchVM.class);
-//		s.add(ListImage.class);
-//		
-//		s.add(DownloadResult.class);
-//		s.add(UploadResult.class);
-		
+		}		
 		return s;
 	}
 
