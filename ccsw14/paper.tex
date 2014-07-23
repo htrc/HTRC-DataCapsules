@@ -285,12 +285,13 @@ bandwidth, steps should be taken to minimize any such known channels to the
 highest degree possible without substantially impacting performance.
 
 The virtual machine infrastructure that underlies the Data Capsules system is
-trusted and assumed to be well implemented.  While such an assumption may be
+trusted and assumed to be well implemented.  While this assumption may be
 somewhat controversial, we note its use in prior work~\cite{capsules}, and also
 note the existence of microkernels such as seL4 and OKL4~\cite{sel4, OKL4},
 which serve as a proof of concept that it is possible to create a lightweight
-hypervisor with a reasonable degree of trustworthiness.  However, the
-development of such a hypervisor lies outside the scope of this paper.
+hypervisor with a reasonable degree of trustworthiness based in formal proofs
+of correctness.  However, the development of such a hypervisor lies outside the
+scope of this paper.
 
 \subsection{Design Overview}
 
@@ -302,11 +303,75 @@ could potentially have multiple VMs, each with access to a different corpus.
 However, the handling of such an access permissions system is outside the scope
 of this paper.
 
-The fundamental element that provides the guarantees
+The major element that is used to isolate VMs that are in the middle of
+accessing sensitive data is live migration \cite{migration-clark}.  When a VM
+switches from maintenance mode to secure mode, the underlying virtual machine
+manager migrates that VM to a separate physical machine that has access to the
+sensitive data, but which is configured to lack network access for any purpose
+other than to receive other incoming VM migrations.  In other words, VMs in
+maintenance mode are strictly segregated within separate physical machines from
+VMs running in secure mode.  We can therefore refer to a physical machine
+running only maintenance VMs as a \emph{maintenance machine}, and likewise a
+\emph{secure machine} runs only secure mode instantiations of VMs.
+
+By adopting this segregated design, the threat of data leak via covert channels
+within a single physical machine is eliminated, so long as the trusted computing
+base remains uncompromised.  The remaining risk is that of one VM in secure mode
+leaking data to another VM that is also in secure mode, but there is no reason
+to want to do so, as both VMs would already have access to the entire secure
+repository.  On a machine running VMs in maintenance mode, there is no way to
+access the sensitive data, and hence no data to be leaked.  We stress that this
+design also requires at least two physical machines in order to provide these
+security guarantees.
 
 \subsection{Maintenance Mode}
 
+As the name suggests, maintenance mode is intended to allow a user to maintain
+their VM's software environment, performing actions such as updating software
+and uploading any files needed to conduct their research when in secure mode.
+In accordance with these needs, maintenance mode allows the user full Internet
+access and persistent storage (i.e.  changes to the virtual hard disk will
+persist on reboot) in exchange for a lack of access to the sensitive data and
+the user's persistent secure storage volume.
 
+When a user initiates the switch to secure mode, their system state is migrated
+to a secure machine.  Once this migration has completed, the state of the
+maintenance VM is frozen, and remains in this frozen state until the user exits
+secure mode.  Upon exit from secure mode, the maintenance VM is simply unfrozen,
+and continues processing from the point at which it left off at the time of the
+original switch to secure mode.
+
+\subsection{Secure Mode}
+
+When the user switches to secure mode, the state of their VM, previously in
+maintenance mode, is migrated to a secure machine where it continues execution.
+By switching to secure mode, the user sacrifices network access and virtual hard
+disk storage persistence in exchange for access to the sensitive data and their
+secure storage volume, which is mounted upon entering secure mode.  Any changes
+to the normal storage are stored only in the machine's virtual memory, and
+discarded when the user exits secure mode.  Only changes to the user's secure
+storage volume will persist to the next time the user enters secure mode.
+Indeed, when the user switches back to maintenance mode from secure mode, all
+accumulated state change after the original switch into secure mode is discarded
+from memory, and the maintenance VM simply resumes execution from where it left
+off prior to the switch.
+
+Conceptually, we can also think of this functionality in this way: by using the
+same single virtual machine and transporting it, via migration, to a different
+environment where it is subject to a different set of permissions and
+privileges, we can allow the user to transport a custom software environment
+created in an insecure environment over to a secure environment where it can
+then be used to conduct research, and subsequently be discarded.  By giving them
+a secure storage volume in secure mode, the user can save their intermediate
+results before further iterating their software environment, preserving
+flexibility in the case that they require further enhancements to their
+software environment.
+
+The use of two separate modes for a single virtual machine, as opposed to, say,
+using two separate machines or two separate VMs, allows the user to customize
+the software environment they use when the secure data is accessed.  This would
+not be possible without opening high-risk channels or a burdensome and
+inconvenient auditing process under a two (virtual) machine model.
 
 \section{Implementation}
 
