@@ -1,4 +1,4 @@
-HTRC Data Capsule
+HTRC Data Capsules
 ================================
 
 Overview
