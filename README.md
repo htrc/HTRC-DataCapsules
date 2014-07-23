@@ -12,7 +12,7 @@ HTRC Data Capsule works by giving a researcher their own virtual machine (VM) th
 
 Installing
 ----------
-Please refer to the [README] of backend and the [set up guide] of web service for general setup. 
+You need to setup both the backend part and the web service part. Please refer to the [README] of backend and the [set up guide] of web service for general setup. 
 
 [README]:https://github.com/htrc/HTRC-Data-Capsules/blob/master/backend/README
 [set up guide]:https://github.com/htrc/HTRC-Data-Capsules/raw/master/webservice/Readme.pdf
