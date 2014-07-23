@@ -231,6 +231,7 @@ functional requirements for the two modes of operation and a discussion of how
 the system avoids various channels for leaking data.
 
 \subsection{Security Goals and Threat Model}
+\label{sec:Threat Model}
 
 The goal of the Data Capsules system is to provide a usable environment for data
 analysis that also provides a reasonably strong (as we elaborate on below)
@@ -375,17 +376,92 @@ inconvenient auditing process under a two (virtual) machine model.
 
 \section{Implementation}
 
-Suspendisse potenti. Donec ornare metus sem, vel semper arcu fermentum in. Nunc
-vehicula eros turpis, ut rhoncus nunc sodales pulvinar. Duis sed est interdum,
-semper mi a, cursus sapien. Nulla elementum congue purus, eu faucibus nibh
-congue et. Ut diam metus, euismod ac quam in, gravida dictum turpis. Vivamus
-hendrerit facilisis tempor. Curabitur hendrerit orci ac libero vestibulum, sit
-amet dictum enim viverra. Nulla rutrum dolor ligula, nec rutrum massa suscipit
-volutpat. Aliquam id mi at velit aliquet imperdiet at nec mi. Integer in massa
-nec augue dapibus ullamcorper. Aliquam nec sollicitudin elit.
+A prototype of the Data Capsules system has been developed using the KVM virtual
+machine manager, which is built in to the Linux operating system, along with the
+user-level counterpart application qemu to achieve virtualization.  A set of
+Bash shell scripts were written to implement the basic operations for managing
+Data Capsules VMs.  Although the current prototype does not fully support the
+migration-based mode change described in this paper, migration-based switching
+has been implemented and demonstrated, and the only remaining work is to fully
+integrate it into the existing code.
+
+End users may use either a convenient web interface, or call the scripts
+directly in order to perform basic operations including creation and deletion of
+VMs, running and stopping VMs, as well as switches between maintenance and
+secure modes.
+
+Although it could be argued that other, better choices for a virtual machine
+manager exist on which to base such a demonstration system, it is the opinion of
+the authors that no currently existing virtual machine manager is sufficiently
+well written and designed so as to serve as an ideal choice, since there is no
+x86-based hypervisor that is formally proven to be properly implemented and
+secure.  The choice of KVM was for its ubiquity as part of the Linux operating
+system along with ease of development.  However, as mentioned in Section
+\ref{sec:Threat Model}, microkernels do exist which serve to demonstrate that
+at least something close to such a robust, well-designed VMM could be made.
+
+\subsection{Network Protections}
+
+The Data Capsules prototype uses iptables rules to implement a simple set of
+firewall rules for VMs.  All VMs on a machine reside on a bridged, private
+network.  In secure mode, additional rules are imposed on the private IP address
+of the VM, restricting all network access except that between the VM and the IP
+address of the one or more servers containing the sensitive data, as written in
+a simple configuration file.  
+
+Because limiting access to only a small set of servers eliminates access to
+public DNS servers, for our prototype we configured the \texttt{/etc/hosts} file
+on VM images to allow them to resolve the server domain names when in secure
+mode.  More elegant solutions could be achieved by allowing access to a
+custom purpose-built DNS server, or by using solutions like cloud-init, which is
+available for Linux based virtual machines.
+
+\subsection{Secure Storage Volume}
+
+In order for a user's intermediate research to persist across sessions within
+secure mode, a storage volume is attached upon entering secure mode.  This
+volume is implemented as a disk image file, which is attached as an emulated USB
+thumb drive.  From the user's perspective, this is a convenient access paradigm,
+as one can imagine a virtual USB drive being ``plugged in" to the machine when
+the user switches to secure mode, and then being removed when the user switches
+back.
+
+One currently unresolved issue with this approach, and any using a mounted disk
+volume, is the issue of caching by the operating system of any changes to the
+secure volume.  Since changes typically are not immediately written back to a
+disk volume, this raises the possibility that a user could switch out of secure
+mode before all data is written back, resulting in data loss.  Currently, we
+warn users of the prototype before they switch out of secure mode that they must
+detatch the secure volume or risk data loss.  In the future, we might include
+software on preconfigured VMs that can help users know when it is safe to switch
+out of secure mode.
+
+\subsection{Releasing Research Results}
+
+Since users ultimately require some method for releasing the results of their
+research, qemu was configured to create a channel through the serial port on the
+VM to a UNIX domain socket on the host machine.  A simple daemon was written
+which runs on the secure machine to listen on this socket for any results to be
+released.  It follows an extremely simple protocol that takes the file name,
+file size, and file data and exports them to a database where they can then
+undergo a review process.  We discuss potential approaches for automating this
+review process for candidate release data in Section \ref{sec:Results Audit}
 
 \section{Discussion and Future Work}
 \label{sec:Discussion}
+
+%mode switch seamlessness (across machines)
+
+%secure client access w/TPM
+% -secure client
+% -secure VNC connection
+
+%managing migration speeds for performance & network
+
+%automating part/all of result release audit
+%\label{sec:Results Audit}
+
+%evaluation plans and some preliminary results
 
 In eu gravida ligula, sit amet tincidunt nisi. Interdum et malesuada fames ac
 ante ipsum primis in faucibus.  Vestibulum venenatis non sem vitae hendrerit.
