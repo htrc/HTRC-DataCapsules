@@ -265,6 +265,12 @@ in such a way that it is accessible outside of secure mode.
 is in secure mode, it should not be able to access any other machine over the
 network, with the exception of machines that are serving the sensitive data.
 
+\textbf{Legitimate Release Channels} When researchers have finished working with
+sensitive data, they must be given some channel for releasing their final
+results.  Since this channel is purpose-built for releasing data that is a
+reflection of the data being protected, safeguards must be put in place to
+ensure that ``too much" information is not leaked.
+
 \textbf{Virtual Machine Access Channels} End users must access their VMs
 through some network channel that connects a physical device (e.g. the user's
 laptop) to the Data Capsules infrastructure.  This could be a remote terminal
@@ -450,25 +456,70 @@ review process for candidate release data in Section \ref{sec:Results Audit}
 \section{Discussion and Future Work}
 \label{sec:Discussion}
 
-%mode switch seamlessness (across machines)
+Although a basic prototype has been implemented and is fully functional, there
+are still many potential routes for improvement.  We discuss many of these,
+including some we are currently investigating and some that we intend to look
+into in the future.
 
-%secure client access w/TPM
-% -secure client
-% -secure VNC connection
+\subsection{Securing Client Access}
+
+As mentioned in Section \ref{sec:Threat Model}, the channels used to access a VM
+are an important element that must be secured in order to safeguard any private
+data.  In the event of more sophisticated attacks, such as a man-in-the-middle
+attack between the end user and the Data Capsules infrastructure or a compromise
+of the end user's device, it is not hard to conceive of very powerful attacks.
+
+For instance, if an end user's device is compromised, the malicious party could
+then install malicious software on the VM while in maintenance mode that is
+designed to enter secure mode and subsequently encode all of the private data in
+the format of the channel medium (e.g. as an image in the case of remode desktop
+protocols like VNC).  The data could then be decoded by additional software
+running on the compromised client, or even forwarded for decoding on the
+attacker's personal infrastructure.  In the case of a 1024x768 screen resolution
+refreshing at 15 times per second, an attacker could leak over 2 GB of data from
+a protected repository within one minute, or at the very least saturate the
+channel connection with the leaked data.
+
+This example clearly illustrates the imperative need to secure the remote access
+channel from these types of attack.  There is also, however, a limit to what can
+be done, since the user ultimately must have some way of seeing into the VM that
+they are remotely administering.  The first obvious step is to secure the
+client-server connection using SSL with certificate-based authentication.  While
+this would seem trivial to accomplish, there is an unfortunate lack of support
+for such a secure connection in existing widely used VNC clients.  We are
+currently in the process of modifying an existing VNC client to support SSL
+connections with certificates.  Beyond this initial setback, we expect
+implementation to be relatively trivial.
+
+Beyond securing the connection, we are currently investigating methods for
+securing the end client device using the Trusted Platform Module (TPM) on an end
+user's device to remotely attest that the end client is secure.  We envision the
+final implementation will consist of a USB thumb drive containing a barebones
+Linux operating system with an installed VNC client, and will use the TPM's
+features to perform a measured boot of Linux and the VNC client.  Users will
+plug in the USB drive to their device and boot into the secure environment in
+order to access their Data Capsules VMs.  In this way, we hope to greatly raise
+the bar for a malicious attacker who wishes to gain access to sensitive data,
+while preserving a reasonably uncumbersome method for access to the end user.
+
+\subsection{Optimizing Mode Switches}
+
+%mode switch seamlessness (across machines)
 
 %managing migration speeds for performance & network
 
+\subsection{Partial Automation of Release Auditing}
+\label{sec:Results Audit}
+
 %automating part/all of result release audit
-%\label{sec:Results Audit}
+
+\subsection{Evaluation}
+
+\subsubsection{User Study}
+
+\subsubsection{Performance}
 
 %evaluation plans and some preliminary results
-
-In eu gravida ligula, sit amet tincidunt nisi. Interdum et malesuada fames ac
-ante ipsum primis in faucibus.  Vestibulum venenatis non sem vitae hendrerit.
-Cras accumsan vel mauris ut vestibulum. Pellentesque auctor quam ut nisl
-commodo malesuada. Phasellus adipiscing placerat tortor, in convallis massa
-cursus eu. Vestibulum ullamcorper lorem vel nunc dictum, elementum pretium
-nulla tincidunt.
 
 \section{Conclusions}
 
