@@ -450,7 +450,7 @@ VM to a UNIX domain socket on the host machine.  A simple daemon was written
 which runs on the secure machine to listen on this socket for any results to be
 released.  It follows an extremely simple protocol that takes the file name,
 file size, and file data and exports them to a database where they can then
-undergo a review process.  We discuss potential approaches for automating this
+undergo a review process.  We discuss a potential approach for automating this
 review process for candidate release data in Section \ref{sec:Results Audit}
 
 \section{Discussion and Future Work}
@@ -502,16 +502,32 @@ order to access their Data Capsules VMs.  In this way, we hope to greatly raise
 the bar for a malicious attacker who wishes to gain access to sensitive data,
 while preserving a reasonably uncumbersome method for access to the end user.
 
+\subsection{Partial Automation of Release Auditing}
+\label{sec:Results Audit}
+
+Although Data Capsules aims to ease secure access to sensitive data by removing
+the need to audit data and software being imported into a secure environment, it
+does not address how to ease the auditing of results data being released from
+that same environment.  This is a challenging issue, since a careful attacker
+could use any number of methods to disguise the leaking of large amounts of data
+as something that appears entirely innocent.
+
+While there is no evident solution, there are likely many measures that could be
+taken to automate the identification of more obvious leak attempts.  For
+example, simply measuring the information content of a candidate for release,
+say by measuring its Shannon entropy or its compressed file size, if the
+candidate is unusually large then it may be immediately flagged as suspicious.
+This is only the tip of the iceberg, and there are likely more elegant and
+powerful solutions available.  We leave investigation into such a system as
+future work.
+
 \subsection{Optimizing Mode Switches}
+
+
 
 %mode switch seamlessness (across machines)
 
 %managing migration speeds for performance & network
-
-\subsection{Partial Automation of Release Auditing}
-\label{sec:Results Audit}
-
-%automating part/all of result release audit
 
 \subsection{Evaluation}
 
