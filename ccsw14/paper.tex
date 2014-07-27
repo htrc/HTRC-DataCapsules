@@ -2,6 +2,12 @@
 
 \usepackage{epstopdf}
 \usepackage{datetime}
+
+% Switch between these two to add/remove todo comments
+\usepackage{color}
+\newcommand{\todo}[2]{{\color{red}\textbf{#2}}}
+%\newcommand{\todo}[2]{#1}
+
 \usdate
 \settimeformat{ampmtime}
 
@@ -381,6 +387,7 @@ not be possible without opening high-risk channels or a burdensome and
 inconvenient auditing process under a two (virtual) machine model.
 
 \section{Implementation}
+\label{sec:Implementation}
 
 A prototype of the Data Capsules system has been developed using the KVM virtual
 machine manager, which is built in to the Linux operating system, along with the
@@ -523,28 +530,106 @@ future work.
 
 \subsection{Optimizing Mode Switches}
 
+As mentioned in Section \ref{sec:Implementation}, the migration-based mode
+switch has currently been implemented as a demonstration, and has yet to be
+fully integrated into the prototype.  We are currently addressing two
+issues that will help usability and performance of this key element.
 
+The first of these issues is the fact that migrating a VM across two physical
+machines currently requires the user to reestablish a remote desktop or shell
+connection with the destination machine.  We intend to set up a proxy connection
+system that will redirect the user's connection automatically, without the need
+for any action on the user end.  Such a proxy would need to reside on a machine
+separate from machines serving VMs, otherwise it would create an intermachine
+covert channel, since there would at some point be a connection link between a
+process on a maintenance machine and a process on a secure machine.
 
-%mode switch seamlessness (across machines)
-
-%managing migration speeds for performance & network
+The second issue with designing a mature migration-based mode switch is that of
+speed and performance.  Transferring the state of many machines all running in
+maintenance mode could easily strain even a very robust network.  Therefore it
+is likely that some form of rate limiting will need to be imposed in order to
+relieve network pressure.  The consequence of this is of course that the time it
+takes to switch modes will increase.  We therefore plan to investigate to find
+the best compromise between the two needs of limiting use of network bandwidth
+and maximizing switch performance.
 
 \subsection{Evaluation}
 
-\subsubsection{User Study}
+Since the ultimate goal of the Data Capsules system is to improve usability of
+remote access to sensitive data, it is natural that performance is an important
+measure of its success.  Virtual machines must not suffer any slowdown, and the
+new mode switching interface that it introduces must not be inconveniently slow.
+Additionally, direct feedback from actual users of our system can serve as a
+useful measure of its merits in practice.
 
 \subsubsection{Performance}
 
-%evaluation plans and some preliminary results
+Fortunately, virtual machine performance is not significantly affected by Data
+Capsules, since it requires no significant changes to qemu or KVM.  Basic VM management functions also run quickly, with starting and stopping and deleting VMs taking only fractions of a second.  VM creation has also been made almost instantatneous to the user through clever use of copy-on-write references to base disk images.  This leaves only the performance of switches between modes.
+
+For our evaluation, we plan to consider two useful measurements for assessing
+the speed of a migration-based mode switch.  Since VM state begins to be
+transferred to the target secure machine immediately upon startup, there is a
+time from startup until the state transfer tapers to a steady stream as most of
+the initial state is completely transferred and only new updates are then
+carried over.  In our tests on two servers linked by a direct wired connection,
+this switch \emph{startup time} took about 20 seconds for a base installation of
+Ubuntu 10.04, which took about 3.5 GB of virtual disk space.  We note that the
+entire virtual hard disk contents are not transferred, but only copy-on-write
+changes to the virtual hard disk, as well as the entire contents of memory and
+CPU registers.  This startup time is easily approximated by the actual execution
+time of a normal, undelayed migration between two machines.
+
+The second element is the actual \emph{execution time} of a switch, assuming
+that the aforementioned startup process has already occurred and there is only a
+small amount of update data that is being periodically generated and
+transferred.  So long as the end user has used a machine for a time greater than
+the startup time, and so long as bandwidth is not constrained so much that the
+new data being generated cannot fully transfer within the window in which it is
+generated, then there should only be a small, negligible delay, that is
+virtually imperceptible to the user.
+
+For our existing prototype, which does not use migration-based mode switches,
+but rather makes use of VM live snapshots, it is not inaccurate to say that its
+functionality is comparable to that of a migration-based mode switch without the
+delay of transferring state across machines.  In this sense, the execution time
+of a snapshot-based mode switch should certainly be no less than the execution
+time of an equivalent migration-based execution time.  In light of this, we can
+use the mode switch performance time for a snapshot-based mode switch to
+approximate the upper bound for switch execution time in the final
+migration-based Data Capsules system.  In practice, we have observed that this
+switch time almost always falls within 5 seconds, and is usually closer to 1 or
+2 seconds.
+
+We also note for clarity that these switch times refer to the switch from
+maintenance mode into secure mode.  Under a migration-based mode switch, the
+switch back to maintenance mode simply requires unpausing a VM and switching
+back the remote desktop or shell connection to the maintenance machine that VM
+is running on.
+
+\subsubsection{User Study}
+
+A user study is another important option for evaluating the undeniably
+unfamiliar paradigm of having two machine modes for a single conceptual machine.
+Although we have no plans to conduct a formal study in the near future, we are
+in the process of implementing a prototype of the system that will be used by
+humanities researchers for secure access to copyrighted materials.  After
+initial alpha testing by a small number of subjects unfamiliar with the system,
+feedback was positive, with no apparent complaints or confusion about how it was
+used.  We leave more formal and in depth user studies for future work.
 
 \section{Conclusions}
 
-Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla facilisi.
-Etiam viverra condimentum accumsan. Mauris sed dolor sed mi dignissim
-vulputate. Duis \cite{clark:pct} pharetra purus purus, eu ultricies ligula
-dignissim vel. Sed nec mauris a turpis luctus placerat id ut ipsum. Fusce quis
-tincidunt dolor.  Nunc mattis ornare sem, vel consectetur ipsum iaculis ac.
-Aenean nulla lacus, iaculis sed tempor nec, euismod suscipit dui.
+In this paper, we introduced Data Capsules, a system that enables more usable
+access to sensitive data repositories by eliminating the need to audit data and
+software that are brought in to the secure environment.  Data Capsules presents
+users with a maintenance mode for fully customizing their software environment,
+and allows users to then import this environment into a secured environment
+where they can then perform analysis on sensitive data with limited risk of data
+leak.  Data Capsules achieves this mode paradigm by migrating underlying VMs
+between machines segregated by their access to the network and to the sensitive
+data.  A prototype of the system has been implemented, and initial performance
+data and end user feedback are both promising.
 
 % References
 \bibliographystyle{abbrv}
