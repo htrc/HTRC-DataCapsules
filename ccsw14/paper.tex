@@ -73,13 +73,13 @@ sensitive, including data protected by copyright, data representing the personal
 information of individuals, as well as any data that may contain secrets that
 its owner does not wish to have revealed, for example corporate or state secrets.
 
-Current state-of-the-art systems developed for the purpose of enabling access to
-these types of data use remotely accessed machines, which can then be used by
-researchers without the need for travel to conduct their analysis. But beyond
-this apparent convenience, rules for using such systems are often highly
-restrictive, with researchers limited to using predefined software environments,
-and being subject to strict auditing requirements for all software and data that
-is uploaded to these software environments.  
+The current state-of-the-art \cite{vrdc} in systems developed for the purpose
+of enabling access to these types of data use remotely accessed machines, which
+can then be used by researchers without the need for travel to conduct their
+analysis. But beyond this apparent convenience, rules for using such systems
+are often highly restrictive, with researchers limited to using predefined
+software environments, and being subject to strict auditing requirements for
+all software and data that is uploaded to these software environments.  
 
 To solve this substantial inconvenience, we propose a new system which we call
 Data Capsules.  While, to an end user, a Data Capsules environment will
@@ -140,10 +140,10 @@ such systems as well as systems proposed by the academic community.
 Systems that enable supervised and audited computational research of sensitive
 data date back at least as far as the 1990s, when a Census Research Data Center
 was opened in Boston.  Since the opening of this initial office, the U.S.
-federal government has established several Research Data Centers (RDCs) across
-the country to enable researchers access to unpublished Census data for the
-purpose of conducting research that could provide beneficial guidance to public
-policy.
+federal government has established several Research Data Centers (RDCs)
+\cite{census-rdc} across the country to enable researchers access to
+unpublished Census data for the purpose of conducting research that could
+provide beneficial guidance to public policy.
 
 Potential researchers must first submit a research proposal demonstrating
 scientific merit and potential benefit to Census Bureau programs.  Once granted
@@ -159,12 +159,12 @@ foreign hardware and potentially software as well, to conduct their research.
 
 More recently, the Centers for Medicare and Medicaid Services began providing
 Medicare and Medicaid data using the CMS Virtual Research Data Center (VRDC) in
-2013.  VRDC provides a more flexible model by allowing researchers to remotely
-access desktop environments provided by a cloud infrastructure.  This model
-relieves researchers of the need to travel to a physical location, and also
-avoids the security risk of researchers having to receive and safeguard physical
-copies of the data while they are conducting their research, as was formerly the
-case.
+2013 \cite{vrdc}.  VRDC provides a more flexible model by allowing researchers
+to remotely access desktop environments provided by a cloud infrastructure.
+This model relieves researchers of the need to travel to a physical location,
+and also avoids the security risk of researchers having to receive and
+safeguard physical copies of the data while they are conducting their research,
+as was formerly the case.
 
 However, this state-of-the-art solution still suffers from significant
 drawbacks, in that researchers are largely limited to using the preallocated
@@ -299,12 +299,12 @@ highest degree possible without substantially impacting performance.
 
 The virtual machine infrastructure that underlies the Data Capsules system is
 trusted and assumed to be well implemented.  While this assumption may be
-somewhat controversial, we note its use in prior work~\cite{capsules}, and also
-note the existence of microkernels such as seL4 and OKL4~\cite{sel4, OKL4},
-which serve as a proof of concept that it is possible to create a lightweight
-hypervisor with a reasonable degree of trustworthiness based in formal proofs
-of correctness.  However, the development of such a hypervisor lies outside the
-scope of this paper.
+somewhat controversial, we note its use in prior work~\cite{capsules-borders},
+and also note the existence of microkernels such as seL4 and OKL4~\cite{sel4,
+sel4-secure, OKL4}, which serve as a proof of concept that it is possible to
+create a lightweight hypervisor with a reasonable degree of trustworthiness
+based in formal proofs of correctness.  However, the development of such a
+hypervisor lies outside the scope of this paper.
 
 \subsection{Design Overview}
 
@@ -423,11 +423,12 @@ address of the one or more servers containing the sensitive data, as written in
 a simple configuration file.  
 
 Because limiting access to only a small set of servers eliminates access to
-public DNS servers, for our prototype we configured the \texttt{/etc/hosts} file
-on VM images to allow them to resolve the server domain names when in secure
-mode.  More elegant solutions could be achieved by allowing access to a
-custom purpose-built DNS server, or by using solutions like cloud-init, which is
-available for Linux based virtual machines.
+public DNS servers, for our prototype we configured the \texttt{/etc/hosts}
+file on VM images to allow them to resolve the server domain names when in
+secure mode.  More elegant solutions could be achieved by allowing access to a
+custom purpose-built DNS server, or by using solutions like
+cloud-init\cite{cloudinit}, which is available for Ubuntu-based virtual
+machines.
 
 \subsection{Secure Storage Volume}
 
