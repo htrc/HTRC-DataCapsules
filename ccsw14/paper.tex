@@ -341,7 +341,23 @@ other than to receive other incoming VM migrations.  In other words, VMs in
 maintenance mode are strictly segregated within separate physical machines from
 VMs running in secure mode.  We can therefore refer to a physical machine
 running only maintenance VMs as a \emph{maintenance machine}, and likewise a
-\emph{secure machine} runs only secure mode instantiations of VMs.
+\emph{secure machine} runs only secure mode instantiations of VMs.  We illustrate an example deployment in Figure \ref{fig:configuration}.
+
+\begin{figure}[ht!]
+\center
+\includegraphics[width=3.0in]{figures/configuration}
+
+\caption{An example deployment configuration for a Data Capsules system.
+Dotted boxes denote physical separation, which is necessary between maintenance
+machines, secure machines, and the remote access proxy.  The sensitive data
+server may exist separately, or it may reside on one of the secure machines.
+The only connections between maintenance and secure machines will be for the
+purpose of tranferring virtual machine state to secure machines, and for
+read-only accesses to the VM disk images.  This data largely travels in one
+direction, from maintenance machines to secure machines.}
+
+\label{fig:configuration}
+\end{figure}
 
 By adopting this segregated design, the threat of data leak via covert channels
 within a single physical machine is eliminated, so long as the trusted computing
