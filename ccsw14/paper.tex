@@ -1,5 +1,6 @@
 \documentclass{acm_proc_article-sp}
 
+\usepackage{url}
 \usepackage{epstopdf}
 \usepackage{datetime}
 
@@ -308,13 +309,28 @@ hypervisor lies outside the scope of this paper.
 
 \subsection{Design Overview}
 
-Data Capsules makes heavy use of virtualization.  For each system user, there
-are one or more corresponding VMs.  Multiple VMs per user may be useful in
-situations where there is a large repository of data that is separated into
-multiple corpora each with their own access permissions.  In this case, a user
-could potentially have multiple VMs, each with access to a different corpus.
-However, the handling of such an access permissions system is outside the scope
-of this paper.
+\begin{figure}[ht!]
+\center
+\includegraphics[width=3.0in]{figures/architecture}
+
+\caption{A Data Capsules virtual machine runs in one of two modes.  In
+maintenance mode, VM state such as memory, CPU and disk state persists across
+shutdowns and mode transitions.  In secure mode, this virtual state is lost
+once a user returns to maintenance mode. The only exception is any data stored
+in the user's secure storage volume, which is attached to the VM only when the
+user enters secure mode.}
+
+\label{fig:architecture}
+\end{figure}
+
+Data Capsules features an architecture, illustrated in Figure
+\ref{fig:architecture}, that makes heavy use of virtualization.  For each
+system user, there are one or more corresponding VMs.  Multiple VMs per user
+may be useful in situations where there is a large repository of data that is
+separated into multiple corpora each with their own access permissions.  In
+this case, a user could potentially have multiple VMs, each with access to a
+different corpus.  However, the handling of such an access permissions system
+is outside the scope of this paper.
 
 The major element that is used to isolate VMs that are in the middle of
 accessing sensitive data is live migration \cite{migration-clark}.  When a VM
@@ -500,15 +516,16 @@ connections with certificates.  Beyond this initial setback, we expect
 implementation to be relatively trivial.
 
 Beyond securing the connection, we are currently investigating methods for
-securing the end client device using the Trusted Platform Module (TPM) on an end
-user's device to remotely attest that the end client is secure.  We envision the
-final implementation will consist of a USB thumb drive containing a barebones
-Linux operating system with an installed VNC client, and will use the TPM's
-features to perform a measured boot of Linux and the VNC client.  Users will
-plug in the USB drive to their device and boot into the secure environment in
-order to access their Data Capsules VMs.  In this way, we hope to greatly raise
-the bar for a malicious attacker who wishes to gain access to sensitive data,
-while preserving a reasonably uncumbersome method for access to the end user.
+securing the end client device using the Trusted Platform Module (TPM)
+\cite{tpm} on an end user's device to remotely attest that the end client is
+secure.  We envision the final implementation will consist of a USB thumb drive
+containing a barebones Linux operating system with an installed VNC client, and
+will use the TPM's features to perform a measured boot of Linux and the VNC
+client.  Users will plug in the USB drive to their device and boot into the
+secure environment in order to access their Data Capsules VMs.  In this way, we
+hope to greatly raise the bar for a malicious attacker who wishes to gain
+access to sensitive data, while preserving a reasonably uncumbersome method for
+access to the end user.
 
 \subsection{Partial Automation of Release Auditing}
 \label{sec:Results Audit}
