@@ -84,58 +84,13 @@ class HypervisorResponse {
 		int respCode = cmdRes.getExitCode();
 		String description = cmdRes.getScreenOutput().trim();
 		
-		// extract "Status"
-//		for (String line : description.split("\n")) {
-//			if (line.contains(VM_STATUS_KEY)) {
-//				String[] items = line.split("\\s");
-//				
-//			}
-//		}
-		
-		// TODO: how to set vm state as error?
-		
+		// TODO: how to set vm state as error?		
 		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
 			.getConcatenatedForm(), cmdRes.getHostname(), respCode, description, 
 			(respCode == 0) ? VMState.RUNNING: VMState.ERROR, 
 			new HashMap<String, String>());			
 		return hyperResp;
-		
-		
-		/*
-		String[] lines = cmdRes.getScreenOutput().split("[\\r\\n]+");
-
-		int respCode = cmdRes.getExitCode();
-
-		if ((lines != null) && (lines.length > 0)) {
-			if (StringUtils.isNumeric(lines[0].trim())) {
-				respCode = Integer.parseInt(lines[0].trim());
-			} 			
-		}
-
-		String description = ((lines != null) && (lines.length > 1))
-				? lines[1].trim()
-				: "";
-
-		// parse key-value pairs
-		Map<String, String> attributes = new HashMap<String, String>();
-		if ((lines != null) && (lines.length > 2)) {
-			for (int i = 2; i < lines.length; i++) {
-				String[] kvpair = lines[i].split(KV_DELIMITER);
-				if (kvpair.length == 2)
-					attributes.put(kvpair[0].trim(), kvpair[1].trim());
-			}
-		}
-		
-
 		// TODO: extra parsing is needed to convert vm state from script string to VMState string
-		
-		HypervisorResponse hyperResp = new HypervisorResponse(cmdRes.getCmds()
-			.getConcatenatedForm(), cmdRes.getHostname(), respCode, description, 
-			(respCode == 0) ? VMState.RUNNING: VMState.ERROR, 
-			attributes);
-		
-		return hyperResp;
-		*/
 	}
 
 	@Override

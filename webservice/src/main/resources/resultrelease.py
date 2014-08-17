@@ -104,6 +104,16 @@ class ResultRelease(cmd.Cmd):
         except Exception, ex:
             #print str(ex)
             print "Error: unable to send email\n"        
+            
+    def do_get(self, arg):
+        rid = arg
+        sql = "select datafield from results where resultid='{}'".format(rid)
+        self.cursor.execute(sql)
+        results = self.cursor.fetchall()
+        print type(results[0][0])
+        
+        
+        
         
     def do_quit(self, args):
         self.db.close()
