@@ -185,7 +185,9 @@ else
 
   # Unmount Secure Volume and Spool Volume
   echo "device_del secure_volume" | nc -U $VM_DIR/monitor >/dev/null
+  echo "drive_del secure_volume" | nc -U $VM_DIR/monitor >/dev/null
   echo "device_del spool" | nc -U $VM_DIR/monitor >/dev/null
+  echo "drive_del spool" | nc -U $VM_DIR/monitor >/dev/null
 
   # Revert Capsules Snapshot
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
@@ -211,6 +213,8 @@ else
     echo "$SSH_RES"
     exit 8
   fi
+
+  echo "usb_del 0.0" | nc -U $VM_DIR/monitor >/dev/null
 
   # Update Mode File
   echo "Maintenance" > $VM_DIR/mode

@@ -36,6 +36,9 @@ if [[ -z "$VM_IP_ADDR" ]]; then
   exit 2
 fi
 
+(
+flock -w 30 200
+
 if [[ "$ACTION" = "up" ]]; then
 
   iptables -t nat -A PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22 && \
@@ -57,3 +60,5 @@ else
   fi
 
 fi
+
+) 200>$SCRIPT_DIR/lock.iptables

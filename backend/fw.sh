@@ -35,6 +35,9 @@ if [[ -z "$VM_IP_ADDR" ]]; then
   exit 2
 fi
 
+(
+flock -w 30 200
+
 # Reset firewall chain
 iptables -t filter -D INPUT -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_INPUT >/dev/null 2>&1
 iptables -t filter -D INPUT -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_INPUT >/dev/null 2>&1
@@ -135,5 +138,7 @@ if [[ -n "$POLICY_FILE" ]]; then
   fi
 
 fi
+
+) 200>$SCRIPT_DIR/lock.iptables
 
 exit 0
