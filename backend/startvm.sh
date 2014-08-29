@@ -172,6 +172,11 @@ rm -rf $VM_DIR/release_mon
 
 sudo $SCRIPT_DIR/launchkvm.sh
 
+if [ $? -ne 0 ]; then
+  echo "Failed to initialize KVM"
+  exit 9
+fi
+
 # Echo process command to logs for debugging purposes
 START_VM_COMMAND="nohup $SCRIPT_DIR/tapinit $QEMU				\
 		   -enable-kvm							\
