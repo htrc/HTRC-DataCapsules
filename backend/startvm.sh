@@ -154,6 +154,8 @@ fi
 if [ -e $VM_DIR/last_run ] ; then
   cat $VM_DIR/last_run >> $VM_DIR/kvm_console
   rm $VM_DIR/last_run
+else
+  FIRST_RUN=true
 fi
 
 cat <<EOF >> $VM_DIR/kvm_console
@@ -170,13 +172,14 @@ rm -rf $VM_DIR/release_mon
 
 sudo $SCRIPT_DIR/launchkvm.sh
 
-# Start guest process
-nohup $SCRIPT_DIR/tapinit $QEMU							\
+# Echo process command to logs for debugging purposes
+START_VM_COMMAND="nohup $SCRIPT_DIR/tapinit $QEMU				\
 		   -enable-kvm							\
 		   -snapshot							\
 		   -no-shutdown							\
 		   -m $MEM_SIZE							\
 		   -smp $NUM_VCPU						\
+                   ${VM_NAME:+-name "$VM_NAME"}					\
 		   -pidfile $VM_DIR/pid						\
 		   -monitor unix:$VM_DIR/monitor,server,nowait			\
 		   -serial file:$VM_DIR/release_mon 				\
@@ -184,9 +187,37 @@ nohup $SCRIPT_DIR/tapinit $QEMU							\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
 		   -hda $VM_DIR/$IMAGE						\
-		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+",password"}	\
+		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+,password}		\
+		   >>$VM_DIR/last_run						\
+		   2>&1 &"
+#		   -drive file=$VM_DIR/$IMAGE,if=virtio				\
+#                   ${FIRST_RUN:+-drive file=$VM_DIR/seed.iso,if=virtio}		\
+
+echo "$START_VM_COMMAND" | sed 's/[\t\n ]\+/ /g' >>$VM_DIR/last_run
+
+# Start guest process
+nohup $SCRIPT_DIR/tapinit $QEMU							\
+		   -enable-kvm							\
+		   -snapshot							\
+		   -no-shutdown							\
+		   -m $MEM_SIZE							\
+		   -smp $NUM_VCPU						\
+                   ${VM_NAME:+-name "$VM_NAME"}					\
+		   -pidfile $VM_DIR/pid						\
+		   -monitor unix:$VM_DIR/monitor,server,nowait			\
+		   -serial file:$VM_DIR/release_mon 				\
+		   -usb								\
+		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
+		   -net tap,vlan=0,fd=%FD%					\
+		   -hda $VM_DIR/$IMAGE						\
+		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+,password}		\
 		   >>$VM_DIR/last_run						\
 		   2>&1 &
+#
+#		   -drive file=$VM_DIR/$IMAGE,if=virtio				\
+#                   ${FIRST_RUN:+-drive file=$VM_DIR/seed.iso,if=virtio}		\
+
+#		   -hda $VM_DIR/$IMAGE						\
 
 # Store the PID of the process for later
 KVM_PID=$!
@@ -201,7 +232,7 @@ for time in $(seq 1 $TIMEOUT); do
   sleep 1
 done
 
-TIMEOUT=$(( $TIMEOUT - $time ))
+TIMEOUT_2=$(( $TIMEOUT - $time ))
 
 if [[ $VNC_LOGIN = 1 ]] ; then
   echo "set_password vnc $LOGIN_PWD" | nc -U $VM_DIR/monitor >/dev/null
@@ -209,7 +240,7 @@ fi
 
 # Make sure VM actually started
 
-for time in $(seq 1 $TIMEOUT); do
+for time in $(seq 1 $TIMEOUT_2); do
   if ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1; then
     break
   else
@@ -224,8 +255,11 @@ done
 ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1
 
 if [ $? -ne 0 ]; then
-  if pidof `basename $QEMU` | grep -q $VM_PID; then
+  if pidof `basename $QEMU` | grep -q $KVM_PID; then
     echo "Warning: guest failed to obtain IP address within $TIMEOUT seconds; may have failed to boot"
+  else
+    echo "Error: guest failed to start"
+    exit 5
   fi
 fi
 

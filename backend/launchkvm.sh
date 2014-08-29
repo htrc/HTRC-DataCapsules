@@ -14,11 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if ! kvm-ok; then
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
+. $SCRIPT_DIR/capsules.cfg
+
+kvm-ok 2>&1 >>/dev/null
+
+if [[ $? -ne 0 || ! -e /dev/kvm ]]; then
+  echo "Starting KVM"
   modprobe kvm_intel
 fi
 
-if ! kvm-ok; then
+kvm-ok 2>&1 >>/dev/null
+
+if [[ $? -ne 0 || ! -e /dev/kvm ]]; then
+  echo "Error: Failed to start kvm"
   exit 1
 fi
 

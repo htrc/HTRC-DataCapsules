@@ -111,6 +111,8 @@ if [[ $CD_ROM = $UNDEFINED ]]; then
   CD_ROM=
 fi
 
+sudo $SCRIPT_DIR/launchkvm.sh
+
 # Start guest process
 nohup $QEMU						\
 		   -enable-kvm				\
