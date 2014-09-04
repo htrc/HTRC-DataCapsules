@@ -29,7 +29,12 @@ usage () {
 
 }
 
-REQUIRED_OPTS="VM_DIR DB_URL"
+REQUIRED_OPTS="VM_DIR"
+
+if [[ "$DB_URL" == "" ]]; then
+  REQUIRED_OPTS="$REQUIRED_OPTS DB_URL"
+fi
+
 ALL_OPTS="$REQUIRED_OPTS DB_SERVER"
 UNDEFINED=12345capsulesxXxXxundefined54321
 
