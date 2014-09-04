@@ -107,8 +107,10 @@ if [[ -n "$POLICY_FILE" ]]; then
   iptables -t nat -I POSTROUTING 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_POST && \
   iptables -t nat -I POSTROUTING 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_POST
 
-  if [ $? -ne 0 ]; then
-    echo "Error: iptables rules failed to execute"
+  RES=$?
+
+  if [ $RES -ne 0 ]; then
+    echo "Error: iptables rules failed to execute (error code $RES)"
     exit 3
   fi
 
@@ -132,7 +134,9 @@ if [[ -n "$POLICY_FILE" ]]; then
     print $0
   }' $POLICY_FILE | sed "s/%IP%/$VM_IP_ADDR/g" | iptables-restore -n 2>&1)
 
-  if [ $? -ne 0 ]; then
+  RES=$?
+
+  if [ $RES -ne 0 ]; then
     echo "Error: Unable to apply firewall policy: $FW_RES"
     exit 4
   fi

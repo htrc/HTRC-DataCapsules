@@ -43,20 +43,35 @@ if [[ "$ACTION" = "up" ]]; then
 
   iptables -t nat -A PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22 && \
   iptables -t nat -A POSTROUTING -j MASQUERADE
+  RES=$?
 
-  if [ $? -ne 0 ]; then
-    echo "Error: iptables ssh rules failed to execute (error code $?)"
+  if [ $RES -ne 0 ]; then
+    echo "Error: iptables ssh rules failed to execute (error code $RES)"
     exit 3
   fi
 
 else
 
-  iptables -t nat -D PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22
-  iptables -t nat -D POSTROUTING -j MASQUERADE
+  if iptables -t nat -C PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22 >/dev/null 2>&1; then
+    iptables -t nat -D PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22 && \
+  fi
 
-  if [ $? -ne 0 ]; then
-    echo "Error: iptables ssh rule removal failed to execute (error code $?)"
+  RES=$?
+
+  if [ $RES -ne 0 ]; then
+    echo "Error: iptables ssh rule removal failed to execute (error code $RES)"
     exit 4
+  fi
+
+  if iptables -t nat -C POSTROUTING -j MASQUERADE >/dev/null 2>&1; then
+    iptables -t nat -D POSTROUTING -j MASQUERADE
+  fi
+
+  RES=$?
+
+  if [ $RES -ne 0 ]; then
+    echo "Error: iptables ssh rule removal failed to execute (error code $RES)"
+    exit 5
   fi
 
 fi
