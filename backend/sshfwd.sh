@@ -53,7 +53,7 @@ if [[ "$ACTION" = "up" ]]; then
 else
 
   if iptables -t nat -C PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22 >/dev/null 2>&1; then
-    iptables -t nat -D PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22 && \
+    iptables -t nat -D PREROUTING -p tcp --dport $SSH_PORT -j DNAT --to-destination $VM_IP_ADDR:22
   fi
 
   RES=$?
