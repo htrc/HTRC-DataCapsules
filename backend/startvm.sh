@@ -233,6 +233,12 @@ sleep 2
 for time in $(seq 1 $TIMEOUT); do
   if echo "" | nc -U $VM_DIR/monitor >/dev/null; then
     break
+  else
+    if kill -0 $KVM_PID 2>&1 | grep -q "No such process" ; then
+      echo "Error starting guest VM:"
+      cat $VM_DIR/last_run
+      exit 4
+    fi
   fi
   sleep 1
 done

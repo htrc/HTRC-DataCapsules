@@ -6,6 +6,13 @@ to function.  On Ubuntu, these can be installed with the following command:
 
 (sudo) apt-get install qemu dnsmasq bridge-utils genisoimage makepasswd
 
+Qemu may also be compiled and installed manually, and this is recommended,
+since it allows you to use newer, more up to date versions of the virtual
+machine manager.  There have also been issues with apt-get overwriting
+important script files during automatic updates, which can cause the scripts to
+function improperly.  Instructions for this can be seen below in the following
+section.
+
 To prepare these scripts for use, give them a fixed location and, optionally,
 add them to the PATH variable of the user that will be invoking them (so that
 the full path need not be given for each invocation). Finally, run the
@@ -29,6 +36,33 @@ otherwise those rules will supercede this one and it will not work.  This
 should not, however, be an issue since the user running the scripts should not
 require root access for anything else, and that is the recommended security
 practice.
+
+MANUALLY INSTALLING QEMU
+--------------------------------------------------
+
+To install qemu from a base Debian system, first run the following commands:
+
+$ (from whatever directory you wish to store the qemu source in)
+$ sudo apt-get install git
+$ git clone git://www.qemu.org/qemu
+$ cd qemu
+$ sudo apt-get install build-essential libtool zlib1g-dev libglib2.0-dev libpixman-1-dev libfdt-dev
+
+Once this has been done, you can at any time install a particular version by
+running the following commands:
+
+$ git pull
+$ git checkout <VERSION> (e.g. v2.0.0)
+$ ./configure
+$ make
+$ sudo make install
+
+The final 'make install' command installs qemu on the entire system.  If there
+are instances of qemu already running during this install, they will continue
+to run, but they will also prevent overwriting the main executable file.  The
+decision whether to stop running VMs is left to the administrators discretion.
+The exact qemu executable that is used by the scripts may be specified in the
+configuration file (capsules.cfg)
 
 GUEST REQUIREMENTS
 --------------------------------------------------
