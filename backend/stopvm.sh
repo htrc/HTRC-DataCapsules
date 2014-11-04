@@ -160,6 +160,11 @@ if [ -e $VM_DIR/pid ]; then
     exit 6
   fi
 
+else
+
+  echo "Warning: VM is not currently running"
+  exit 9
+
 fi
 
 # Bring down firewall and ssh port forwarding
