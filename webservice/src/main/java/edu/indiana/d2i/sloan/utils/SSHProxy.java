@@ -174,23 +174,39 @@ public class SSHProxy {
 		this.passwd = builder.passwd;
 		this.privateKeyPath = builder.privateKeyPath;
 		
-		jsch = new JSch();
+		int maxtry = 3;
+		for (int i = 0; i < maxtry; i++) {
+			try {
+				jsch = new JSch();
 
-		/* prefer public-private key authentication */
-		if (privateKeyPath != null) {
-			jsch.addIdentity(privateKeyPath);
+				/* prefer public-private key authentication */
+				if (privateKeyPath != null) {
+					jsch.addIdentity(privateKeyPath);
+				}
+				
+				Properties sshConfig = new Properties();
+				sshConfig.put("StrictHostKeyChecking", "no");
+				session = jsch.getSession(username, hostname, port);
+
+				if (privateKeyPath == null) {
+					session.setPassword(passwd);
+				}
+
+				session.setConfig(sshConfig);
+				session.connect();
+				break;
+			} catch (JSchException ex) {
+				logger.error(ex.getMessage(), ex);
+				jsch = null;
+				session = null;
+				logger.info("Retry ssh connection " + (i+1) + " times.");
+				try {
+					Thread.sleep(1000 * (i+1));
+				} catch (InterruptedException e) {
+					throw ex;
+				}
+			}
 		}
-		
-		Properties sshConfig = new Properties();
-		sshConfig.put("StrictHostKeyChecking", "no");
-		session = jsch.getSession(username, hostname, port);
-
-		if (privateKeyPath == null) {
-			session.setPassword(passwd);
-		}
-
-		session.setConfig(sshConfig);
-		session.connect();
 	}
 
 //	public SSHProxy(String hostname, int port, String username, String passwd,

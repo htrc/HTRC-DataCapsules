@@ -114,7 +114,7 @@
     <!-- result download url prefix -->
     <property>
       	<name>result.download.prefix</name>
-		<value>https://thatchpalm.pti.indiana.edu:8080/sloan-ws-1.1-SNAPSHOT/download?randomid=</value>
+		<value>${URL}/download?randomid=</value>
     </property>     
     <property>
     	<!-- -1 means never expire -->

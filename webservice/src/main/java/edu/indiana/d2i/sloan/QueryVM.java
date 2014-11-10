@@ -39,6 +39,8 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
+import edu.indiana.d2i.sloan.vm.VMState;
+import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 @Path("/show")
 public class QueryVM {
@@ -87,8 +89,11 @@ public class QueryVM {
 			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());
 			
 			for (VmInfoBean vminfo : vmInfoList) {
-				HypervisorProxy.getInstance().addCommand(
-						new QueryVMCommand(vminfo));
+				// query the back-end script only when vm state is not in pending
+				if (!VMStateManager.isPendingState(vminfo.getVmstate())) {
+					HypervisorProxy.getInstance().addCommand(
+							new QueryVMCommand(vminfo));
+				}
 			}
 
 			return Response.status(200).entity(new QueryVmResponseBean(status))

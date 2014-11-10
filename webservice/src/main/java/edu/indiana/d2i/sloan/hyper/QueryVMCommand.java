@@ -48,21 +48,21 @@ public class QueryVMCommand extends HypervisorCommand {
 		 * if VM state returned by hypervisor is ERROR, then update VM state in
 		 * DB accordingly
 		 */
-		VMState returnedState = resp.getVmState();
-		if (returnedState == VMState.ERROR) {
-			RetriableTask<Void> r = new RetriableTask<Void>(
-				new Callable<Void>() {
-					@Override
-					public Void call() throws Exception {
-						// set state to error
-						VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-								vminfo.getVmstate(), VMState.ERROR);
-						return null;
-					}
-				},  1000, 3, 
-				new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
-			r.call();
-		}
+//		VMState returnedState = resp.getVmState();
+//		if (returnedState == VMState.ERROR) {
+//			RetriableTask<Void> r = new RetriableTask<Void>(
+//				new Callable<Void>() {
+//					@Override
+//					public Void call() throws Exception {
+//						// set state to error
+//						VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+//								vminfo.getVmstate(), VMState.ERROR);
+//						return null;
+//					}
+//				},  1000, 3, 
+//				new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+//			r.call();
+//		}
 	}
 
 	@Override
