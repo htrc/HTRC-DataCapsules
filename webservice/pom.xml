@@ -10,6 +10,7 @@
 
 
 	<repositories>
+		<!--  
 		<repository>
 			<id>nexus</id>
             <name>HTRC Nexus Repository</name>
@@ -22,6 +23,7 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		-->
 		<repository>
 			<id>maven2-repository.java.net</id>
 			<name>Java.net Repository for Maven</name>
@@ -109,7 +111,15 @@
 			<version>1.2</version>
 		</dependency>
 
+		<!-- java mail -->
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.7</version>
+		</dependency>
+		
 		<!-- htrc oauth2 -->
+		<!--
 		<dependency>
 			<groupId>edu.indiana.d2i.htrc</groupId>
 			<artifactId>htrc-auditor</artifactId>
@@ -120,6 +130,7 @@
 			<artifactId>oauth2-servletfilter</artifactId>
 			<version>1.0</version>
 		</dependency>
+		-->
 
 		<!-- configuration -->
 		<dependency>

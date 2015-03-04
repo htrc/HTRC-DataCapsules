@@ -36,6 +36,7 @@ import edu.indiana.d2i.sloan.bean.UserBean;
 import edu.indiana.d2i.sloan.bean.UserResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.result.UploadPostprocess;
+import edu.indiana.d2i.sloan.utils.EmailUtil;
 
 /**
  * For internal use only!
@@ -69,8 +70,25 @@ public class UploadResult {
 			DBOperations.getInstance().insertResult(vmid, randomid, input);			
 			
 			// add to post-process
-			UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
-				userbean.getUserName(), userbean.getUserEmail(), randomid));
+			if (!Configuration.getInstance().getBoolean(
+				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) {
+				UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
+					userbean.getUserName(), userbean.getUserEmail(), randomid));
+			}	else {
+				// send email to the reviewer
+				String emails = Configuration.getInstance().getString(
+					Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
+				if (emails == null) {
+					logger.error("Reviewers' email addresses are missing.");
+				} else {
+					String[] addrs = emails.split(";");
+					for (String email : addrs) {
+						EmailUtil emailUtil = new EmailUtil();
+						emailUtil.sendEMail(email, "HTRC Data Capsules Result Review Request", 
+							"Dear Reviewer, \nThere is a new result pending for your review. Its id is " + randomid);
+					}
+				}
+			}
 			
 			logger.info("Upload result for " + vmid + ", " + userbean + " successfully.");
 			
