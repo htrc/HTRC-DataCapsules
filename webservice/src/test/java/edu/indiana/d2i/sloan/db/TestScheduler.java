@@ -22,10 +22,7 @@ import java.sql.SQLException;
 
 import junit.framework.Assert;
 
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
@@ -37,6 +34,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.scheduler.SchedulerFactory;
 
+@Ignore
 public class TestScheduler {
 	@BeforeClass
 	public static void beforeClass() {

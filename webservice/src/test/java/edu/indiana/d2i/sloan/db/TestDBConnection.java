@@ -21,10 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.indiana.d2i.sloan.Configuration;
 
+@Ignore
 public class TestDBConnection {
 	@BeforeClass
 	public static void beforeClass() {

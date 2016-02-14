@@ -18,11 +18,13 @@ package edu.indiana.d2i.sloan.utils;
 import java.util.Collections;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
 
+@Ignore
 public class TestSSHProxy {
 	private SSHProxy proxy = null;
 	
