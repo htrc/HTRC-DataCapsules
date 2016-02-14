@@ -20,6 +20,7 @@ import java.io.IOException;
 import junit.framework.Assert;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.jcraft.jsch.JSchException;
@@ -29,6 +30,7 @@ import edu.indiana.d2i.sloan.utils.SSHProxy;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
+@Ignore
 public class TestCapsuleHypervisor {
 	private static final String SUCCESSFUL_DESCRIPTION = "test-screen-output";
 	private static final VMState SUCCESSFUL_STATE = VMState.RUNNING;

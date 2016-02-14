@@ -19,11 +19,13 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
 
+@Ignore
 public class TestHypervisorResponse {
 	
 	@Test

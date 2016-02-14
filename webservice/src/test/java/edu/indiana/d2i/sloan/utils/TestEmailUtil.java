@@ -15,8 +15,10 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan.utils;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class TestEmailUtil {
 	private final EmailUtil emailUtil = new EmailUtil();
 	
