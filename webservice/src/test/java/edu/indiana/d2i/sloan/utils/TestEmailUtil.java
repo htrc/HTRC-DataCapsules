@@ -22,7 +22,6 @@ public class TestEmailUtil {
 	
 	@Test
 	public void testSendMessage() {
-		String appellation = "Jiaan";
 		String emailAddr = "jiaazeng@indiana.edu";
 		String subject = "Testing subject";
 		String content = "Hello! This is a test message.";

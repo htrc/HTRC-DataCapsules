@@ -36,8 +36,12 @@ public class EmailUtil {
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.host", Configuration.getInstance().getString(
 				Configuration.PropertyName.EMAIL_SMTP_HOST));
-		props.put("mail.smtp.port", Configuration.getInstance().getString(
+		props.put("mail.smtp.socketFactory.port", Configuration.getInstance().getString(
 				Configuration.PropertyName.EMAIL_SMTP_PORT));
+		props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		
+		
+		System.out.println(props.toString());
 	}
 
 	public void sendEMail(String emailAddr, String subject, String content) {
@@ -58,7 +62,8 @@ public class EmailUtil {
 			message.setText(content);
  
 			Transport.send(message);
-		} catch (Exception e) {
+		} catch (Exception e) {		
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}
