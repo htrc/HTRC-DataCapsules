@@ -24,6 +24,7 @@ import edu.indiana.d2i.sloan.Configuration;
 
 public class EmailUtil {
 	private final String sendername;
+	private final String senderAddr;
 	private final String password;
 	private Properties props = new Properties();
 
@@ -32,12 +33,17 @@ public class EmailUtil {
 				Configuration.PropertyName.EMAIL_SENDERNAME);
 		this.password = Configuration.getInstance().getString(
 				Configuration.PropertyName.EMAIL_PASSWORD);
+		this.senderAddr = Configuration.getInstance().getString(Configuration.PropertyName.EMAIL_SENDER_ADDR);
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.host", Configuration.getInstance().getString(
 				Configuration.PropertyName.EMAIL_SMTP_HOST));
-		props.put("mail.smtp.port", Configuration.getInstance().getString(
+		props.put("mail.smtp.socketFactory.port", Configuration.getInstance().getString(
 				Configuration.PropertyName.EMAIL_SMTP_PORT));
+		props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		
+		
+		System.out.println(props.toString());
 	}
 
 	public void sendEMail(String emailAddr, String subject, String content) {
@@ -51,14 +57,15 @@ public class EmailUtil {
 		
 		try {			 
 			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(sendername));
+			message.setFrom(new InternetAddress(senderAddr));
 			message.setRecipients(Message.RecipientType.TO,
 					InternetAddress.parse(emailAddr));
 			message.setSubject(subject);
 			message.setText(content);
  
 			Transport.send(message);
-		} catch (Exception e) {
+		} catch (Exception e) {		
+			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 	}

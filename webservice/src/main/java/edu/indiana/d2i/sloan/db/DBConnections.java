@@ -42,9 +42,9 @@ class DBConnections {
 			dataSource.setPassword(Configuration.getInstance().getString(
 				Configuration.PropertyName.DB_PWD));
 			
-			dataSource.setMinPoolSize(5);
-			dataSource.setAcquireIncrement(5);
-			dataSource.setMaxPoolSize(20);
+//			dataSource.setMinPoolSize(5);
+//			dataSource.setAcquireIncrement(5);
+//			dataSource.setMaxPoolSize(20);
 			
 			dataSource.setMaxIdleTime(60); // 60 seconds
 			dataSource.setIdleConnectionTestPeriod(55); // 55 seconds

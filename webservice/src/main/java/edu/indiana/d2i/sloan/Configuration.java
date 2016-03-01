@@ -131,6 +131,7 @@ public final class Configuration {
 		
 		/* email setting */
 		public static final String EMAIL_SENDERNAME = "email.sendername";
+		public static final String EMAIL_SENDER_ADDR = "email.sender.addr";
 		public static final String EMAIL_PASSWORD = "email.password";
 		public static final String EMAIL_SMTP_HOST = "email.smtp.host";
 		public static final String EMAIL_SMTP_PORT = "email.smtp.port";
@@ -138,6 +139,8 @@ public final class Configuration {
 		/* result relative */
 		public static final String RESULT_DOWNLOAD_URL_PREFIX = "result.download.prefix";
 		public static final String RESULT_EXPIRE_IN_SECOND = "result.expire.sec";
+		public static final String RESULT_HUMAN_REVIEW = "result.review.human";
+		public static final String RESULT_HUMAN_REVIEW_EMAIL = "result.review.email";
 	}
 	
 	public static synchronized Configuration getInstance() {
