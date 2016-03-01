@@ -131,6 +131,7 @@ public final class Configuration {
 		
 		/* email setting */
 		public static final String EMAIL_SENDERNAME = "email.sendername";
+		public static final String EMAIL_SENDER_ADDR = "email.sender.addr";
 		public static final String EMAIL_PASSWORD = "email.password";
 		public static final String EMAIL_SMTP_HOST = "email.smtp.host";
 		public static final String EMAIL_SMTP_PORT = "email.smtp.port";
