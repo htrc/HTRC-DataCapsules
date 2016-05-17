@@ -19,11 +19,11 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
 # Timeout for boot, in seconds
-TIMEOUT=120
+TIMEOUT=30
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy [Policy File]"
+  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --starget <Secure Mode Server> --policy [Policy File]"
   echo ""
   echo "Launches a VM instance for the VM in the given directory."
   echo ""
@@ -32,13 +32,15 @@ usage () {
   echo "--mode    Boot to Secure Mode: One of 's(ecure)' or 'm(aintenance)', denotes whether the"
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
+#  echo "--starget Secure Mode Target Server: URL target (and port if applicable) for secure mode server"
+#  echo ""
   echo "--policy  Policy File: The file that contains the policy for restricting this VM."
-  echo "                       This policy is optional when booting into maintenance mode." 
 
 }
 
-REQUIRED_OPTS="VM_DIR BOOT_SECURE"
-ALL_OPTS="$REQUIRED_OPTS POLICY"
+#REQUIRED_OPTS="VM_DIR BOOT_SECURE SECURE_TARGET"
+REQUIRED_OPTS="VM_DIR BOOT_SECURE POLICY"
+ALL_OPTS="$REQUIRED_OPTS"
 UNDEFINED=12345capsulesxXxXxundefined54321
 
 for var in $ALL_OPTS; do
@@ -51,8 +53,8 @@ if [[ $1 && $1 != -* ]]; then
 fi
 
 declare -A longoptspec
-longoptspec=( [wdir]=1 [mode]=1 [policy]=1 )
-optspec=":h-:d:m:p:"
+longoptspec=( [wdir]=1 [mode]=1 [policy]=1 [starget]=1)
+optspec=":h-:d:m:s:p:"
 while getopts "$optspec" OPT; do
 
   if [[ "x${OPT}x" = "x-x" ]]; then
@@ -86,6 +88,9 @@ while getopts "$optspec" OPT; do
       if [ $BOOT_SECURE = 0 ]; then
         REQUIRED_OPTS="$REQUIRED_OPTS POLICY"
       fi
+      ;;
+    s|starget)
+      SECURE_TARGET=$OPTARG
       ;;
     p|policy)
       POLICY=$OPTARG
@@ -143,7 +148,7 @@ if [[ "$IMAGE" = *.diff  && -e $VM_DIR/${IMAGE%.diff} && -s $VM_DIR/${IMAGE%.dif
     BASE_IMAGE=$(qemu-img info $VM_DIR/$IMAGE | sed -n 's/backing file: \(.*\)$/\1/p')
     if [[ $(md5sum $BASE_IMAGE | awk '{print $1}') \
           = $(cat $VM_DIR/${IMAGE%.diff}.sum | awk '{print $1}') ]]; then
-      nohup dd if=$BASE_IMAGE of=$VM_DIR/$IMAGE bs=$DD_BLOCK_SIZE 2>&1 >$VM_DIR/kvm_console &
+      nohup dd if=$BASE_IMAGE of=$VM_DIR/$IMAGE bs=$DD_BLOCK_SIZE >>$VM_DIR/last_run 2>&1 &
     else
       echo "Error: Unable to copy base image; it has been changed since the VM was created!"
       exit 11
@@ -177,8 +182,18 @@ if [ $? -ne 0 ]; then
   exit 9
 fi
 
+# Initialize maintenance mode firewall
+sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
+POLICY_RES=$?
+
+if [ $POLICY_RES -ne 0 ]; then
+  echo "Error: Failed to apply initial firewall policy on startup; error code ($POLICY_RES)"
+  exit 8
+fi
+
+
 # Echo process command to logs for debugging purposes
-START_VM_COMMAND="nohup $SCRIPT_DIR/tapinit $QEMU				\
+START_VM_COMMAND="nohup $SCRIPT_DIR/tapinit $SCRIPT_DIR $VM_IP_ADDR $QEMU	\
 		   -enable-kvm							\
 		   -snapshot							\
 		   -no-shutdown							\
@@ -192,6 +207,7 @@ START_VM_COMMAND="nohup $SCRIPT_DIR/tapinit $QEMU				\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
 		   -hda $VM_DIR/$IMAGE						\
+		   -vga vmware                                                  \
 		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+,password}		\
 		   >>$VM_DIR/last_run						\
 		   2>&1 &"
@@ -201,7 +217,7 @@ START_VM_COMMAND="nohup $SCRIPT_DIR/tapinit $QEMU				\
 echo "$START_VM_COMMAND" | sed 's/[\t\n ]\+/ /g' >>$VM_DIR/last_run
 
 # Start guest process
-nohup $SCRIPT_DIR/tapinit $QEMU							\
+nohup $SCRIPT_DIR/tapinit $SCRIPT_DIR $VM_IP_ADDR $QEMU				\
 		   -enable-kvm							\
 		   -snapshot							\
 		   -no-shutdown							\
@@ -215,6 +231,7 @@ nohup $SCRIPT_DIR/tapinit $QEMU							\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
 		   -hda $VM_DIR/$IMAGE						\
+		   -vga vmware                                                  \
 		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+,password}		\
 		   >>$VM_DIR/last_run						\
 		   2>&1 &
@@ -274,14 +291,6 @@ if [ $? -ne 0 ]; then
   fi
 fi
 
-# Setup SSH port forwarding
-SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh up $VM_MAC_ADDR $SSH_PORT 2>&1)
-
-if [ $? -ne 0 ]; then
-  echo "$SSH_RES"
-  exit 6
-fi
-
 # All VMs start in Maintenance mode initially
 echo "Maintenance" > $VM_DIR/mode
 
@@ -293,18 +302,6 @@ if [[ $BOOT_SECURE = 0 ]]; then
   if [ $SWITCH_RES -ne 0 ]; then
     echo "Error: Failed to switch VM to security mode on startup; error code ($SWITCH_RES)"
     exit 7
-  fi
-
-else
-
-  if [[ $POLICY != $UNDEFINED ]]; then
-    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
-    POLICY_RES=$?
-
-    if [ $POLICY_RES -ne 0 ]; then
-      echo "Error: Failed to apply firewall policy on startup; error code ($POLICY_RES)"
-      exit 8
-    fi
   fi
 
 fi

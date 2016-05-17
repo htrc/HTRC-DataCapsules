@@ -19,7 +19,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy [Policy File]"
+  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy <Policy File>"
   echo ""
   echo "(--wdir)  Directory: The directory where this VM's data will be held"
   echo ""
@@ -27,12 +27,11 @@ usage () {
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
   echo "--policy  Policy File: The file that contains the policy for restricting this VM."
-  echo "                       This policy is optional when booting into maintenance mode." 
 
 }
 
-REQUIRED_OPTS="VM_DIR SECURE_MODE"
-ALL_OPTS="$REQUIRED_OPTS POLICY"
+REQUIRED_OPTS="VM_DIR SECURE_MODE POLICY"
+ALL_OPTS="$REQUIRED_OPTS"
 UNDEFINED=12345capsulesxXxXxundefined54321
 
 for var in $ALL_OPTS; do
@@ -126,14 +125,6 @@ fi
 # If secure mode, sync storage, apply policy, take snapshot, mount secure volume, update modefile
 if [ $SECURE_MODE = 0 ]; then
 
-  # Take down SSH port forwarding
-  SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh down $VM_MAC_ADDR $SSH_PORT 2>&1)
-  
-  if [ $? -ne 0 ]; then
-    echo "$SSH_RES"
-    exit 4
-  fi
-
   # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
   for time in $(seq 1 30); do
     if [ -e $VM_DIR/$SECURE_VOL ]; then
@@ -151,7 +142,7 @@ if [ $SECURE_MODE = 0 ]; then
   echo "commit all" | nc -U $VM_DIR/monitor >/dev/null
 
   # Apply Firewall Policy
-  sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
+  sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
@@ -192,28 +183,17 @@ else
   # Revert Capsules Snapshot
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
 
-  # Remove Firewall Policy
-  if [[ $POLICY = $UNDEFINED ]]; then
-    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR
-  else
-    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
-  fi
-
+  # Replace Firewall Policy
+  sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
-    echo "Error: Failed to apply/remove firewall policy; error code ($FW_RES)"
+    echo "Error: Failed to replace firewall policy; error code ($FW_RES)"
     exit 7
   fi
 
-  # Restart SSH port forwarding
-  SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh up $VM_MAC_ADDR $SSH_PORT 2>&1)
-  
-  if [ $? -ne 0 ]; then
-    echo "$SSH_RES"
-    exit 8
-  fi
-
+  # The devices have been removed already,
+  # this just resets things for future secure transitions
   echo "usb_del 0.0" | nc -U $VM_DIR/monitor >/dev/null
 
   # Update Mode File

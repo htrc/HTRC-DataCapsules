@@ -25,7 +25,6 @@ fi
 sudo chown root:kvm $SCRIPT_DIR/tapinit
 sudo chmod ug+s $SCRIPT_DIR/tapinit
 
-sed -i 's#SCRIPT_DIR=.*$#SCRIPT_DIR='"$SCRIPT_DIR"'#' $SCRIPT_DIR/qemu-ifup
 sudo cp $SCRIPT_DIR/qemu-ifup /etc/qemu-ifup
 
 if [ -e /etc/sudoers.tmp -o "$(pidof visudo)" ]; then
@@ -37,7 +36,7 @@ sudo cp /etc/sudoers /etc/sudoers.bak
 sudo cp /etc/sudoers /etc/sudoers.tmp
 
 sudo chmod 0640 /etc/sudoers.tmp
-sudo echo "$USERNAME ALL=(ALL) NOPASSWD: $SCRIPT_DIR/sshfwd.sh, NOPASSWD: $SCRIPT_DIR/fw.sh, NOPASSWD: $SCRIPT_DIR/launchkvm.sh, NOPASSWD: /bin/mount, NOPASSWD: /bin/umount" >> /etc/sudoers.tmp
+sudo echo "$USERNAME ALL=(ALL) NOPASSWD: $SCRIPT_DIR/fw.sh, NOPASSWD: $SCRIPT_DIR/launchkvm.sh" >> /etc/sudoers.tmp
 sudo chmod 0440 /etc/sudoers.tmp
 
 sudo mv /etc/sudoers.tmp /etc/sudoers

@@ -171,19 +171,21 @@ fi
 if [[ ! (-e $SCRIPT_DIR/dhcp_hosts && -e $SCRIPT_DIR/free_hosts) ]]; then
   rm -f $SCRIPT_DIR/{dhcp_hosts,free_hosts}
 
-  for SUFFIX in $(seq 2 254); do
-    # Generate a locally-administered MAC address
-    MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
-    IP_ADDR="192.168.53.$SUFFIX"
-
-    echo "$MAC_ADDR,$IP_ADDR" >> $SCRIPT_DIR/dhcp_hosts
-    echo "$IP_ADDR" >> $SCRIPT_DIR/free_hosts
-  done
+$SCRIPT_DIR/tools/make_hosts_files.py $SCRIPT_DIR $GATEWAY $NETMASK
+#  for SUFFIX in $(seq 2 254); do
+#    # Generate a locally-administered MAC address
+#    MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+#    IP_ADDR="${NETWORK_PREFIX}.${SUFFIX}"
+#
+#    echo "$MAC_ADDR,$IP_ADDR" >> $SCRIPT_DIR/dhcp_hosts
+#    echo "$IP_ADDR" >> $SCRIPT_DIR/free_hosts
+#  done
 
   # Push dhcp_hosts configuration to dnsmasq
-  if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
-    if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
-      kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
+  if [ -e $DNSMASQ_PID_FILE ]; then
+    DNSMASQ_PID=$(cat $DNSMASQ_PID_FILE)
+    if pidof dnsmasq | grep -q $DNSMASQ_PID; then
+      kill -HUP $DNSMASQ_PID
     fi
   fi
 fi
@@ -197,7 +199,7 @@ if [[ -z $VM_IP_ADDR ]]; then
 fi
 
 VM_MAC_ADDR=$(awk -F, '/'"${VM_IP_ADDR}"'$/{print $1}' $SCRIPT_DIR/dhcp_hosts)
-sed -ni '/'"$VM_IP_ADDR"'/!p' $SCRIPT_DIR/free_hosts
+sed -ni '/'"$VM_IP_ADDR"'$/!p' $SCRIPT_DIR/free_hosts
 
 # Copy temporary delta image to newly created working directory
 CP_RES=$(qemu-img create -o backing_file=$(readlink -f $IMAGE) -f qcow2 $VM_DIR/$(basename $IMAGE).diff)
@@ -253,21 +255,22 @@ if [ $? -ne 0 ]; then
   fail 6
 fi
 
-MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "Secure Volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
+MKFS_RES=$(echo "y" | /sbin/mkfs.ntfs -F -f -L "Secure Volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error formatting secure volume for VM: $MKFS_RES"
   fail 7
 fi
 
-SPOOL_IMG_RES=$(qemu-img create -f raw $VM_DIR/spool_volume 100M 2>&1)
+#SPOOL_IMG_RES=$(qemu-img create -f raw $VM_DIR/spool_volume 100M 2>&1)
+SPOOL_IMG_RES=$(qemu-img create -f raw $VM_DIR/spool_volume 10240M 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error creating spool volume for VM: $SPOOL_IMG_RES"
   fail 8
 fi
 
-SPOOL_MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "release_spool" $VM_DIR/spool_volume 2>&1)
+SPOOL_MKFS_RES=$(echo "y" | /sbin/mkfs.ntfs -F -f -L "release_spool" $VM_DIR/spool_volume 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"

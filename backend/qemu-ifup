@@ -8,21 +8,34 @@
 # This work is licensed under the terms of the GNU GPL, version 2.  See
 # the COPYING file in the top-level directory.
 
-# Set to the name of your bridge
-BRIDGE=br0
+set -e
 
-# Network information
-NETWORK=192.168.53.0
-NETMASK=255.255.255.0
-GATEWAY=192.168.53.1
-DHCPRANGE=192.168.53.2,192.168.53.254
-SCRIPT_DIR=/home/crowella/capsulescloud/backend
+export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+
+if [ $(whoami) != "root" ]; then
+  echo "$0: Not running as root! (running as $(whoami))"
+  exit 1
+fi
+
+if [ "$#" -lt 3 ]; then
+  echo "$0: Invalid argument count to $0"
+  echo "Command line: '$@'"
+  exit 1
+fi
+
+TAP_DEV=$1
+SCRIPT_DIR=$2
+GUEST_IP=$3
+
 DHCPHOSTS=$SCRIPT_DIR/dhcp_hosts
-DNSMASQ_PID=/var/run/qemu-dnsmasq-$BRIDGE.pid
 
-# Optionally parameters to enable PXE support
-TFTPROOT=
-BOOTP=
+. $SCRIPT_DIR/capsules.cfg
+
+#------END VARIABLE INITIALIZATION------#
+
+fail() {
+    exit $@
+}
 
 do_brctl() {
     brctl "$@"
@@ -37,7 +50,17 @@ do_dd() {
 }
 
 do_iptables_restore() {
-    iptables-restore -n "$@"
+
+#  (
+#  flock -w 30 200
+
+    if ! iptables-restore -n "$@" 2>&1; then
+        cat "$@"
+        exit 2
+    fi
+
+#  ) 200>$SCRIPT_DIR/lock.iptables
+
 }
 
 do_dnsmasq() {
@@ -53,11 +76,11 @@ check_bridge() {
 }
 
 check_dnsmasq() {
-  if [ -e $DNSMASQ_PID ]; then
+  if [ -e $DNSMASQ_PID_FILE ]; then
 
-    PID=$(cat $DNSMASQ_PID)
+    DNSMASQ_PID=$(cat $DNSMASQ_PID_FILE)
 
-    if pidof dnsmasq | grep -q $PID; then
+    if pidof dnsmasq | grep -q $DNSMASQ_PID; then
       return 1
     else
       return 0
@@ -80,9 +103,13 @@ enable_ip_forward() {
 }
 
 add_filter_rules() {
+
+TAP_DEV=$1
+GUEST_IP=$2
+
 do_iptables_restore <<EOF
 *nat
--A POSTROUTING -s $NETWORK/$NETMASK -j MASQUERADE 
+-A POSTROUTING -s $GATEWAY/$NETMASK -j MASQUERADE 
 COMMIT
 *filter
 -I INPUT 1 -i $BRIDGE -d $GATEWAY -p tcp -m tcp --dport 67 -j ACCEPT 
@@ -90,13 +117,52 @@ COMMIT
 -I INPUT 1 -i $BRIDGE -d $GATEWAY -p tcp -m tcp --dport 53 -j ACCEPT 
 -I INPUT 1 -i $BRIDGE -d $GATEWAY -p udp -m udp --dport 53 -j ACCEPT 
 -I FORWARD 1 -i $1 -o $1 -j REJECT
--A FORWARD -s $NETWORK/$NETMASK -i $BRIDGE -j ACCEPT 
--A FORWARD -d $NETWORK/$NETMASK -o $BRIDGE -p tcp -m tcp --dport 22 -j ACCEPT
--A FORWARD -d $NETWORK/$NETMASK -o $BRIDGE -m state --state RELATED,ESTABLISHED -j ACCEPT 
+-A FORWARD -s $GATEWAY/$NETMASK -i $BRIDGE -j ACCEPT 
+-A FORWARD -d $GATEWAY/$NETMASK -o $BRIDGE -p tcp -m tcp --dport 22 -j ACCEPT
+-A FORWARD -d $GATEWAY/$NETMASK -o $BRIDGE -m state --state RELATED,ESTABLISHED -j ACCEPT 
 -A FORWARD -o $BRIDGE -j REJECT --reject-with icmp-port-unreachable 
 -A FORWARD -i $BRIDGE -j REJECT --reject-with icmp-port-unreachable 
+
 COMMIT
 EOF
+}
+
+add_anti_spoof_rules() {
+
+TAP_DEV=$1
+GUEST_IP=$2
+
+#iptables-save > $SCRIPT_DIR/cur_ip_state
+
+do_iptables_restore <<EOF
+*filter
+
+-I INPUT 1 -m physdev --physdev-in $TAP_DEV -j REJECT
+-I INPUT 1 -d $GUEST_IP -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_INPUT
+-I INPUT 1 -s 0.0.0.0 -d 255.255.255.255 -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_INPUT
+
+-I INPUT 1 -s $GUEST_IP -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_INPUT
+-I INPUT 1 -s $GATEWAY -d 255.255.255.255 -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_INPUT
+-I OUTPUT 1 -s 0.0.0.0 -d 255.255.255.255 -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_OUTPUT
+-I FORWARD 1 -m physdev --physdev-in $TAP_DEV -j REJECT
+-I FORWARD 1 -m physdev --physdev-out $TAP_DEV -j REJECT
+-I FORWARD 1 -s $GUEST_IP -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -d $GUEST_IP -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -s $GUEST_IP -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -d $GUEST_IP -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -s 0.0.0.0 -d 255.255.255.255 -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -s $GATEWAY -d 255.255.255.255 -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+
+COMMIT
+
+EOF
+
+#-I OUTPUT 1 -d $GUEST_IP -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_OUTPUT
+#-I OUTPUT 1 -m physdev --physdev-out $TAP_DEV -j REJECT
+#-I OUTPUT 1 -s $GUEST_IP -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_OUTPUT
+#-I OUTPUT 1 -s $GATEWAY -d 255.255.255.255 -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_OUTPUT
+
+
 }
 
 start_dnsmasq() {
@@ -106,42 +172,54 @@ start_dnsmasq() {
 	--interface=$BRIDGE \
 	--listen-address=$GATEWAY \
 	--bind-interfaces \
-	--dhcp-range=$DHCPRANGE \
+	--dhcp-range=$GATEWAY,static \
 	--dhcp-hostsfile=$DHCPHOSTS \
 	--conf-file="" \
-	--pid-file=$DNSMASQ_PID \
-	--dhcp-leasefile=/var/run/qemu-dnsmasq-$BRIDGE.leases \
+	--pid-file=$DNSMASQ_PID_FILE \
+	--dhcp-leasefile=$DNSMASQ_LEASE_FILE \
 	--dhcp-no-override \
 	${TFTPROOT:+"--enable-tftp"} \
 	${TFTPROOT:+"--tftp-root=$TFTPROOT"} \
 	${BOOTP:+"--dhcp-boot=$BOOTP"}
+#	--dhcp-range=set:subnet,$DHCPRANGE \
 }
 
+# $1: Bridge Name
 setup_bridge_nat() {
-  if check_bridge "$1" ; then
-    create_bridge "$1"
+
+  BRIDGE=$1
+
+  if check_bridge "$BRIDGE" ; then
+    create_bridge "$BRIDGE"
     enable_ip_forward
-    add_filter_rules "$1"
+    add_filter_rules "$TAP_DEV" "$GUEST_IP"
   fi
 
   if check_dnsmasq; then
-    start_dnsmasq "$1"
+    start_dnsmasq "$BRIDGE"
   fi
+
 }
 
 setup_bridge_vlan() {
-  if check_bridge "$1" ; then
-    create_bridge "$1"
+
+  BRIDGE=$1
+
+  if check_bridge "$BRIDGE" ; then
+    create_bridge "$BRIDGE"
   fi
 
   if check_dnsmasq; then
-    start_dnsmasq "$1"
+    start_dnsmasq "$BRIDGE"
   fi
+
 }
 
 setup_bridge_nat "$BRIDGE"
 
-if test "$1" ; then
-    do_ifconfig "$1" 0.0.0.0 up
-    do_brctl addif "$BRIDGE" "$1"
+if test "$TAP_DEV" ; then
+    add_anti_spoof_rules "$TAP_DEV" "$GUEST_IP"
+    do_ifconfig "$TAP_DEV" 0.0.0.0 up
+    do_brctl addif "$BRIDGE" "$TAP_DEV"
+    #echo "$TAP_DEV" > $VM_DIR/tapdev
 fi

@@ -37,6 +37,7 @@ int tun_alloc(char *dev)
 
 	if( (err = ioctl(fd, TUNSETIFF, (void *) &ifr)) < 0 )
 	{
+    		fprintf(stderr, "tapinit: unable to allocate TAP device\n");
 		close(fd);
 		return err;
 	}
@@ -47,10 +48,10 @@ int tun_alloc(char *dev)
 /* END Code taken from linux/Documentation/networking/tuntap.txt */
 
 /* BEGIN Code taken from qemu */
-static int launch_script(const char *setup_script, const char *ifname, int fd)
+static int launch_script(const char *setup_script, const char *ifname, const char *script_dir, const char *guest_ip, int fd)
 {
     int pid, status;
-    char *args[3];
+    char *args[5];
     char **parg;
 
     /* try to launch network script */
@@ -69,8 +70,10 @@ static int launch_script(const char *setup_script, const char *ifname, int fd)
         parg = args;
         *parg++ = (char *)setup_script;
         *parg++ = (char *)ifname;
+        *parg++ = (char *)script_dir;
+        *parg++ = (char *)guest_ip;
         *parg = NULL;
-        execv(setup_script, args);
+        execve(setup_script, args, NULL);
         _exit(1);
     } else if (pid > 0) {
         while (waitpid(pid, &status, 0) != pid) {
@@ -80,8 +83,13 @@ static int launch_script(const char *setup_script, const char *ifname, int fd)
         if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
             return 0;
         }
+	if (WIFEXITED(status) != 0) {
+    	    fprintf(stderr, "%s: could not launch network script\n", setup_script);
+	}
+	if (WEXITSTATUS(status) != 0) {
+    	    fprintf(stderr, "%s: network script returned error code %d\n", setup_script, WEXITSTATUS(status));
+	}
     }
-    fprintf(stderr, "%s: could not launch network script\n", setup_script);
     return -1;
 }
 /* END Code taken from qemu */
@@ -89,6 +97,7 @@ static int launch_script(const char *setup_script, const char *ifname, int fd)
 int main(int argc, char **argv)
 {
 	uid_t caller_uid;
+	uid_t effective_uid;
 
 	char tapdev[11] = "tap%d";
 	int tapfd;
@@ -98,26 +107,33 @@ int main(int argc, char **argv)
 	char *fdpos;
 	int i;
 
-	if(argc < 2)
+	if(argc < 4)
 		return 1;
 
 	caller_uid = getuid();
+	effective_uid = geteuid();
+
+	if(effective_uid != 0)
+	{
+		fprintf(stderr, "tapinit: must be run as setuid root!\n");
+		return 1;
+	}
 
 	tapfd = tun_alloc((char*) &tapdev);
 
 	if(tapfd < 0)
 		return 1;
 
-	if(launch_script(INIT_SCRIPT,(char *) &tapdev, tapfd))
+	if(launch_script(INIT_SCRIPT,(char *) &tapdev, argv[1], argv[2], tapfd))
 		return 1;
 
 	if(seteuid(caller_uid) != 0)
 		return 1;
 
-	newargv = argv + 1;
+	newargv = argv + 3;
 
 	// Insert fd into command line
-	for(i = 0; i < argc-1; i++)
+	for(i = 0; i < argc-3; i++)
 		if(newargv[i] != NULL && (fdpos = strstr(newargv[i], FDSTRING)) != NULL)
 		{
 			*(fdpos) = '\0';

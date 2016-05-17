@@ -168,20 +168,12 @@ else
 fi
 
 # Bring down firewall and ssh port forwarding
-sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR
+sudo $SCRIPT_DIR/fw.sh $VM_DIR
 FW_RES=$?
 
 if [ $FW_RES -ne 0 ]; then
   echo "Error: Failed to remove firewall policy after stopping VM; error code ($FW_RES)"
   exit 7
-fi
-
-sudo $SCRIPT_DIR/sshfwd.sh down $VM_MAC_ADDR $SSH_PORT
-SSH_RES=$?
-
-if [ $SSH_RES -ne 0 ]; then
-  echo "Error: Failed to remove ssh forwarding after stopping VM; error code ($SSH_RES)"
-  exit 8
 fi
 
 exit 0

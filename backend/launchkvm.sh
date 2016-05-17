@@ -20,7 +20,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 kvm-ok 2>&1 >>/dev/null
 
 if [[ $? -ne 0 || ! -e /dev/kvm ]]; then
-  echo "Starting KVM"
+#  echo "Starting KVM"
   modprobe kvm_intel
 fi
 
