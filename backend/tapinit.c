@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 
-/* BEGIN Code taken from linux/Documentation/networking/tuntap.txt */
+/* BEGIN Code taken from https://www.kernel.org/doc/Documentation/networking/tuntap.txt */
 #include <sys/ioctl.h>
 
 #include <linux/if_tun.h>
