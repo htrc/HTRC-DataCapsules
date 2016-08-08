@@ -145,13 +145,13 @@ do_iptables_restore <<EOF
 -I INPUT 1 -s $GATEWAY -d 255.255.255.255 -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_INPUT
 -I OUTPUT 1 -s 0.0.0.0 -d 255.255.255.255 -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_OUTPUT
 -I FORWARD 1 -m physdev --physdev-in $TAP_DEV -j REJECT
--I FORWARD 1 -m physdev --physdev-out $TAP_DEV -j REJECT
+-I FORWARD 1 -m physdev --physdev-is-bridged --physdev-out $TAP_DEV -j REJECT
 -I FORWARD 1 -s $GUEST_IP -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
 -I FORWARD 1 -d $GUEST_IP -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
--I FORWARD 1 -s $GUEST_IP -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
--I FORWARD 1 -d $GUEST_IP -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -s $GUEST_IP -m physdev --physdev-is-bridged --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -d $GUEST_IP -m physdev --physdev-is-bridged --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
 -I FORWARD 1 -s 0.0.0.0 -d 255.255.255.255 -m physdev --physdev-in $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
--I FORWARD 1 -s $GATEWAY -d 255.255.255.255 -m physdev --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
+-I FORWARD 1 -s $GATEWAY -d 255.255.255.255 -m physdev --physdev-is-bridged --physdev-out $TAP_DEV -j ${GUEST_IP}_FW_F_FORWARD
 
 COMMIT
 
@@ -168,7 +168,7 @@ EOF
 start_dnsmasq() {
     do_dnsmasq \
 	--strict-order \
-	--except-interface=lo \
+	--except-interface=lo,em1 \
 	--interface=$BRIDGE \
 	--listen-address=$GATEWAY \
 	--bind-interfaces \
