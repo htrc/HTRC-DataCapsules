@@ -5,3 +5,24 @@
 
 # Build files #
 target/
+.idea/compiler.xml
+
+.idea/copyright/profiles_settings.xml
+
+.idea/misc.xml
+
+.idea/modules.xml
+
+.idea/vcs.xml
+
+.idea/workspace.xml
+
+webservice/projectFilesBackup/sloan-ws.iml
+
+webservice/projectFilesBackup/sloan-ws.ipr
+
+webservice/sloan-ws.iml
+
+webservice/sloan-ws.ipr
+
+webservice/sloan-ws.iws
