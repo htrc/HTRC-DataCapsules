@@ -54,7 +54,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `htrcvirtdb`.`vmhosts` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vmhosts` (
-  `hostname` VARCHAR(256) NOT NULL,
+  `hostname` VARCHAR(128) NOT NULL,
   `cpu_cores` INT NULL,
   `mem_gb` INT NULL,
   PRIMARY KEY (`hostname`))
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vms` (
   `diskspace` INT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `username` VARCHAR(128) NOT NULL,
-  `host` VARCHAR(256) NULL,
+  `host` VARCHAR(128) NULL,
   PRIMARY KEY (`vmid`),
   INDEX `fk_images_idx` (`imagename` ASC),
   INDEX `fk_users_idx` (`username` ASC),
@@ -111,7 +111,7 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`results` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`results` (
   `vmid` VARCHAR(128) NOT NULL,
-  `resultid` VARCHAR(256) NOT NULL,
+  `resultid` VARCHAR(128) NOT NULL,
   `datafield` LONGBLOB NULL,
   `createtime` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `notified` ENUM('YES', 'NO', 'REJECTED') NOT NULL DEFAULT 'NO',

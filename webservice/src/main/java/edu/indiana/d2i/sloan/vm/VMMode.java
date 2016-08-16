@@ -19,5 +19,5 @@ public enum VMMode {
 	MAINTENANCE,
 	SECURE,
 	NOT_DEFINED;
-	 
+
 }
