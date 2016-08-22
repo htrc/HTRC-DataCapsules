@@ -19,6 +19,9 @@ DD_BLOCK_SIZE=2048k
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
+#htrcvirt user doesn't have write permissions in the  SCRIPT_DIR. Because of that FREE_HOSTS file is saved at diffrent location where htrcvirt user has wite permissions.
+FREE_HOSTS=/home/htrcvirt/free_hosts
+
 usage () {
 
   echo "Usage: $0 <Directory for VM> --image <Image Name> --ncpu <Number of CPUs> --mem <Guest Memory Size>"
@@ -168,30 +171,30 @@ fi
 
 # This should only happen on the first use of the scripts;
 # Be sure these files are initialized before opening system to real users!
-if [[ ! (-e $SCRIPT_DIR/dhcp_hosts && -e $SCRIPT_DIR/free_hosts) ]]; then
-  rm -f $SCRIPT_DIR/{dhcp_hosts,free_hosts}
+#if [[ ! (-e $SCRIPT_DIR/dhcp_hosts && -e $SCRIPT_DIR/free_hosts) ]]; then
+   # rm -f $SCRIPT_DIR/{dhcp_hosts,free_hosts}
 
-$SCRIPT_DIR/tools/make_hosts_files.py $SCRIPT_DIR $GATEWAY $NETMASK
-#  for SUFFIX in $(seq 2 254); do
-#    # Generate a locally-administered MAC address
-#    MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
-#    IP_ADDR="${NETWORK_PREFIX}.${SUFFIX}"
-#
-#    echo "$MAC_ADDR,$IP_ADDR" >> $SCRIPT_DIR/dhcp_hosts
-#    echo "$IP_ADDR" >> $SCRIPT_DIR/free_hosts
-#  done
+  #  $SCRIPT_DIR/tools/make_hosts_files.py $SCRIPT_DIR $GATEWAY $NETMASK
+    #  for SUFFIX in $(seq 2 254); do
+    #    # Generate a locally-administered MAC address
+    #    MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+    #    IP_ADDR="${NETWORK_PREFIX}.${SUFFIX}"
+    #
+    #    echo "$MAC_ADDR,$IP_ADDR" >> $SCRIPT_DIR/dhcp_hosts
+    #    echo "$IP_ADDR" >> $SCRIPT_DIR/free_hosts
+    #  done
 
-  # Push dhcp_hosts configuration to dnsmasq
-  if [ -e $DNSMASQ_PID_FILE ]; then
-    DNSMASQ_PID=$(cat $DNSMASQ_PID_FILE)
-    if pidof dnsmasq | grep -q $DNSMASQ_PID; then
-      kill -HUP $DNSMASQ_PID
-    fi
-  fi
-fi
+    # Push dhcp_hosts configuration to dnsmasq
+ #   if [ -e $DNSMASQ_PID_FILE ]; then
+#	DNSMASQ_PID=$(cat $DNSMASQ_PID_FILE)
+#	if pidof dnsmasq | grep -q $DNSMASQ_PID; then
+#	    kill -HUP $DNSMASQ_PID
+#	fi
+ #   fi
+#fi
 
 # Allocate IP Address
-VM_IP_ADDR=$(head -n1 $SCRIPT_DIR/free_hosts)
+VM_IP_ADDR=$(head -n1 $FREE_HOSTS)
 
 if [[ -z $VM_IP_ADDR ]]; then
   echo "Error: Unable to allocate IP address; IP pool is exhausted"
@@ -199,7 +202,7 @@ if [[ -z $VM_IP_ADDR ]]; then
 fi
 
 VM_MAC_ADDR=$(awk -F, '/'"${VM_IP_ADDR}"'$/{print $1}' $SCRIPT_DIR/dhcp_hosts)
-sed -ni '/'"$VM_IP_ADDR"'$/!p' $SCRIPT_DIR/free_hosts
+sed -ni '/'"$VM_IP_ADDR"'$/!p' $FREE_HOSTS
 
 # Copy temporary delta image to newly created working directory
 CP_RES=$(qemu-img create -o backing_file=$(readlink -f $IMAGE) -f qcow2 $VM_DIR/$(basename $IMAGE).diff)

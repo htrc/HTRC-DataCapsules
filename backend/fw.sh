@@ -60,10 +60,6 @@ flock -w 30 200
 # Reset firewall chain
 RESET_CHAINS=$(cat <<EOF
 *nat
-${VM_IP_ADDR}_FW_N_PRE
-${VM_IP_ADDR}_FW_N_INPUT
-${VM_IP_ADDR}_FW_N_OUTPUT
-${VM_IP_ADDR}_FW_N_POST
 
 *filter
 ${VM_IP_ADDR}_FW_F_INPUT
@@ -125,15 +121,15 @@ if [[ -n "$POLICY_FILE" ]]; then
   BEGIN {
     def_prefix="_FW_"
   }
-  /\*nat/ {
-    prefix=def_prefix "N_"
-  }
+  #/\*nat/ {
+  #  prefix=def_prefix "N_"
+  #}
   /\*filter/ {
     prefix=def_prefix "F_"
   }
   /INPUT|OUTPUT|FORWARD|PREROUTING|POSTROUTING/ {
-    sub(/PREROUTING/, "%IP%" prefix "PRE");
-    sub(/POSTROUTING/, "%IP%" prefix "POST");
+#    sub(/PREROUTING/, "%IP%" prefix "PRE");
+#    sub(/POSTROUTING/, "%IP%" prefix "POST");
     sub(/INPUT|OUTPUT|FORWARD/, "%IP%" prefix "&");
   }
   {

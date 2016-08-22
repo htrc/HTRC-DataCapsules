@@ -168,12 +168,14 @@ else
 fi
 
 # Bring down firewall and ssh port forwarding
-sudo $SCRIPT_DIR/fw.sh $VM_DIR
-FW_RES=$?
+#sudo $SCRIPT_DIR/fw.sh $VM_DIR
+#FW_RES=$?
 
-if [ $FW_RES -ne 0 ]; then
-  echo "Error: Failed to remove firewall policy after stopping VM; error code ($FW_RES)"
-  exit 7
-fi
+#if [ $FW_RES -ne 0 ]; then
+#  echo "Error: Failed to remove firewall policy after stopping VM; error code ($FW_RES)"
+#  exit 7
+#fi
+
+sudo $SCRIPT_DIR/remove-vm-iptables.sh $VM_DIR
 
 exit 0

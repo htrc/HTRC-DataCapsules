@@ -1,0 +1,80 @@
+# This file is no longer being updated by the server so can be edited
+
+# Rules for KVM doing nat
+*mangle
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+#-A POSTROUTING -o virbr0 -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill 
+-A POSTROUTING -o br1 -p udp -m udp --dport 68 -j CHECKSUM --checksum-fill 
+COMMIT
+*nat
+:PREROUTING ACCEPT [0:0]
+:POSTROUTING ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+#-A POSTROUTING -s 192.168.122.0/24 ! -d 192.168.122.0/24 -p tcp -j MASQUERADE --to-ports 1024-65535 
+#-A POSTROUTING -s 192.168.122.0/24 ! -d 192.168.122.0/24 -p udp -j MASQUERADE --to-ports 1024-65535 
+#-A POSTROUTING -s 192.168.122.0/24 ! -d 192.168.122.0/24 -j MASQUERADE 
+-A POSTROUTING -s 192.168.53.0/24 ! -d 192.168.53.0/24 -p tcp -j MASQUERADE --to-ports 1024-65535
+-A POSTROUTING -s 192.168.53.0/24 ! -d 192.168.53.0/24 -p udp -j MASQUERADE --to-ports 1024-65535
+-A POSTROUTING -s 192.168.53.0/24 ! -d 192.168.53.0/24 -j MASQUERADE
+COMMIT
+
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT 
+-A INPUT -p icmp -j ACCEPT 
+-A INPUT -i lo -j ACCEPT 
+#-A INPUT -i br1 -j ACCEPT
+
+#==================================================================
+#========================  thatchpalm   ===========================
+#==================================================================
+
+# Limited ssh access on demo1
+# gateway
+-A INPUT -s 10.56.27.70 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
+# pyro
+-A INPUT -s 10.79.247.74 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
+# Nagios servers
+-A INPUT -s 156.56.83.10 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
+-A INPUT -s 129.79.247.154 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
+-A INPUT -s 10.79.247.1 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
+#
+# Allow snmp connections from the nagios servers
+-A INPUT -s 156.56.83.10 -p udp --dport 161 -j ACCEPT
+-A INPUT -s 129.79.247.154 -p udp --dport 161 -j ACCEPT
+-A INPUT -s 10.79.247.1 -p udp --dport 161 -j ACCEPT
+#
+# VM ports open to the world
+# 
+-A INPUT -p tcp --dport 16000:16079 -j ACCEPT
+
+# Select ports from htrc systems
+#
+# silvermaple/25443
+-A INPUT -s 156.56.27.70 -p tcp --dport 25443 -j ACCEPT
+# htrc1/8888
+-A INPUT -s 156.56.27.82 -p tcp --dport 8888 -j ACCEPT
+# htrc1/3306
+-A INPUT -s 156.56.27.82 -p tcp --dport 3306 -j ACCEPT
+#
+# Need to allow connection for the SDA/MDSS backups and archives
+-A INPUT -s 149.165.226.0/26 -j ACCEPT
+
+#==================================================================
+#=======================  EVERYONE  ===============================
+#==================================================================
+#
+# Reject everything else
+#
+-A INPUT -j REJECT --reject-with icmp-host-prohibited 
+#-A FORWARD -m physdev --physdev-is-bridged -j ACCEPT 
+-A FORWARD -d 192.168.53.0/24 -j ACCEPT 
+-A FORWARD -j REJECT --reject-with icmp-host-prohibited 
+COMMIT
