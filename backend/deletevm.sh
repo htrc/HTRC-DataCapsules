@@ -17,7 +17,6 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
-#htrcvirt user doesn't have write permissions in the  SCRIPT_DIR. Because of that FREE_HOSTS file is saved at diffrent location where htrcvirt user has wite permissions.
 FREE_HOSTS=/home/htrcvirt/free_hosts
 
 usage () {

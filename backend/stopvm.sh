@@ -127,7 +127,7 @@ if [ -e $VM_DIR/pid ]; then
 
     echo "quit" | nc -U $VM_DIR/monitor >/dev/null
 
-    if pidof `basename $QEMU` | grep -q $VM_PID; then
+    if /usr/sbin/pidof `basename $QEMU` | grep -q $VM_PID; then
       
       KILL_RES=$(kill $VM_PID 2>&1)
   

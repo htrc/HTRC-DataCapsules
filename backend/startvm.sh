@@ -231,6 +231,12 @@ nohup $SCRIPT_DIR/tapinit $SCRIPT_DIR $VM_IP_ADDR $QEMU				\
 		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
 		   -hda $VM_DIR/$IMAGE						\
+                   -chardev socket,path=$VM_DIR/negotiator-host-to-guest.sock,server,nowait,id=host2guest \
+                   -device virtio-serial \
+                   -device virtserialport,chardev=host2guest,name=negotiator-host-to-guest.0 \
+                   -chardev socket,path=$VM_DIR/negotiator-guest-to-host.sock,server,nowait,id=guest2host \
+                   -device virtio-serial \
+                   -device virtserialport,chardev=guest2host,name=negotiator-guest-to-host.0 \
 		   -vga vmware                                                  \
 		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+,password}		\
 		   >>$VM_DIR/last_run						\
@@ -283,7 +289,7 @@ done
 ping -c1 -w1 $VM_IP_ADDR >/dev/null 2>&1
 
 if [ $? -ne 0 ]; then
-  if pidof `basename $QEMU` | grep -q $KVM_PID; then
+  if /usr/sbin/pidof `basename $QEMU` | grep -q $KVM_PID; then
     echo "Warning: guest failed to obtain IP address within $TIMEOUT seconds; may have failed to boot"
   else
     echo "Error: guest failed to start"

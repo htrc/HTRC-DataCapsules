@@ -5,6 +5,8 @@ if [ $(whoami) != "root" ]; then
   exit 1
 fi
 
+export PATH=/usr/sbin:$PATH
+
 VM_DIR=$1
 
 if [ ! -d $VM_DIR ] ; then
@@ -29,6 +31,9 @@ VM_TAP_DEV=`iptables -L FORWARD --line-numbers | grep $VM_IP | head -n 1 | grep 
 
 echo "VM with IP $VM_IP uses tap device $VM_TAP_DEV"
 
+IPTBLS_EXECUTABLE=`which iptables`
+logger "$VM_DIR - iptables executable $IPTBLS_EXECUTABLE"
+logger "$VM_DIR - Deleting forward rules.."
 # Deleting FORWARD rules related to VM
 while true
 do
@@ -41,6 +46,7 @@ do
     iptables -D FORWARD $RULE_LINE
 done
 
+logger "$VM_DIR - Deleting input rules.."
 # Deleting INPUT rules related to VM
 while true
 do
@@ -53,6 +59,7 @@ do
     iptables -D INPUT $RULE_LINE
 done
 
+logger "$VM_DIR - Deleting output rules.."
 # Deleting OUTPUT rules related to VM
 while true
 do
@@ -65,6 +72,7 @@ do
     iptables -D OUTPUT $RULE_LINE
 done
 
+logger "$VM_DIR - Deleting nat rules.."
 # Deleting rules in nat table related to VM
 while true
 do
@@ -77,6 +85,7 @@ do
     iptables -t nat -D PREROUTING $RULE_LINE
 done
 
+logger "$VM_DIR - Deleting chains.."
 echo "Deleting iptables chains for VM with IP $VM_IP"
 iptables -F "${VM_IP}_FW_F_FORWARD"
 iptables -F "${VM_IP}_FW_F_INPUT"
