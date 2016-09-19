@@ -118,7 +118,7 @@ public class CreateVM {
 
 			// nonblocking call to hypervisor
 			vminfo.setImagePath(imagePath);
-			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo, userName));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid)).build();
 		} catch (Exception e) {

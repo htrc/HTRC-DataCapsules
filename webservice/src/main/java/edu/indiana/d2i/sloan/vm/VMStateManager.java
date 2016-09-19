@@ -115,14 +115,14 @@ public class VMStateManager {
 	}
 
 	public synchronized boolean transitTo(String vmid, VMState src,
-			VMState target) throws SQLException, NoItemIsFoundInDBException {
+			VMState target, String operator) throws SQLException, NoItemIsFoundInDBException {
 		if (target == VMState.ERROR) {
-			DBOperations.getInstance().updateVMState(vmid, target);
+			DBOperations.getInstance().updateVMState(vmid, target, operator);
 			return true;
 		}
 
 		if (isValidTransition(src, target)) {
-			DBOperations.getInstance().updateVMState(vmid, target);
+			DBOperations.getInstance().updateVMState(vmid, target, operator);
 			logger.info("Transit from " + src + " to " + target + " for vm "
 					+ vmid);
 			return true;

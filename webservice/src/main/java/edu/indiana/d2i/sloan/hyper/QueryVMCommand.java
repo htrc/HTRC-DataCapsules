@@ -29,9 +29,11 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class QueryVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(QueryVMCommand.class);
+	private String operator;
 
-	public QueryVMCommand(VmInfoBean vminfo) throws Exception {
+	public QueryVMCommand(VmInfoBean vminfo, String operator) throws Exception {
 		super(vminfo);
+		this.operator = operator;
 	}
 
 	@Override
@@ -69,7 +71,7 @@ public class QueryVMCommand extends HypervisorCommand {
 	public void cleanupOnFailed() throws Exception {
 		// set to error?
 		VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-				vminfo.getVmstate(), VMState.ERROR);
+				vminfo.getVmstate(), VMState.ERROR, operator);
 	}
 
 	@Override
