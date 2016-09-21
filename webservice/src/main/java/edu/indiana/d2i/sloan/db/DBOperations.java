@@ -26,15 +26,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.indiana.d2i.sloan.bean.*;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
-import edu.indiana.d2i.sloan.bean.ImageInfoBean;
-import edu.indiana.d2i.sloan.bean.ResultBean;
-import edu.indiana.d2i.sloan.bean.UserBean;
-import edu.indiana.d2i.sloan.bean.UserResultBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -86,6 +81,55 @@ public class DBOperations {
 			if (connection != null)
 				connection.close();
 		}
+	}
+
+
+	public List<VmKeyInfoBean> getVmKeyInfo() throws SQLException {
+		String sql = "SELECT " + DBSchema.VmTable.VM_ID + ","
+				+ DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.STATE + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ","
+				+ DBSchema.UserTable.USER_EMAIL + " FROM "
+				+ DBSchema.VmTable.TABLE_NAME + ", "
+				+ DBSchema.UserTable.TABLE_NAME + " WHERE "
+				+ DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + " = "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME + " AND "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
+				+ VMState.DELETED.toString() + "\"";
+		logger.debug(sql);
+		List<VmKeyInfoBean> res = new ArrayList<VmKeyInfoBean>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				VmKeyInfoBean vmKeyInfoBean = new VmKeyInfoBean(
+						rs.getString(DBSchema.VmTable.VM_ID),
+						rs.getString(DBSchema.UserTable.USER_NAME),
+						rs.getString(DBSchema.UserTable.USER_EMAIL),
+						rs.getInt(DBSchema.VmTable.NUM_CPUS),
+						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
+						VMMode.valueOf(rs
+								.getString(DBSchema.VmTable.VM_MODE)),
+						VMState.valueOf(rs
+								.getString(DBSchema.VmTable.STATE))
+				);
+                res.add(vmKeyInfoBean);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
 	}
 
 	private List<VmInfoBean> getVmInfoInternal(final String sql)
