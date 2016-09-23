@@ -40,6 +40,8 @@ COMMIT
 # Limited ssh access on demo1
 # gateway
 -A INPUT -s 10.56.27.70 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
+# htrc1
+-A INPUT -s 156.56.27.82 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT
 # pyro
 -A INPUT -s 10.79.247.74 -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT 
 # Nagios servers
