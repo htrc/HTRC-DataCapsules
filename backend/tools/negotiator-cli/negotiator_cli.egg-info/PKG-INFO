@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: negotiator-cli
+Version: 0.1
+Summary: Tool for interacting QEMU VMs with negotiator-guest running.
+Home-page: http://github.com/milinda/negotiator-cli
+Author: Milinda Pathirage
+Author-email: milinda.pathirage@gmail.com
+License: Apache License, Version 2
+Description: UNKNOWN
+Platform: UNKNOWN

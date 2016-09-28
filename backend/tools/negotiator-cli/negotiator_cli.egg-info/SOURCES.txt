@@ -1,0 +1,6 @@
+setup.py
+negotiator_cli.egg-info/PKG-INFO
+negotiator_cli.egg-info/SOURCES.txt
+negotiator_cli.egg-info/dependency_links.txt
+negotiator_cli.egg-info/requires.txt
+negotiator_cli.egg-info/top_level.txt
