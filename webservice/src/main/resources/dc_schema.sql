@@ -24,6 +24,7 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`images` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`images` (
   `imagename` VARCHAR(128) NOT NULL,
+  `status` VARCHAR(128) NOT NULL,
   `imagedescription` VARCHAR(1024) NULL,
   `imagepath` VARCHAR(512) NULL,
   `loginusername` VARCHAR(32) NULL,
