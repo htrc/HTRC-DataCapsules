@@ -17,10 +17,12 @@ package edu.indiana.d2i.sloan.bean;
 
 public class ImageInfoBean {
 	private String imageName;
+	private String imageStatus;
 	private String imageDescription;
 
-	public ImageInfoBean(String imageName, String imageDescription) {
+	public ImageInfoBean(String imageName, String imageStatus, String imageDescription) {
 		this.imageName = imageName;
+		this.imageStatus = imageStatus;
 		this.imageDescription = imageDescription;
 	}
 	
@@ -30,5 +32,9 @@ public class ImageInfoBean {
 	
 	public String getImageDescription() {
 		return imageDescription;
+	}
+
+	public String getImageStatus() {
+		return imageStatus;
 	}
 }

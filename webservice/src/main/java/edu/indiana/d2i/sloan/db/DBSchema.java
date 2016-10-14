@@ -96,6 +96,7 @@ class DBSchema {
 	public static class ImageTable {
 		public static String TABLE_NAME = "images";
 		public static String IMAGE_NAME = "imagename";
+		public static String IMAGE_STATUS = "status";
 		public static String IMAGE_PATH = "imagepath";
 		public static String IMAGE_LOGIN_ID = "loginusername";
 		public static String IMAGE_LOGIN_PASSWORD = "loginpassword";

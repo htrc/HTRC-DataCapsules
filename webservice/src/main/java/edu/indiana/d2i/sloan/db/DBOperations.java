@@ -703,6 +703,7 @@ public class DBOperations {
 			rs = pst1.executeQuery();
 			while (rs.next()) {
 				res.add(new ImageInfoBean(rs.getString(DBSchema.ImageTable.IMAGE_NAME),
+						rs.getString(DBSchema.ImageTable.IMAGE_STATUS),
 					rs.getString(DBSchema.ImageTable.IMAGE_DESCRIPTION)));
 			} 
 		} finally {
