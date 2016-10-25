@@ -228,7 +228,7 @@ nohup $SCRIPT_DIR/tapinit $SCRIPT_DIR $VM_IP_ADDR $QEMU				\
 		   -monitor unix:$VM_DIR/monitor,server,nowait			\
 		   -serial file:$VM_DIR/release_mon 				\
 		   -usb								\
-		   -net nic,vlan=0,macaddr=$VM_MAC_ADDR				\
+		   -net nic,model=virtio,vlan=0,macaddr=$VM_MAC_ADDR				\
 		   -net tap,vlan=0,fd=%FD%					\
 		   -hda $VM_DIR/$IMAGE						\
                    -chardev socket,path=$VM_DIR/negotiator-host-to-guest.sock,server,nowait,id=host2guest \
