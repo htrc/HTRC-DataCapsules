@@ -87,15 +87,21 @@ public class DBOperations {
 	public List<VmKeyInfoBean> getVmKeyInfo() throws SQLException {
 		String sql = "SELECT " + DBSchema.VmTable.VM_ID + ","
 				+ DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.HOST + ","
 				+ DBSchema.VmTable.STATE + ","
 				+ DBSchema.VmTable.NUM_CPUS + ","
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.HostTable.CPU_CORES + ","
+				+ DBSchema.HostTable.MEMORY_GB + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ","
 				+ DBSchema.UserTable.USER_EMAIL + " FROM "
 				+ DBSchema.VmTable.TABLE_NAME + ", "
+				+ DBSchema.HostTable.TABLE_NAME + ", "
 				+ DBSchema.UserTable.TABLE_NAME + " WHERE "
 				+ DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + " = "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME + " AND "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.HOST + "="
+				+ DBSchema.HostTable.TABLE_NAME + "." + DBSchema.HostTable.HOST_NAME + " AND "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
 				+ VMState.DELETED.toString() + "\"";
 		logger.debug(sql);
@@ -117,7 +123,10 @@ public class DBOperations {
 						VMMode.valueOf(rs
 								.getString(DBSchema.VmTable.VM_MODE)),
 						VMState.valueOf(rs
-								.getString(DBSchema.VmTable.STATE))
+								.getString(DBSchema.VmTable.STATE)),
+						rs.getString(DBSchema.VmTable.HOST),
+						rs.getInt(DBSchema.HostTable.CPU_CORES),
+						rs.getInt(DBSchema.HostTable.MEMORY_GB)
 				);
                 res.add(vmKeyInfoBean);
 			}
