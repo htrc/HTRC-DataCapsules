@@ -600,6 +600,75 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	public void restoreQuota(String username, int cpu, int memory, int diskspace)
+			throws SQLException, NoItemIsFoundInDBException {
+
+			Connection connection = null;
+			PreparedStatement pst = null;
+			ResultSet rs = null;
+
+			List<String> updates = new ArrayList<String>();
+
+
+			/* restore quota */
+
+			// first query remaining quota
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA)
+					.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
+					.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
+					.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
+					.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+					.append("=").append(String.format("\"%s\"", username));
+
+			StringBuilder updateUserTableSql = new StringBuilder();
+
+			try {
+				connection = DBConnections.getInstance().getConnection();
+
+				pst = connection.prepareStatement(sql.toString());
+
+				rs = pst.executeQuery();
+				if (rs.next()) {
+					int leftDiskQuota = rs
+							.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
+					int leftCPUQuota = rs.getInt(DBSchema.UserTable.CPU_LEFT_QUOTA);
+					int leftMemoryQuota = rs
+							.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+
+					// compose update sql
+					updateUserTableSql = new StringBuilder();
+					updateUserTableSql
+							.append("UPDATE ")
+							.append(DBSchema.UserTable.TABLE_NAME)
+							.append(" SET ")
+							.append(String.format("%s=%d, %s=%d, %s=%d",
+									DBSchema.UserTable.DISK_LEFT_QUOTA,
+									leftDiskQuota + diskspace,
+									DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota
+											+ cpu,
+									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
+									leftMemoryQuota + memory))
+							.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+							.append("=").append(String.format("\"%s\"", username));
+				}
+
+			} finally {
+				if (rs != null)
+					rs.close();
+				if (pst != null)
+					pst.close();
+				if (connection != null)
+					connection.close();
+			}
+
+			if (updateUserTableSql.length() > 0) {
+				updates.add(updateUserTableSql.toString());
+				executeTransaction(updates);
+			}
+	}
+
 	// This function is just for test purpose and should not be called
 	public void updateVMState(String vmid, VMState state) throws SQLException {
 		this.updateVMState(vmid, state, "TEST");
