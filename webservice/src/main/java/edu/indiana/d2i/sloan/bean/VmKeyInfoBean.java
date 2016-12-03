@@ -2,7 +2,7 @@ package edu.indiana.d2i.sloan.bean;
 
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
-import sun.jvm.hotspot.runtime.VM;
+//import sun.jvm.hotspot.runtime.VM;
 
 /**
  * Created by liang on 9/21/16.
