@@ -99,7 +99,10 @@ fi
 if [ -e $VM_DIR/pid ]; then
 
   VM_PID=`cat $VM_DIR/pid`
- 
+
+# Remove iptables rules related to the capsule 
+  sudo $SCRIPT_DIR/remove-vm-iptables.sh $VM_DIR
+
   if kill -0 $VM_PID 2>&1 | grep -q "No such process" ; then
     echo "Error: There appears to be no VM instance running"
     exit 3
@@ -175,7 +178,5 @@ fi
 #  echo "Error: Failed to remove firewall policy after stopping VM; error code ($FW_RES)"
 #  exit 7
 #fi
-
-sudo $SCRIPT_DIR/remove-vm-iptables.sh $VM_DIR
 
 exit 0
