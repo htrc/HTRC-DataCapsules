@@ -1,4 +1,4 @@
-#!/bin/bash
+#ut!/bin/bash
 
 # Copyright 2013 University of Michigan
 # 
@@ -18,6 +18,10 @@ DD_BLOCK_SIZE=2048k
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
+
+FREE_HOSTS=/home/htrcvirt/free_hosts
+UBUNTU_16_04_IMAGE=ubuntu-16-04.img
+UBUNTU_12_04_IMAGE=uncamp2015-demo.img
 
 usage () {
 
@@ -166,30 +170,8 @@ if [ $? -ne 0 ]; then
   fail 3
 fi
 
-# This should only happen on the first use of the scripts;
-# Be sure these files are initialized before opening system to real users!
-if [[ ! (-e $SCRIPT_DIR/dhcp_hosts && -e $SCRIPT_DIR/free_hosts) ]]; then
-  rm -f $SCRIPT_DIR/{dhcp_hosts,free_hosts}
-
-  for SUFFIX in $(seq 2 254); do
-    # Generate a locally-administered MAC address
-    MAC_ADDR=$(printf '%1x2:%02x:%02x:%02x:%02x:%02x\n' $((RANDOM%16)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
-    IP_ADDR="192.168.53.$SUFFIX"
-
-    echo "$MAC_ADDR,$IP_ADDR" >> $SCRIPT_DIR/dhcp_hosts
-    echo "$IP_ADDR" >> $SCRIPT_DIR/free_hosts
-  done
-
-  # Push dhcp_hosts configuration to dnsmasq
-  if [ -e /var/run/qemu-dnsmasq-br0.pid ]; then
-    if pidof dnsmasq | grep -q $(cat /var/run/qemu-dnsmasq-br0.pid); then
-      kill -HUP $(cat /var/run/qemu-dnsmasq-br0.pid)
-    fi
-  fi
-fi
-
 # Allocate IP Address
-VM_IP_ADDR=$(head -n1 $SCRIPT_DIR/free_hosts)
+VM_IP_ADDR=$(head -n1 $FREE_HOSTS)
 
 if [[ -z $VM_IP_ADDR ]]; then
   echo "Error: Unable to allocate IP address; IP pool is exhausted"
@@ -197,7 +179,7 @@ if [[ -z $VM_IP_ADDR ]]; then
 fi
 
 VM_MAC_ADDR=$(awk -F, '/'"${VM_IP_ADDR}"'$/{print $1}' $SCRIPT_DIR/dhcp_hosts)
-sed -ni '/'"$VM_IP_ADDR"'/!p' $SCRIPT_DIR/free_hosts
+sed -ni '/'"$VM_IP_ADDR"'$/!p' $FREE_HOSTS
 
 # Copy temporary delta image to newly created working directory
 CP_RES=$(qemu-img create -o backing_file=$(readlink -f $IMAGE) -f qcow2 $VM_DIR/$(basename $IMAGE).diff)
@@ -245,6 +227,25 @@ EOF
 
 fi
 
+
+if [ "$IMAGE" != "/home/htrcvirt/images/uncamp2015-demo.img" ]; then
+    logger "$VM_DIR:$IMAGE:$VM_IP_ADDR:$VNC_PORT - Enabling negotiator."
+    cat <<EOF >> $VM_DIR/config
+
+NEGOTIATOR_ENABLED=1
+
+EOF
+
+else
+    logger "$VM_DIR:$IMAGE:$VM_IP_ADDR:$VNC_PORT - Disabling negotiator."
+    cat <<EOF >> $VM_DIR/config
+
+NEGOTIATOR_ENABLED=0
+
+EOF
+
+fi
+
 # Create the VM's secure volume
 IMG_RES=$(qemu-img create -f raw $VM_DIR/${SECURE_VOL_NAME}.tmp $SECURE_VOL_SIZE 2>&1)
 
@@ -253,31 +254,50 @@ if [ $? -ne 0 ]; then
   fail 6
 fi
 
-MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "Secure Volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
-
-if [ $? -ne 0 ]; then
-  echo "Error formatting secure volume for VM: $MKFS_RES"
-  fail 7
-fi
-
-SPOOL_IMG_RES=$(qemu-img create -f raw $VM_DIR/spool_volume 100M 2>&1)
+SPOOL_IMG_RES=$(qemu-img create -f raw $VM_DIR/spool_volume 10240M 2>&1)
 
 if [ $? -ne 0 ]; then
   echo "Error creating spool volume for VM: $SPOOL_IMG_RES"
   fail 8
 fi
 
-SPOOL_MKFS_RES=$(echo "y" | mkfs.ntfs -F -f -L "release_spool" $VM_DIR/spool_volume 2>&1)
+#Create  mounts for the secure volume and the spool volume 
+if [ "$IMAGE" = "/home/htrcvirt/images/uncamp2015-demo.img" ]; then
+    MKFS_RES=$(echo "y" | /sbin/mkfs.ntfs -F -f -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
 
-if [ $? -ne 0 ]; then
-  echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"
-  fail 9
+    if [ $? -ne 0 ]; then
+	echo "Error formatting secure volume for VM: $MKFS_RES"
+	fail 7
+    fi
+
+    SPOOL_MKFS_RES=$(echo "y" | /sbin/mkfs.ntfs -F -f -L "release_spool" $VM_DIR/spool_volume 2>&1)
+
+    if [ $? -ne 0 ]; then
+	echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"
+	fail 9
+    fi
+else
+    MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
+
+    if [ $? -ne 0 ]; then
+	echo "Error formatting secure volume for VM: $MKFS_RES"
+	fail 7
+    fi
+
+    SPOOL_MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "release_spool" $VM_DIR/spool_volume 2>&1)
+
+    if [ $? -ne 0 ]; then
+	echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"
+	fail 9
+    fi
 fi
 
 # This conversion to qcow2 format saves significant disk space (for example, 10GB file -> 53MB file)
 (nohup qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}.done 2>$VM_DIR/kvm_console >/dev/null \
     && rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>$VM_DIR/kvm_console >/dev/null \
     && mv $VM_DIR/${SECURE_VOL_NAME}.done $VM_DIR/$SECURE_VOL_NAME 2>$VM_DIR/kvm_console >/dev/null ) </dev/null >/dev/null 2>/dev/null &
+
+#mv $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}
 
 # Return results (only reaches here if no errors occur)
 exit 0

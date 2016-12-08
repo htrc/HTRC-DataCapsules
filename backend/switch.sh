@@ -14,12 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+. utils.sh
+
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy [Policy File]"
+  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy <Policy File>"
   echo ""
   echo "(--wdir)  Directory: The directory where this VM's data will be held"
   echo ""
@@ -27,13 +29,14 @@ usage () {
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
   echo "--policy  Policy File: The file that contains the policy for restricting this VM."
-  echo "                       This policy is optional when booting into maintenance mode." 
 
 }
 
-REQUIRED_OPTS="VM_DIR SECURE_MODE"
-ALL_OPTS="$REQUIRED_OPTS POLICY"
+REQUIRED_OPTS="VM_DIR SECURE_MODE POLICY"
+ALL_OPTS="$REQUIRED_OPTS"
 UNDEFINED=12345capsulesxXxXxundefined54321
+
+UBUNTU_12_04_IMAGE=uncamp2015-demo.img
 
 for var in $ALL_OPTS; do
   eval $var=$UNDEFINED
@@ -126,14 +129,6 @@ fi
 # If secure mode, sync storage, apply policy, take snapshot, mount secure volume, update modefile
 if [ $SECURE_MODE = 0 ]; then
 
-  # Take down SSH port forwarding
-  SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh down $VM_MAC_ADDR $SSH_PORT 2>&1)
-  
-  if [ $? -ne 0 ]; then
-    echo "$SSH_RES"
-    exit 4
-  fi
-
   # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
   for time in $(seq 1 30); do
     if [ -e $VM_DIR/$SECURE_VOL ]; then
@@ -151,7 +146,7 @@ if [ $SECURE_MODE = 0 ]; then
   echo "commit all" | nc -U $VM_DIR/monitor >/dev/null
 
   # Apply Firewall Policy
-  sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
+  sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
@@ -163,12 +158,29 @@ if [ $SECURE_MODE = 0 ]; then
   echo "savevm capsules" | nc -U $VM_DIR/monitor >/dev/null
 
   # Mount Secure Volume
-  echo "drive_add 0 id=secure_volume,if=none,file=$VM_DIR/$SECURE_VOL" | nc -U $VM_DIR/monitor >/dev/null
-  echo "device_add usb-storage,id=secure_volume,drive=secure_volume" | nc -U $VM_DIR/monitor >/dev/null
+  echo "drive_add 0 if=none,id=secure_volume,file=$VM_DIR/$SECURE_VOL" | nc -U $VM_DIR/monitor >/dev/null
+  if beginswith $UBUNTU_12_04_IMAGE $IMAGE || [ -z ${NEGOTIATOR_ENABLED+x} ] || [ $NEGOTIATOR_ENABLED -eq 0 ]; then
+      echo "device_add usb-storage,id=secure_volume,drive=secure_volume" | nc -U $VM_DIR/monitor >/dev/null
+  else
+      echo "device_add virtio-blk-pci,id=secure_volume,drive=secure_volume" | nc -U $VM_DIR/monitor >/dev/null
+  fi
+  #
 
   # Mount Spool Volume
   echo "drive_add 1 id=spool,if=none,file=$VM_DIR/spool_volume" | nc -U $VM_DIR/monitor >/dev/null
-  echo "device_add usb-storage,id=spool,drive=spool" | nc -U $VM_DIR/monitor >/dev/null
+  if beginswith $UBUNTU_12_04_IMAGE $IMAGE || [ -z ${NEGOTIATOR_ENABLED+x} ] || [ $NEGOTIATOR_ENABLED -eq 0 ]; then
+      echo "device_add usb-storage,id=spool,drive=spool" | nc -U $VM_DIR/monitor >/dev/null
+  else
+      echo "device_add virtio-blk-pci,id=spool,drive=spool" | nc -U $VM_DIR/monitor >/dev/null    
+  fi
+
+  if ! beginswith $UBUNTU_12_04_IMAGE $IMAGE && [ -n "$NEGOTIATOR_ENABLED" ]  && [ $NEGOTIATOR_ENABLED -eq 1 ]; then
+      # Automount volumes and fix permissions
+      sleep 5
+      echo "Automounting disks and fixing permissions"
+      python $SCRIPT_DIR/tools/negotiator-cli/negotiator-cli.py -e fix-securevol-permissions $VM_DIR/negotiator-host-to-guest.sock
+  fi
+
 
   # Start release daemon if not already running
   if [ ! -e $VM_DIR/release_pid ]; then
@@ -178,7 +190,6 @@ if [ $SECURE_MODE = 0 ]; then
 
   # Update Mode File
   echo "Secure" > $VM_DIR/mode
-
 
 # If maintenance, unmount secure volume, revert snapshot, remove policy, update modefile
 else
@@ -192,28 +203,17 @@ else
   # Revert Capsules Snapshot
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
 
-  # Remove Firewall Policy
-  if [[ $POLICY = $UNDEFINED ]]; then
-    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR
-  else
-    sudo $SCRIPT_DIR/fw.sh $VM_MAC_ADDR $POLICY
-  fi
-
+  # Replace Firewall Policy
+  sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
-    echo "Error: Failed to apply/remove firewall policy; error code ($FW_RES)"
+    echo "Error: Failed to replace firewall policy; error code ($FW_RES)"
     exit 7
   fi
 
-  # Restart SSH port forwarding
-  SSH_RES=$(sudo $SCRIPT_DIR/sshfwd.sh up $VM_MAC_ADDR $SSH_PORT 2>&1)
-  
-  if [ $? -ne 0 ]; then
-    echo "$SSH_RES"
-    exit 8
-  fi
-
+  # The devices have been removed already,
+  # this just resets things for future secure transitions
   echo "usb_del 0.0" | nc -U $VM_DIR/monitor >/dev/null
 
   # Update Mode File

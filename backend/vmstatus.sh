@@ -99,7 +99,7 @@ if [ -e $VM_DIR/pid ]; then
   VM_PID=`cat $VM_DIR/pid`
  
   # If no process is running with that pid, then it probably shut down naturally
-  if pidof `basename $QEMU` | grep -q $VM_PID; then
+  if /usr/sbin/pidof `basename $QEMU` | grep -q $VM_PID; then
     echo "$STAT_RUNNING"
   else
     echo "$STAT_NOT_RUNNING"

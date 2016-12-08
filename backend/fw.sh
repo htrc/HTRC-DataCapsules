@@ -14,13 +14,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+export PATH="/usr/sbin:/usr/bin:/sbin:/bin"
+
+if [ $(whoami) != "root" ]; then
+  echo "$0: Not running as root! (running as $(whoami))"
+  exit 1
+fi
+
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
-VM_MAC_ADDR=$1
+VM_DIR=$1
 POLICY_FILE=$2
 
-VM_IP_ADDR=$(cat $SCRIPT_DIR/dhcp_hosts | awk -F, "/$VM_MAC_ADDR/ "'{print $2}')
+if [ ! -d $VM_DIR ] ; then
+  echo "Error: Invalid VM directory specified!"
+  exit 2
+fi
+
+# Load config file
+. $VM_DIR/config
 
 if [[ $(id | sed 's/uid=\([0-9]*\).*/\1/') != 0 ]]; then
   echo "Error: Firewall script is not running as root.  You probably have not"
@@ -30,7 +43,13 @@ if [[ $(id | sed 's/uid=\([0-9]*\).*/\1/') != 0 ]]; then
 fi
 
 if [[ -z "$VM_IP_ADDR" ]]; then
-  echo "Error: Unable to resolve MAC address to IP address"
+  echo "Error: Unable to find VM IP address in VM configuration file!"
+
+  exit 2
+fi
+
+if [[ -z "$SSH_PORT" ]]; then
+  echo "Error: Unable to find VM SSH port in VM configuration file!"
 
   exit 2
 fi
@@ -39,100 +58,83 @@ fi
 flock -w 30 200
 
 # Reset firewall chain
-iptables -t filter -D INPUT -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_INPUT >/dev/null 2>&1
-iptables -t filter -D INPUT -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_INPUT >/dev/null 2>&1
-iptables -t filter -F ${VM_IP_ADDR}_FW_F_INPUT >/dev/null 2>&1
-iptables -t filter -X ${VM_IP_ADDR}_FW_F_INPUT >/dev/null 2>&1
+RESET_CHAINS=$(cat <<EOF
+*nat
 
-iptables -t filter -D FORWARD -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_FORWARD >/dev/null 2>&1
-iptables -t filter -D FORWARD -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_FORWARD >/dev/null 2>&1
-iptables -t filter -F ${VM_IP_ADDR}_FW_F_FORWARD >/dev/null 2>&1
-iptables -t filter -X ${VM_IP_ADDR}_FW_F_FORWARD >/dev/null 2>&1
+*filter
+${VM_IP_ADDR}_FW_F_INPUT
+${VM_IP_ADDR}_FW_F_FORWARD
+${VM_IP_ADDR}_FW_F_OUTPUT
 
-iptables -t filter -D OUTPUT -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_OUTPUT >/dev/null 2>&1
-iptables -t filter -D OUTPUT -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_OUTPUT >/dev/null 2>&1
-iptables -t filter -F ${VM_IP_ADDR}_FW_F_OUTPUT >/dev/null 2>&1
-iptables -t filter -X ${VM_IP_ADDR}_FW_F_OUTPUT >/dev/null 2>&1
+EOF
+)
 
-iptables -t nat -D PREROUTING -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_PRE >/dev/null 2>&1
-iptables -t nat -D PREROUTING -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_PRE >/dev/null 2>&1
-iptables -t nat -F ${VM_IP_ADDR}_FW_N_PRE >/dev/null 2>&1
-iptables -t nat -X ${VM_IP_ADDR}_FW_N_PRE >/dev/null 2>&1
+# Default for following loop
+table="filter"
 
-iptables -t nat -D INPUT -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_INPUT >/dev/null 2>&1
-iptables -t nat -D INPUT -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_INPUT >/dev/null 2>&1
-iptables -t nat -F ${VM_IP_ADDR}_FW_N_INPUT >/dev/null 2>&1
-iptables -t nat -X ${VM_IP_ADDR}_FW_N_INPUT >/dev/null 2>&1
+# Read lines from $RESET_CHAINS and process them using iptables
+while read -r rule; do
 
-iptables -t nat -D OUTPUT -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_OUTPUT >/dev/null 2>&1
-iptables -t nat -D OUTPUT -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_OUTPUT >/dev/null 2>&1
-iptables -t nat -F ${VM_IP_ADDR}_FW_N_OUTPUT >/dev/null 2>&1
-iptables -t nat -X ${VM_IP_ADDR}_FW_N_OUTPUT >/dev/null 2>&1
+  if [[ "$rule" =~ \*[A-Za-z]+ ]]; then
+    table=${rule:1}
+    continue
+  fi
 
-iptables -t nat -D POSTROUTING -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_POST >/dev/null 2>&1
-iptables -t nat -D POSTROUTING -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_POST >/dev/null 2>&1
-iptables -t nat -F ${VM_IP_ADDR}_FW_N_POST >/dev/null 2>&1
-iptables -t nat -X ${VM_IP_ADDR}_FW_N_POST >/dev/null 2>&1
+  if [[ "$rule" == "" ]]; then
+    continue
+  fi
+
+  IPTABLES_CALL="iptables -t $table -F $rule"
+  RESET_RES=$($IPTABLES_CALL 2>&1)
+  RES=$?
+
+  if echo "$RESET_RES" | grep -q "iptables: No chain/target/match by that name."; then
+
+    IPTABLES_CALL="iptables -t $table -N $rule"
+    RESET_RES=$($IPTABLES_CALL 2>&1)
+    RES=$?
+
+    if [[ $RES -ne 0 ]]; then
+      echo "Error: iptables chain reset rules failed to execute (error code $RES); Error output below:"
+      echo "'$IPTABLES_CALL'"
+      echo "$RESET_RES"
+      exit 3
+    fi
+
+    continue
+  fi
+
+  if [[ $RES -ne 0 ]]; then
+    echo "Error: iptables chain reset rules failed to execute (error code $RES); Error output below:"
+    echo "'$IPTABLES_CALL'"
+    echo "$RESET_RES"
+    exit 3
+  fi
+
+done <<< "$RESET_CHAINS"
 
 # Create new tables for rules
 if [[ -n "$POLICY_FILE" ]]; then
-
-  # Note that the filter "FORWARD" chain has a rule preventing communication
-  # within the bridge interface;  that rule takes precedence, hence the '2';
-  iptables -t filter -N ${VM_IP_ADDR}_FW_F_INPUT && \
-  iptables -t filter -I INPUT 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_INPUT && \
-  iptables -t filter -I INPUT 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_INPUT && \
-  \
-  iptables -t filter -N ${VM_IP_ADDR}_FW_F_FORWARD && \
-  iptables -t filter -I FORWARD 2 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_FORWARD && \
-  iptables -t filter -I FORWARD 2 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_FORWARD && \
-  \
-  iptables -t filter -N ${VM_IP_ADDR}_FW_F_OUTPUT && \
-  iptables -t filter -I OUTPUT 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_OUTPUT && \
-  iptables -t filter -I OUTPUT 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_F_OUTPUT && \
-  \
-  iptables -t nat -N ${VM_IP_ADDR}_FW_N_PRE && \
-  iptables -t nat -I PREROUTING 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_PRE && \
-  iptables -t nat -I PREROUTING 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_PRE && \
-  \
-  iptables -t nat -N ${VM_IP_ADDR}_FW_N_INPUT && \
-  iptables -t nat -I INPUT 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_INPUT && \
-  iptables -t nat -I INPUT 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_INPUT && \
-  \
-  iptables -t nat -N ${VM_IP_ADDR}_FW_N_OUTPUT && \
-  iptables -t nat -I OUTPUT 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_OUTPUT && \
-  iptables -t nat -I OUTPUT 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_OUTPUT && \
-  \
-  iptables -t nat -N ${VM_IP_ADDR}_FW_N_POST && \
-  iptables -t nat -I POSTROUTING 1 -s ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_POST && \
-  iptables -t nat -I POSTROUTING 1 -d ${VM_IP_ADDR} -j ${VM_IP_ADDR}_FW_N_POST
-
-  RES=$?
-
-  if [ $RES -ne 0 ]; then
-    echo "Error: iptables rules failed to execute (error code $RES)"
-    exit 3
-  fi
 
   # Apply firewall
   FW_RES=$(awk '
   BEGIN {
     def_prefix="_FW_"
   }
-  /\*nat/ {
-    prefix=def_prefix "N_"
-  }
+  #/\*nat/ {
+  #  prefix=def_prefix "N_"
+  #}
   /\*filter/ {
     prefix=def_prefix "F_"
   }
   /INPUT|OUTPUT|FORWARD|PREROUTING|POSTROUTING/ {
-    sub(/PREROUTING/, "%IP%" prefix "PRE");
-    sub(/POSTROUTING/, "%IP%" prefix "POST");
+#    sub(/PREROUTING/, "%IP%" prefix "PRE");
+#    sub(/POSTROUTING/, "%IP%" prefix "POST");
     sub(/INPUT|OUTPUT|FORWARD/, "%IP%" prefix "&");
   }
   {
     print $0
-  }' $POLICY_FILE | sed "s/%IP%/$VM_IP_ADDR/g" | iptables-restore -n 2>&1)
+  }' $POLICY_FILE | sed "s/%IP%/$VM_IP_ADDR/g; s/%SSH_PORT%/$SSH_PORT/g" | iptables-restore -n 2>&1)
 
   RES=$?
 
@@ -145,4 +147,4 @@ fi
 
 ) 200>$SCRIPT_DIR/lock.iptables
 
-exit 0
+exit $?

@@ -4,7 +4,7 @@ GENERAL SETUP
 The scripts require that qemu and dnsmasq be installed on your system in order
 to function.  On Ubuntu, these can be installed with the following command:
 
-(sudo) apt-get install qemu dnsmasq bridge-utils genisoimage makepasswd
+(sudo) apt-get install qemu dnsmasq bridge-utils genisoimage makepasswd python-netaddr
 
 Qemu may also be compiled and installed manually, and this is recommended,
 since it allows you to use newer, more up to date versions of the virtual
@@ -29,7 +29,7 @@ it), and the account that will be running the scripts must be able to run the
 sshfwd.sh and fw.sh scripts via sudo without a password.  To configure this,
 add the following line to the sudoers file:
 
-<USERNAME>  ALL=(ALL) NOPASSWD: <SCRIPT_DIRECTORY>/sshfwd.sh, NOPASSWD: <SCRIPT_DIRECTORY>/fw.sh, NOPASSWD: <SCRIPT_DIRECTORY>/launchkvm.sh
+<USERNAME>  ALL=(ALL) NOPASSWD: <SCRIPT_DIRECTORY>/fw.sh, NOPASSWD: <SCRIPT_DIRECTORY>/launchkvm.sh
 
 Make sure this line is after any lines about the sudo and admin groups,
 otherwise those rules will supercede this one and it will not work.  This

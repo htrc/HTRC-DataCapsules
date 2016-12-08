@@ -17,6 +17,9 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
+FREE_HOSTS=/home/htrcvirt/free_hosts
+VM_BACKUP_DIR=/home/htrcvirt/vm_backup
+
 usage () {
 
   echo "Usage: $0 <Directory for VM>"
@@ -114,15 +117,16 @@ if [ -d $VM_DIR ]; then
     fi
 
   fi
-
-  RM_RES=$(rm -rf $VM_DIR 2>&1)
+  
+  #RM_RES=$(rm -rf $VM_DIR 2>&1)
+  MV_RES=$(mv $VM_DIR $VM_BACKUP_DIR/$(basename $VM_DIR)-$(date +"%m_%d_%Y")/ 2>&1)
 
   if [ $? -ne 0 ]; then
-    echo "Error: Could not delete VM directory: $RM_RES"
+    echo "Error: Could not move VM directory: $MV_RES"
     exit 3
   else
     # Return IP address to free pool
-    echo "$VM_IP_ADDR" >> $SCRIPT_DIR/free_hosts
+    echo "$VM_IP_ADDR" >> $FREE_HOSTS
     exit 0
   fi
 
