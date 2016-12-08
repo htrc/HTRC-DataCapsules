@@ -20,14 +20,13 @@ import java.util.Map;
 
 @SuppressWarnings("serial")
 class DBSchema {
-	public static String DB_NAME = "vmdb";
+	public static String DB_NAME = "htrcvirtdb";
 
 	public static class VmTable {
 		public static String TABLE_NAME = "vms";
 		public static String VM_ID = "vmid";
 		public static String VM_MODE = "vmmode";
 		public static String STATE = "vmstate";
-		public static String PUBLIC_IP = "publicip";
 		public static String SSH_PORT = "sshport";
 		public static String VNC_PORT = "vncport";
 		public static String WORKING_DIR = "workingdir";
@@ -46,23 +45,29 @@ class DBSchema {
 		public static String NUM_CPUS = "numcpus";
 		public static String MEMORY_SIZE = "memorysize";
 		public static String DISK_SPACE = "diskspace";
-		
+
+		public static String CREATED_AT = "created_at";
+		public static String USERNAME = "username";
+		public static String HOST = "host";
+
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{
 				put(VM_ID, 1);
 				put(VM_MODE, 2);
 				put(STATE, 3);
-				put(PUBLIC_IP, 4);
-				put(SSH_PORT, 5);
-				put(VNC_PORT, 6);
-				put(WORKING_DIR, 7);
-				put(IMAGE_NAME, 8);
-				put(VNC_USERNAME, 9);
-				put(VNC_PASSWORD, 10);
-				put(NUM_CPUS, 11);
-				put(MEMORY_SIZE, 12);
-				put(DISK_SPACE, 13);
-				put(POLICY_NAME, 14);
+				put(SSH_PORT, 4);
+				put(VNC_PORT, 5);
+				put(WORKING_DIR, 6);
+				put(IMAGE_NAME, 7);
+				put(VNC_USERNAME, 8);
+				put(VNC_PASSWORD, 9);
+				put(NUM_CPUS, 10);
+				put(MEMORY_SIZE, 11);
+				put(DISK_SPACE, 12);
+				put(CREATED_AT, 13);
+				put(USERNAME, 14);
+				put(HOST, 15);
+				put(POLICY_NAME, 16);
 			}
 		};
 	}
@@ -88,16 +93,10 @@ class DBSchema {
 		public static String USER_TYPE = "usertype";
 	}
 
-	public static class UserVmTable {
-		public static String TABLE_NAME = "uservm";
-		public static String USER_NAME = "username";
-		public static String VM_ID = "vmid";
-		public static String DELETED = "deleted";
-	}
-	
 	public static class ImageTable {
 		public static String TABLE_NAME = "images";
 		public static String IMAGE_NAME = "imagename";
+		public static String IMAGE_STATUS = "status";
 		public static String IMAGE_PATH = "imagepath";
 		public static String IMAGE_LOGIN_ID = "loginusername";
 		public static String IMAGE_LOGIN_PASSWORD = "loginpassword";
@@ -110,6 +109,26 @@ class DBSchema {
 		public static String RESULT_ID = "resultid";
 		public static String DATA_FIELD = "datafield";
 		public static String NOTIFIED = "notified";
-		public static String STARTTIME = "starttime";
+		public static String CREATE_TIME= "createtime";
+		public static String NOTIFIED_TIME= "notifiedtime";
+	}
+
+	public static class HostTable {
+		public static String TABLE_NAME = "vmhosts";
+		public static String HOST_NAME = "hostname";
+		public static String CPU_CORES = "cpu_cores";
+		public static String MEMORY_GB = "mem_gb";
+	}
+
+	public static class ActivityTable {
+		public static String TABLE_NAME = "vmactivity";
+		public static String ACTIVITY_ID = "id";
+		public static String TIMESTAMP = "ts";
+		public static String VM_ID = "vmid";
+		public static String PREV_MODE = "prev_mode";
+		public static String CURR_MODE = "curr_mode";
+		public static String PREV_STATE = "prev_state";
+		public static String CURR_STATE = "curr_state";
+		public static String USERNAME = "username";
 	}
 }

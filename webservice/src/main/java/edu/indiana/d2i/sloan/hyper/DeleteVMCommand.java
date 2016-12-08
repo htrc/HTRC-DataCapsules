@@ -29,10 +29,12 @@ import edu.indiana.d2i.sloan.utils.RetriableTask;
 public class DeleteVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(DeleteVMCommand.class);
 	private final String username;
+	private final String operator;
 
-	public DeleteVMCommand(String username, VmInfoBean vminfo) throws Exception {
+	public DeleteVMCommand(String username, String operator, VmInfoBean vminfo) throws Exception {
 		super(vminfo);
 		this.username = username;
+		this.operator = operator;
 	}
 
 	@Override
@@ -45,7 +47,7 @@ public class DeleteVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DBOperations.getInstance().deleteVMs(username, vminfo);
+					DBOperations.getInstance().deleteVMs(username, operator, vminfo);
 					return null;
 				}
 			},  1000, 3, 

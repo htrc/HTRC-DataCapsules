@@ -26,15 +26,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import edu.indiana.d2i.sloan.bean.*;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
-import edu.indiana.d2i.sloan.bean.ImageInfoBean;
-import edu.indiana.d2i.sloan.bean.ResultBean;
-import edu.indiana.d2i.sloan.bean.UserBean;
-import edu.indiana.d2i.sloan.bean.UserResultBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -88,6 +83,64 @@ public class DBOperations {
 		}
 	}
 
+
+	public List<VmKeyInfoBean> getVmKeyInfo() throws SQLException {
+		String sql = "SELECT " + DBSchema.VmTable.VM_ID + ","
+				+ DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.HOST + ","
+				+ DBSchema.VmTable.STATE + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.HostTable.CPU_CORES + ","
+				+ DBSchema.HostTable.MEMORY_GB + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ","
+				+ DBSchema.UserTable.USER_EMAIL + " FROM "
+				+ DBSchema.VmTable.TABLE_NAME + ", "
+				+ DBSchema.HostTable.TABLE_NAME + ", "
+				+ DBSchema.UserTable.TABLE_NAME + " WHERE "
+				+ DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + " = "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME + " AND "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.HOST + "="
+				+ DBSchema.HostTable.TABLE_NAME + "." + DBSchema.HostTable.HOST_NAME + " AND "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
+				+ VMState.DELETED.toString() + "\"";
+		logger.debug(sql);
+		List<VmKeyInfoBean> res = new ArrayList<VmKeyInfoBean>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				VmKeyInfoBean vmKeyInfoBean = new VmKeyInfoBean(
+						rs.getString(DBSchema.VmTable.VM_ID),
+						rs.getString(DBSchema.UserTable.USER_NAME),
+						rs.getString(DBSchema.UserTable.USER_EMAIL),
+						rs.getInt(DBSchema.VmTable.NUM_CPUS),
+						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
+						VMMode.valueOf(rs
+								.getString(DBSchema.VmTable.VM_MODE)),
+						VMState.valueOf(rs
+								.getString(DBSchema.VmTable.STATE)),
+						rs.getString(DBSchema.VmTable.HOST),
+						rs.getInt(DBSchema.HostTable.CPU_CORES),
+						rs.getInt(DBSchema.HostTable.MEMORY_GB)
+				);
+                res.add(vmKeyInfoBean);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
+
 	private List<VmInfoBean> getVmInfoInternal(final String sql)
 			throws SQLException {
 		logger.debug(sql);
@@ -105,7 +158,7 @@ public class DBOperations {
 			while (rs.next()) {
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
-						rs.getString(DBSchema.VmTable.PUBLIC_IP),
+						rs.getString(DBSchema.VmTable.HOST),
 						rs.getString(DBSchema.VmTable.WORKING_DIR),
 						null, // image path
 						null, // policy path
@@ -265,7 +318,7 @@ public class DBOperations {
 	public List<VmInfoBean> getExistingVmInfo() throws SQLException {
 		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
+				+ "," + DBSchema.VmTable.HOST + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -280,14 +333,16 @@ public class DBOperations {
 				// + image path & policy path
 				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
 				+ " WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
-				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME;
+				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
+				+ VMState.DELETED.toString() + "\"";
 		return getVmInfoInternal(sql);
 	}
 
 	public List<VmInfoBean> getVmInfo(String userName) throws SQLException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
+				+ "," + DBSchema.VmTable.HOST + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -300,16 +355,13 @@ public class DBOperations {
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
-				+ " FROM " + DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.ImageTable.TABLE_NAME + ","
+				+ " FROM " + DBSchema.ImageTable.TABLE_NAME + ","
 				+ DBSchema.VmTable.TABLE_NAME 
 				+ " WHERE "
-				+ DBSchema.UserVmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID + "="
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
-				+ " AND " + DBSchema.UserVmTable.DELETED + "=0", userName);
+				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.STATE + "!= \"" + VMState.DELETED.toString() + "\"", userName);
 		return getVmInfoInternal(sql);
 	}
 
@@ -317,7 +369,7 @@ public class DBOperations {
 			throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.PUBLIC_IP + ","
+				+ "," + DBSchema.VmTable.HOST + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -330,18 +382,14 @@ public class DBOperations {
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
-				+ " FROM " + DBSchema.UserVmTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
 				+ " WHERE "
-				+ DBSchema.UserVmTable.TABLE_NAME + "."
-				+ DBSchema.UserVmTable.VM_ID + "="
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.UserVmTable.USER_NAME + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
-				+ DBSchema.UserVmTable.VM_ID + "=\"%s\""
-				+ " AND " + DBSchema.UserVmTable.DELETED + "=0", userName, vmid);
+				+ DBSchema.VmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.STATE + "!= \"" + VMState.DELETED.toString() + "\"", userName, vmid);
 
 		logger.debug(sql);
 
@@ -349,6 +397,40 @@ public class DBOperations {
 		if (res.size() == 0)
 			throw new NoItemIsFoundInDBException(String.format(
 					"VM %s with user %s is not found in DB.", vmid, userName));
+		return res.get(0);
+	}
+
+	private VmInfoBean getVmInfoByID(String vmid)
+			throws SQLException, NoItemIsFoundInDBException {
+		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ "," + DBSchema.VmTable.HOST + ","
+				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
+				+ "," + DBSchema.VmTable.VNC_PORT + ","
+				+ DBSchema.VmTable.WORKING_DIR + ","
+				+ DBSchema.VmTable.VNC_PASSWORD + ","
+				+ DBSchema.VmTable.VNC_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
+				// + image path & policy path
+				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ " WHERE "
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
+				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
+				+ DBSchema.VmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.STATE + "!= \"" + VMState.DELETED.toString() + "\"", vmid);
+
+		logger.debug(sql);
+
+		List<VmInfoBean> res = getVmInfoInternal(sql);
+		if (res.size() == 0)
+			throw new NoItemIsFoundInDBException(String.format(
+					"VM %s is not found in DB.", vmid));
 		return res.get(0);
 	}
 
@@ -366,7 +448,7 @@ public class DBOperations {
 						+ ","
 						+ DBSchema.VmTable.VM_MODE
 						+ ","
-						+ DBSchema.VmTable.PUBLIC_IP
+						+ DBSchema.VmTable.HOST
 						+ ","
 						+ DBSchema.VmTable.SSH_PORT
 						+ ","
@@ -385,31 +467,59 @@ public class DBOperations {
 						+ DBSchema.VmTable.MEMORY_SIZE
 						+ ","
 						+ DBSchema.VmTable.DISK_SPACE
+						+ ","
+						+ DBSchema.VmTable.USERNAME
 						+ ") VALUES"
-						+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d)",
+						+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\")",
 						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
 						vncLoginId, vncLoginPwd, numCPUs, memorySize,
-						diskSpace);
+						diskSpace, userName);
 
-		String insertvmusersql = String.format("INSERT INTO "
-				+ DBSchema.UserVmTable.TABLE_NAME + " ("
-				+ DBSchema.UserVmTable.USER_NAME + ","
-				+ DBSchema.UserVmTable.VM_ID + ") VALUES" + "(\"%s\", \"%s\")",
-				userName, vmid);
 
 		logger.debug(insertvmsql);
-		logger.debug(insertvmusersql);
 
 		List<String> updates = new ArrayList<String>();
 		updates.add(insertvmsql);
-		updates.add(insertvmusersql);
+
+		String insertActivitySQL = getInsertActivitySQL(vmid, VMMode.NOT_DEFINED.toString(),
+				VMMode.NOT_DEFINED.toString(),VMState.SHUTDOWN.toString(),
+				VMState.SHUTDOWN.toString(), userName);
+		logger.debug(insertActivitySQL);
+		updates.add(insertActivitySQL);
 
 		executeTransaction(updates);
 	}
 
+	private String getInsertActivitySQL(String vmid, String prevMode, String curMode,
+										String prevState, String curState, String operator) {
+		String insertActivitySQL = String.format("INSERT INTO "
+						+ DBSchema.ActivityTable.TABLE_NAME
+						+ " ("
+						+ DBSchema.ActivityTable.VM_ID
+						+ ", "
+						+ DBSchema.ActivityTable.PREV_MODE
+						+ ", "
+						+ DBSchema.ActivityTable.CURR_MODE
+						+ ", "
+						+ DBSchema.ActivityTable.PREV_STATE
+						+ ", "
+						+ DBSchema.ActivityTable.CURR_STATE
+						+ ", "
+						+ DBSchema.ActivityTable.USERNAME
+						+ ") VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
+				vmid, prevMode, curMode, prevState, curState, operator
+		);
+		return insertActivitySQL;
+	}
+
 	public void deleteVMs(String username, VmInfoBean vmInfo)
+		throws SQLException, NoItemIsFoundInDBException {
+		deleteVMs(username, username, vmInfo);
+	}
+
+	public void deleteVMs(String username, String operator, VmInfoBean vmInfo)
 			throws SQLException, NoItemIsFoundInDBException {
 
 		Connection connection = null;
@@ -418,13 +528,9 @@ public class DBOperations {
 		
 		List<String> updates = new ArrayList<String>();
 
-		String deletevmsql = String.format("DELETE FROM "
-				+ DBSchema.VmTable.TABLE_NAME + " where "
-				+ DBSchema.VmTable.VM_ID + "=\"%s\"", vmInfo.getVmid());
-		
-		String markdeletedsql = String.format("UPDATE %s SET %s=%d WHERE %s=\"%s\"", 
-			DBSchema.UserVmTable.TABLE_NAME, DBSchema.UserVmTable.DELETED, 1, 
-			DBSchema.UserVmTable.VM_ID,	vmInfo.getVmid()); 
+		String markdeletedsql = String.format("UPDATE %s SET %s=\"%s\" WHERE %s=\"%s\"",
+			DBSchema.VmTable.TABLE_NAME, DBSchema.VmTable.STATE, VMState.DELETED.toString(),
+			DBSchema.VmTable.VM_ID,	vmInfo.getVmid());
 
 		/* restore quota */
 
@@ -479,31 +585,155 @@ public class DBOperations {
 				connection.close();
 		}
 
-		updates.add(deletevmsql);
 		updates.add(markdeletedsql);
 
 		if (updateUserTableSql.length() > 0) {
 			updates.add(updateUserTableSql.toString());
 		}
 
+		String insertActivitySQL = getInsertActivitySQL(vmInfo.getVmid(), vmInfo.getVmmode().toString(),
+				VMMode.NOT_DEFINED.toString(), vmInfo.getVmstate().toString(),
+				VMState.DELETED.toString(), operator);
+		logger.debug(insertActivitySQL);
+		updates.add(insertActivitySQL);
+
 		executeTransaction(updates);
 	}
+
+	public void restoreQuota(String username, int cpu, int memory, int diskspace)
+			throws SQLException, NoItemIsFoundInDBException {
+
+			Connection connection = null;
+			PreparedStatement pst = null;
+			ResultSet rs = null;
+
+			List<String> updates = new ArrayList<String>();
+
+
+			/* restore quota */
+
+			// first query remaining quota
+			StringBuilder sql = new StringBuilder();
+
+			sql.append("SELECT ").append(DBSchema.UserTable.DISK_LEFT_QUOTA)
+					.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
+					.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
+					.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
+					.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+					.append("=").append(String.format("\"%s\"", username));
+
+			StringBuilder updateUserTableSql = new StringBuilder();
+
+			try {
+				connection = DBConnections.getInstance().getConnection();
+
+				pst = connection.prepareStatement(sql.toString());
+
+				rs = pst.executeQuery();
+				if (rs.next()) {
+					int leftDiskQuota = rs
+							.getInt(DBSchema.UserTable.DISK_LEFT_QUOTA);
+					int leftCPUQuota = rs.getInt(DBSchema.UserTable.CPU_LEFT_QUOTA);
+					int leftMemoryQuota = rs
+							.getInt(DBSchema.UserTable.MEMORY_LEFT_QUOTA);
+
+					// compose update sql
+					updateUserTableSql = new StringBuilder();
+					updateUserTableSql
+							.append("UPDATE ")
+							.append(DBSchema.UserTable.TABLE_NAME)
+							.append(" SET ")
+							.append(String.format("%s=%d, %s=%d, %s=%d",
+									DBSchema.UserTable.DISK_LEFT_QUOTA,
+									leftDiskQuota + diskspace,
+									DBSchema.UserTable.CPU_LEFT_QUOTA, leftCPUQuota
+											+ cpu,
+									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
+									leftMemoryQuota + memory))
+							.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+							.append("=").append(String.format("\"%s\"", username));
+				}
+
+			} finally {
+				if (rs != null)
+					rs.close();
+				if (pst != null)
+					pst.close();
+				if (connection != null)
+					connection.close();
+			}
+
+			if (updateUserTableSql.length() > 0) {
+				updates.add(updateUserTableSql.toString());
+				executeTransaction(updates);
+			}
+	}
+
+	// This function is just for test purpose and should not be called
 	public void updateVMState(String vmid, VMState state) throws SQLException {
+		this.updateVMState(vmid, state, "TEST");
+	}
+
+
+	public void updateVMState(String vmid, VMState state, String operator) throws SQLException {
+		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
 				+ DBSchema.VmTable.STATE + "=\"%s\" WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"", state.toString(), vmid);
-		executeTransaction(Collections.singletonList(updatevmsql));
+        updates.add(updatevmsql);
+
+		VmInfoBean vmInfo = null;
+		try {
+			vmInfo = getVmInfoByID(vmid);
+		} catch (NoItemIsFoundInDBException e) {
+			logger.debug("Cannot find VM with id: " + vmid + "to update state");
+		}
+
+		if (vmInfo != null) {
+			String insertActivitySQL = getInsertActivitySQL(vmid,
+					vmInfo.getVmmode().toString(),
+					vmInfo.getVmmode().toString(),
+					vmInfo.getVmstate().toString(),
+					state.toString(),
+					operator);
+			updates.add(insertActivitySQL);
+		}
+		executeTransaction(updates);
 	}
 
+	// This function is just for test purpose and should not be called
 	public void updateVMMode(String vmid, VMMode mode) throws SQLException {
+	    updateVMMode(vmid, mode, "TEST");
+    }
+
+	public void updateVMMode(String vmid, VMMode mode, String operator) throws SQLException {
+		List<String> updates = new ArrayList<String>();
 		StringBuilder sql = new StringBuilder().append("UPDATE ")
 				.append(DBSchema.VmTable.TABLE_NAME)
 				.append(" SET ")
 				.append(DBSchema.VmTable.VM_MODE)
 				.append(String.format("=\"%s\" WHERE %s=\"%s\"",
 						mode.toString(), DBSchema.VmTable.VM_ID, vmid));
-		executeTransaction(Collections.singletonList(sql.toString()));
+        updates.add(sql.toString());
+
+		VmInfoBean vmInfo = null;
+		try {
+			vmInfo = getVmInfoByID(vmid);
+		} catch (NoItemIsFoundInDBException e) {
+			logger.debug("Cannot find VM with id: " + vmid + "to update state");
+		}
+
+		if (vmInfo != null) {
+			String insertActivitySQL = getInsertActivitySQL(vmid,
+					vmInfo.getVmmode().toString(),
+					mode.toString(),
+					vmInfo.getVmstate().toString(),
+					vmInfo.getVmstate().toString(),
+					operator);
+			updates.add(insertActivitySQL);
+		}
+		executeTransaction(updates);
 	}
 
 	public String getImagePath(String imageName) throws SQLException {
@@ -551,6 +781,7 @@ public class DBOperations {
 			rs = pst1.executeQuery();
 			while (rs.next()) {
 				res.add(new ImageInfoBean(rs.getString(DBSchema.ImageTable.IMAGE_NAME),
+						rs.getString(DBSchema.ImageTable.IMAGE_STATUS),
 					rs.getString(DBSchema.ImageTable.IMAGE_DESCRIPTION)));
 			} 
 		} finally {
@@ -581,7 +812,7 @@ public class DBOperations {
 			
 			if (rs.next()) {
 				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), 
-					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.STARTTIME)));
+					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.CREATE_TIME)));
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
 			}
@@ -603,7 +834,7 @@ public class DBOperations {
 			String insertResult = String.format(
 				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)", 
 				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RESULT_ID, 
-				DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.STARTTIME);
+				DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.CREATE_TIME);
 			
 			connection = DBConnections.getInstance().getConnection();
 			pst = connection.prepareStatement(insertResult);
@@ -629,17 +860,17 @@ public class DBOperations {
 
 		try {
 			connection = DBConnections.getInstance().getConnection();
-			String query = String.format("SELECT %s, %s, %s FROM %s, %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
+			String query = String.format("SELECT %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
 				// selected fields
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME, 
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL,
 				DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID,
 				// selected tables
-				DBSchema.UserTable.TABLE_NAME, DBSchema.UserVmTable.TABLE_NAME, DBSchema.ResultTable.TABLE_NAME,
+				DBSchema.UserTable.TABLE_NAME,  DBSchema.ResultTable.TABLE_NAME,
 				// where clause
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME,
-					DBSchema.UserVmTable.TABLE_NAME + "." + DBSchema.UserVmTable.USER_NAME,
-				DBSchema.UserVmTable.TABLE_NAME + "." + DBSchema.UserVmTable.VM_ID,
+					DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME,
+				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 					DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.VM_ID,
 				DBSchema.ResultTable.NOTIFIED, "0");
 			logger.debug(query);
@@ -693,11 +924,11 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String query = String.format(
-				"SELECT * FROM %s, %s WHERE %s=%s AND %s=\"%s\"", 
-				DBSchema.UserTable.TABLE_NAME, DBSchema.UserVmTable.TABLE_NAME,
+				"SELECT * FROM %s, %s WHERE %s=%s AND %s=\"%s\"",
+				DBSchema.UserTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
 				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
-				DBSchema.UserVmTable.TABLE_NAME+"."+DBSchema.UserVmTable.USER_NAME,
-				DBSchema.UserVmTable.VM_ID, vmid);
+				DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME,
+				DBSchema.VmTable.VM_ID, vmid);
 			pst = connection.prepareStatement(query);
 			
 			ResultSet result = pst.executeQuery();

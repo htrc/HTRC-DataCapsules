@@ -6,3 +6,14 @@
 # Build files #
 target/
 .idea/*
+webservice/projectFilesBackup/sloan-ws.iml
+
+webservice/projectFilesBackup/sloan-ws.ipr
+
+webservice/sloan-ws.iml
+
+webservice/sloan-ws.ipr
+
+webservice/sloan-ws.iws
+
+webservice/.idea/

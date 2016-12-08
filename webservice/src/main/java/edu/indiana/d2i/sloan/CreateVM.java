@@ -15,6 +15,7 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
+import java.sql.SQLException;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +30,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.vm.PortsPool;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 
@@ -79,7 +82,9 @@ public class CreateVM {
 
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			
+
+			// check if ports are available
+
 			// check if image name is valid
 			String imagePath = DBOperations.getInstance().getImagePath(imageName);
 			if (imagePath == null) {
@@ -118,11 +123,22 @@ public class CreateVM {
 
 			// nonblocking call to hypervisor
 			vminfo.setImagePath(imagePath);
-			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo));
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo, userName));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
+
+			// if because of port unavailable error, restore user quota
+            if (e.getMessage().equals("No port resource available.")) {
+				try {
+					DBOperations.getInstance().restoreQuota(userName, vcpu, memory, 10);
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				} catch (NoItemIsFoundInDBException e1) {
+					e1.printStackTrace();
+				}
+			}
 			return Response.status(500)
 					.entity(new ErrorBean(500, e.getMessage())).build();
 		}

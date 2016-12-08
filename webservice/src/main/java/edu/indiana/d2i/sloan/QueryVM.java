@@ -55,7 +55,12 @@ public class QueryVM {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
-		
+
+		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		if (operator == null) operator = userName;
+		if (operatorEmail == null) operatorEmail = "";
+
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
 			return Response
@@ -71,7 +76,8 @@ public class QueryVM {
 
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			
+			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
 			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
 			if (vmid == null) {
@@ -92,7 +98,7 @@ public class QueryVM {
 				// query the back-end script only when vm state is not in pending
 				if (!VMStateManager.isPendingState(vminfo.getVmstate())) {
 					HypervisorProxy.getInstance().addCommand(
-							new QueryVMCommand(vminfo));
+							new QueryVMCommand(vminfo, operator));
 				}
 			}
 

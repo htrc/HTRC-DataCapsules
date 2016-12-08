@@ -31,9 +31,11 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class LaunchVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(LaunchVMCommand.class);
+	private String operator;
 
-	public LaunchVMCommand(VmInfoBean vminfo) throws Exception {
+	public LaunchVMCommand(VmInfoBean vminfo, String operator) throws Exception {
 		super(vminfo);
+		this.operator = operator;
 	}
 
 	@Override
@@ -52,7 +54,7 @@ public class LaunchVMCommand extends HypervisorCommand {
 				public Void call() throws Exception {
 					// update state
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-						vminfo.getVmstate(), VMState.RUNNING);
+						vminfo.getVmstate(), VMState.RUNNING, operator);
 
 					// update mode
 					assert vminfo.getVmmode().equals(VMMode.NOT_DEFINED);
@@ -65,7 +67,7 @@ public class LaunchVMCommand extends HypervisorCommand {
 					}
 
 					DBOperations.getInstance().updateVMMode(vminfo.getVmid(),
-							vminfo.getRequestedVMMode());
+							vminfo.getRequestedVMMode(), operator);
 					return null;
 				}
 			},  1000, 3, 
@@ -80,7 +82,7 @@ public class LaunchVMCommand extends HypervisorCommand {
 				@Override
 				public Void call() throws Exception {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-							vminfo.getVmstate(), VMState.ERROR);
+							vminfo.getVmstate(), VMState.ERROR, operator);
 					return null;
 				}
 			},  1000, 3, 

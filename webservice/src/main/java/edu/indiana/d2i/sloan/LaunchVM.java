@@ -52,7 +52,12 @@ public class LaunchVM {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
-		
+
+		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		if (operator == null) operator = userName;
+		if (operatorEmail == null) operatorEmail = "";
+
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
 			return Response
@@ -75,11 +80,12 @@ public class LaunchVM {
 		// launch can only start from shutdown
 		try {		
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			
+			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
 				!VMStateManager.getInstance().transitTo(vmid, 
-				vmInfo.getVmstate(), VMState.LAUNCH_PENDING)) {
+				vmInfo.getVmstate(), VMState.LAUNCH_PENDING, operator)) {
 				return Response
 					.status(400)
 					.entity(new ErrorBean(400,
@@ -95,7 +101,7 @@ public class LaunchVM {
 			vmInfo.setPolicypath(Configuration.getInstance().getString(
 				Configuration.PropertyName.MAINTENANCE_FIREWALL_POLICY));
 			
-			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo));
+			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo, operator));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

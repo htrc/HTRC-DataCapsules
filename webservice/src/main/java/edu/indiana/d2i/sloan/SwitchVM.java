@@ -54,6 +54,11 @@ public class SwitchVM {
 		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
 
+		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		if (operator == null) operator = userName;
+		if (operatorEmail == null) operatorEmail = "";
+
 		// check if username exists
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -84,7 +89,8 @@ public class SwitchVM {
 
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			
+			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+
 			VmInfoBean vmInfo;
 			vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 
@@ -105,7 +111,7 @@ public class SwitchVM {
 					vmid, vmInfo.getVmstate(),
 					(VMMode.MAINTENANCE.equals(target)
 							? VMState.SWITCH_TO_MAINTENANCE_PENDING
-							: VMState.SWITCH_TO_SECURE_PENDING))) {
+							: VMState.SWITCH_TO_SECURE_PENDING), operator)) {
 				return Response
 						.status(400)
 						.entity(new ErrorBean(400, "Cannot switch VM " + vmid
@@ -128,7 +134,7 @@ public class SwitchVM {
 			vmInfo.setPolicypath(policypath);
 
 			HypervisorProxy.getInstance().addCommand(
-					new SwitchVMCommand(vmInfo));
+					new SwitchVMCommand(vmInfo, operator));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

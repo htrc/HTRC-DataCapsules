@@ -19,6 +19,8 @@ public class Constants {
 	/** http header */
 	public static final String USER_NAME = "htrc-remote-user";
 	public static final String USER_EMAIL = "htrc-remote-user-email";
+	public static final String OPERATOR = "htrc-remote-operator";
+	public static final String OPERATOR_EMAIL = "htrc-remote-operator-email";
 
 	/** hypervisor relative variables */
 	public static final String DEFAULT_HYPER_WORKERS = "1024";
