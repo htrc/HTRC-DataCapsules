@@ -36,34 +36,57 @@ echo "VM with IP $VM_IP uses tap device $VM_TAP_DEV"
 
 IPTBLS_EXECUTABLE=`which iptables`
 logger "$VM_DIR - iptables executable $IPTBLS_EXECUTABLE"
-
-function deleteiptablesrules {
-    logger "$3 - Deleting $1 rules.."
-    GREP_OUT=`iptables -n -L $1 --line-numbers | grep $2`
+logger "$VM_DIR - Deleting forward rules.."
+# Deleting FORWARD rules related to VM
+while true
+do
+    GREP_OUT=`iptables -n -L FORWARD --line-numbers | grep $VM_TAP_DEV`
     if [ $? -eq 1 ]; then
-        logger "No $1 chain related rules for VM with IP: $3"
-    else
-	RULE_LINES=`echo "$GREP_OUT" | awk '{ print $1 }' | sort -nr |tr '\n' ' '`
-	for i in $RULE_LINES; do
-            iptables -D $1 $i
-	done
+	logger "Done deleting FORWARD chain related rules for VM with IP: $VM_IP"
+	break
     fi
-}
+    RULE_LINE=`iptables -n -L FORWARD --line-numbers | grep $VM_TAP_DEV | head -n 1 | grep -oP '^[^\s]*'`
+    iptables -D FORWARD $RULE_LINE
+done
 
-deleteiptablesrules FORWARD ${VM_TAP_DEV} ${VM_IP} 
-deleteiptablesrules INPUT ${VM_TAP_DEV} ${VM_IP}
-deleteiptablesrules OUTPUT ${VM_TAP_DEV} ${VM_IP}
+logger "$VM_DIR - Deleting input rules.."
+# Deleting INPUT rules related to VM
+while true
+do
+    GREP_OUT=`iptables -n -L INPUT --line-numbers | grep $VM_TAP_DEV`
+    if [ $? -eq 1 ]; then
+	logger "Done deleting INPUT chain related rules for VM with IP: $VM_IP"
+	break
+    fi
+    RULE_LINE=`iptables -n -L INPUT --line-numbers | grep $VM_TAP_DEV | head -n 1 | grep -oP '^[^\s]*'`
+    iptables -D INPUT $RULE_LINE
+done
 
-logger "$VM_IP - Deleting nat rules.."
+logger "$VM_DIR - Deleting output rules.."
+# Deleting OUTPUT rules related to VM
+while true
+do
+    GREP_OUT=`iptables -n -L OUTPUT --line-numbers | grep $VM_TAP_DEV`
+    if [ $? -eq 1 ]; then
+	logger "Done deleting OUTPUT chain related rules for VM with IP: $VM_IP"
+	break
+    fi
+    RULE_LINE=`iptables -n -L OUTPUT --line-numbers | grep $VM_TAP_DEV | head -n 1 | grep -oP '^[^\s]*'`
+    iptables -D OUTPUT $RULE_LINE
+done
+
+logger "$VM_DIR - Deleting nat rules.."
 # Deleting rules in nat table related to VM
-GREP_OUT=`iptables -n -L -t nat --line-numbers | grep $SSH_PORT`
-if [ $? -eq 1 ]; then
-    logger "No nat table related to VM with IP: $VM_IP"
-else
-    for i in $RULE_LINES; do
-	iptables -t nat -D PREROUTING $i
-    done
-fi
+while true
+do
+    GREP_OUT=`iptables -n -L -t nat --line-numbers | grep $SSH_PORT`
+    if [ $? -eq 1 ]; then
+        logger "Done deleting rules in nat table related to VM with IP: $VM_IP"
+        break
+    fi
+    RULE_LINE=`iptables -n -L -t nat --line-numbers | grep $SSH_PORT | head -n 1 | grep -oP '^[^\s]*'`
+    iptables -t nat -D PREROUTING $RULE_LINE
+done
 
 logger "$VM_DIR - Deleting chains.."
 logger "Deleting iptables chains for VM with IP $VM_IP"
