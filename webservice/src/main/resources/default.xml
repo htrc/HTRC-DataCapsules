@@ -45,7 +45,7 @@
     <!-- log4j property file -->
     <property>
 		<name>log4j.properties.path</name>
-		<value>XXX</value>
+		<value>xxx</value>
     </property>     
     
 </configuration>

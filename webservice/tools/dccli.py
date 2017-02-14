@@ -7,38 +7,93 @@ import argparse
 import string
 import httplib
 
-# OAuth2
-#REQUEST_TOKEN_URL = 'https://silvermaple.pti.indiana.edu/oauth2/token'
 
 # DC
 DC_API = 'localhost'
+PORT = '8080'
 
 def query_yes_no(question, default="yes"):
-        """Ask a yes/no question via raw_input() and return their answer.
+    """Ask a yes/no question via raw_input() and return their answer.
     "question" is a string that is presented to the user.
     "default" is the presumed answer if the user just hits <Enter>.
         It must be "yes" (the default), "no" or None (meaning
         an answer is required of the user).
     The "answer" return value is True for "yes" or False for "no".
     """
-            valid = {"yes": True, "y": True, "ye": True,
-                     nt-Type': 'application/x-www-form-urlencoded',
-                     'htrc-remote-user': username,
+    valid = {"yes": True, "y": True, "ye": True,
+             "no": False, "n": False}
+    if default is None:
+        prompt = " [y/n] "
+    elif default == "yes":
+        prompt = " [Y/n] "
+    elif default == "no":
+        prompt = " [y/N] "
+    else:
+        raise ValueError("invalid default answer: '%s'" % default)
+
+    while True:
+        sys.stdout.write(question + prompt)
+        choice = raw_input().lower()
+        if default is not None and choice == '':
+            return valid[default]
+        elif choice in valid:
+            return valid[choice]
+        else:
+            sys.stdout.write("Please respond with 'yes' or 'no' "
+                             "(or 'y' or 'n').\n")
+
+def delete_vm(vmid, username, useremail):
+
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+    'htrc-remote-user': username,
     'htrc-remote-user-email': useremail }
 
     params = urllib.urlencode({'vmid': vmid})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, port=8888)
-    conn.request("POST", '/sloan-ws-1.1-SNAPSHOT/launchvm', params, headers)
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/deletevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
     print data
 
-    def switch_vm(vmid, username, useremail, mode):
-#    access_token = get_auth_token()
+def stop_vm(vmid, username, useremail):
+
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+    'htrc-remote-user': username,
+    'htrc-remote-user-email': useremail }
+
+    params = urllib.urlencode({'vmid': vmid})
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/stopvm', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+
+    print data
+
+def start_vm(vmid, username, useremail):
+
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+    'htrc-remote-user': username,
+    'htrc-remote-user-email': useremail }
+
+    params = urllib.urlencode({'vmid': vmid})
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/launchvm', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+
+    print data
+
+def switch_vm(vmid, username, useremail, mode):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
     'htrc-remote-user': username,
@@ -47,16 +102,15 @@ def query_yes_no(question, default="yes"):
     params = urllib.urlencode({'vmid': vmid, 'mode': mode})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, port=8888)
-    conn.request("POST", '/sloan-ws-1.1-SNAPSHOT/switchvm', params, headers)
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/switchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
     print data
 
-    def create_vm(username, useremail, imagename, loginusername, loginpassword, memory, vcpu):
-#    access_token = get_auth_token()
+def create_vm(username, useremail, imagename, loginusername, loginpassword, memory, vcpu):
 
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
     'htrc-remote-user': username,
@@ -65,48 +119,13 @@ def query_yes_no(question, default="yes"):
     params = urllib.urlencode({'imagename': imagename, 'loginusername': loginusername, 'loginpassword': loginpassword, 'memory': memory, 'vcpu': vcpu})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, port=8888)
-    conn.request("POST", '/sloan-ws-1.1-SNAPSHOT/createvm', params, headers)
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/createvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
     print data
-
-def get_auth_token():
-    # content-type http header must be "application/x-www-form-urlencoded"
-    headers = {'content-type' : 'application/x-www-form-urlencoded'}
-
-    # request body
-    values = {'grant_type' : 'client_credentials',
-          'client_id' : os.environ['HTRC_OAUTH2_CLIENT_ID'],
-          'client_secret' : os.environ['HTRC_OAUTH2_CLIENT_SECRET'] }
-    body = urllib.urlencode(values)
-
-    # request method must be POST
-          req = urllib2.Request(REQUEST_TOKEN_URL, body, headers)
-    try:
-        # urllib2 module sends HTTP/1.1 requests with Connection:close header included
-        response = urllib2.urlopen(req)
-
-        # any other response code means the OAuth2 authentication failed. raise exception
-        if (response.code != 200):
-            raise urllib2.HTTPError(response.url, response.code, response.read(), response.info(), response.fp)
-
-        # response body is a JSON string
-        response_str = response.read()
-
-        # parse JSON string using python built-in json lib
-        json_response = json.loads(response_str)
-
-        # return the access token
-        return json_response["access_token"]
-
-    # response code in the 400-599 range will raise HTTPError
-    except urllib2.HTTPError as e:
-        # just re-raise the exception
-        raise Exception(str(e.code) + " " + str(e.reason) + " " + str(e.info) + " " + str(e.read()))
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

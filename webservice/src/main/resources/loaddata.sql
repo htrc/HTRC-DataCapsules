@@ -1,5 +1,4 @@
-USE vmdb;
+USE htrcvirtdb;
 
-INSERT INTO images (imagename, imagepath, imagedescription, loginusername, loginpassword) VALUES ("ubuntu-image", "/u/hathitrust/htrc-sloan/script-simulator/vm-image/ubuntu-image", "This is an Ubuntu image.", "ubuntu", "password");
-INSERT INTO images (imagename, imagepath, imagedescription, loginusername, loginpassword) VALUES ("suse-image", "/u/hathitrust/htrc-sloan/script-simulator/vm-image/suse-image", "This is a Suse image.", "ubuntu", "password");
-INSERT INTO images (imagename, imagepath, imagedescription, loginusername, loginpassword) VALUES ("redhat-image", "/u/hathitrust/htrc-sloan/script-simulator/vm-image/redhat-image", "This is a Redhat image.", "ubuntu", "password");
+INSERT INTO images VALUES ("ubuntu-image", "ACTIVE", "/u/hathitrust/htrc-sloan/script-simulator/vm-image/ubuntu-image", "This is an Ubuntu image.", "ubuntu", "password");
+INSERT INTO vmhosts VALUES ('oilpalm2.pti.indiana.edu',24,240),('peachpalm.pti.indiana.edu',12,120),('queenpalm.pti.indiana.edu',12,120),('royalpalm.pti.indiana.edu',12,120),('silverpalm.pti.indiana.edu',24,120),('thatchpalm.pti.indiana.edu',24,120);

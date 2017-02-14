@@ -7,7 +7,7 @@
     </property>
     <property>
 		<name>sloan.ws.db.jdbcurl</name>
-		<value>jdbc:mysql://localhost:3307/htrcvirtdb</value>
+		<value>jdbc:mysql://localhost:3306/htrcvirtdb</value>
     </property>
     <property>
 		<name>sloan.ws.db.user</name>
@@ -15,7 +15,7 @@
     </property>
         <property>
 		<name>sloan.ws.db.pwd</name>
-		<value></value>
+		<value>xxx</value>
     </property>
     
     <property>
