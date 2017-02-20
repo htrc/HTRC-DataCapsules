@@ -45,7 +45,7 @@
     <!-- log4j property file -->
     <property>
 		<name>log4j.properties.path</name>
-		<value>xxx</value>
+		<value>/opt/tomcat/apache-tomcat-8.5.11/webapps/sloan-ws-1.1/WEB-INF/classes/log4j.properties</value>
     </property>     
     
 </configuration>

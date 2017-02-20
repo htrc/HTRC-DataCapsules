@@ -15,7 +15,7 @@
     </property>
         <property>
 		<name>sloan.ws.db.pwd</name>
-		<value>xxx</value>
+		<value>lee091120115</value>
     </property>
     
     <property>
@@ -26,7 +26,7 @@
     <!--  -->
     <property>
 		<name>sloan.ws.hosts</name>
-		<value>smoketree.cs.indiana.edu</value>
+		<value>oilpalm2.pti.indiana.edu</value>
     </property>
     <property>
 		<name>sloan.ws.port.range.min</name>
