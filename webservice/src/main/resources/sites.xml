@@ -11,7 +11,7 @@
     </property>
     <property>
 		<name>sloan.ws.db.user</name>
-		<value>root</value>
+		<value>xxx</value>
     </property>
         <property>
 		<name>sloan.ws.db.pwd</name>

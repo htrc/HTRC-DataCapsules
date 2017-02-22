@@ -15,6 +15,7 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -60,8 +61,10 @@ public class SloanWSApplication extends Application {
 	}
 
 	private void configureLogger(ServletConfig servletConfig) {
-		String log4jPropertiesPath = Configuration.getInstance().getString("log4j.properties.path"); 
-		PropertyConfigurator.configure(log4jPropertiesPath);
-		logger.info("logger configured as " + log4jPropertiesPath);
+		String log4jPropertiesPath = Configuration.getInstance().getString("log4j.properties.path");
+		if(log4jPropertiesPath != null && new File(log4jPropertiesPath).exists()){
+			PropertyConfigurator.configure(log4jPropertiesPath);
+			logger.info("logger configured as " + log4jPropertiesPath);
+		}
 	}
 }

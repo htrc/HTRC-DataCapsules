@@ -178,4 +178,19 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<distributionManagement>
+		<repository>
+			<id>htrc.nexus.releases</id>
+			<name>HTRC Release Repository</name>
+			<url>https://nexus.htrc.illinois.edu/content/repositories/releases/</url>
+		</repository>
+
+		<snapshotRepository>
+			<id>htrc.nexus.snapshots</id>
+			<name>HTRC Snapshot Repository</name>
+			<url>https://nexus.htrc.illinois.edu/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 </project>

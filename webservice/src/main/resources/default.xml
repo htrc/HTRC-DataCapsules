@@ -40,12 +40,10 @@
     <property>
 		<name>scheduler.max.num.attempts</name>
 		<value>5</value>
-    </property>    
-    
-    <!-- log4j property file -->
-    <property>
-		<name>log4j.properties.path</name>
-		<value>xxx</value>
-    </property>     
-    
+    </property>
+	<property>
+		<name>sites.xml.path</name>
+		<value>/etc/htrc/conf/sites.xml</value>
+	</property>
+
 </configuration>
