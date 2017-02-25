@@ -32,9 +32,15 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import edu.indiana.d2i.sloan.bean.;
+import javax.mail.*;
+import javax.mail.internet.*;
+import javax.mail.internet.MimeMessage.RecipientType;
+
+import com.sun.xml.internal.ws.server.sei.EndpointResponseMessageBuilder;
+import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBConnections;
 import edu.indiana.d2i.sloan.db.DBSchema;
+import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import org.apache.log4j.Logger;
 
@@ -48,13 +54,18 @@ import sun.security.util.Password;
 
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Date;
+import java.text.*;
+import java.text.ParseException;
+import java.util.*;
+import java.util.Date.*;
 
-import java.io.BufferedWriter;
+import java.io.*;
 import java.io.FileWriter;
 import java.io.IOException;
-
+import java.nio.charset.*;
+import java.nio.file.*;
+import java.util.Objects.*;
 
 
 @Path("/ResultRelease")
@@ -63,53 +74,184 @@ public class ResultRelease {
     private static Logger logger = Logger.getLogger(CreateVM.class);
     private DBConnections DBConnections;
 
-    /**
+/**
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
 **/
-public void Response getResourcePost(@Context HttpHeaders httpHeaders,
-                                @Context HttpServletRequest httpServletRequest)
-    {
+public Response getResourcePost(@FormParam("resultId") String resultid,
+                                @Context HttpHeaders httpHeaders,
+                                @Context HttpServletRequest httpServletRequest) {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);
         String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 
 
+        /*1. check if the result has been released */
+        try {
+            ResultInfoBean result = DBOperations.getInstance().getResultInfo(resultid);
+            String notified = result.getNotified();
+            if (notified.equals("0")) {
+                logger.info("The result with id " + resultid + " is still available\n");
+                //can continue
+            } else {
+                logger.info("The result with id " + resultid + " has been released \n");
+                return Response.status(406)
+                        .entity(new ErrorBean(406, "Result with id" + resultid+"has been released before")).build();
+            }
+        } catch (SQLException e) {
+            logger.error(e.getMessage(), e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "SQL Syntax Error")).build();
+            //e.printStackTrace();
+        } catch (NoItemIsFoundInDBException e) {
+            logger.error(e.getMessage(), e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "No Item found for this result id")).build();
+        } catch (ParseException e) {
+            logger.error(e.getMessage(),e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "Parse Error")).build();
+        }
+
+        /*2. update starttime in database if result to be released*/
+        DateFormat df = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
+        java.util.Date date = new java.util.Date();
+        java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
+        try {
+
+            DBOperations.getInstance().updateResultTimeStamp(resultid, timestamp);
+
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage(),e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "SQL Syntax Error")).build();
+        }
+        //TODO: add catch update fail, do db.rollback
+
+        /*3. send out result datafield as content in email*/
+        EmailUtil send_email = new EmailUtil();
+        //constructor fetch properites automatically
+        try {
+            send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", fetchData(resultid));
+        } catch (ParseException e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage(),e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "Parse Error")).build();
+        } catch (NoItemIsFoundInDBException e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage(),e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "No item found for this result id")).build();
+        } catch (IOException e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage(),e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "IO Exception")).build();
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage(),e);
+            return Response
+                    .status(400)
+                    .entity(new ErrorBean(400, "SQL Syntax Error")).build();
+        }
+
+        /*4. mark this result as released (change notified to 1)*/
+
+        try {
+            DBOperations.getInstance().updateResultAsNotified(resultid);
+        } catch (SQLException e) {
+            //e.printStackTrace();
+            logger.error(e.getMessage(),e);
+            return Response
+                .status(400)
+                .entity(new ErrorBean(400, "SQL Syntax Error")).build();
+        }
+
+        return Response.status(200).build();
+    }
+
+
+
+
+
+    /*Already in util.EamilUtil*/
+    /**
+    public void send_email(StringBuilder content, String subject, String recipient) throws AddressException,
+            MessagingException, IOException
+    {
+        List<String> lines = Files.readAllLines(Paths.get(content),Charset.forName("UTF-8"));
+
+        String sender = "htrccapsule@gmail.com";
+
+        StringBuilder builder = new StringBuilder();
+        builder = content;
+
+
+        Properties props = new Properties();
+
+
+        Session mailSession = Session.getDefaultInstance(props);
+
+
+        try {
+
+
+
+            MimeMessage message = new MimeMessage(mailSession);
+            message.setFrom(new InternetAddress(sender));
+            message.addRecipients(RecipientType.TO, String.valueOf(new InternetAddress(recipient)));
+            message.setSubject(subject);
+            message.setText(builder.toString());
+
+
+            Transport.send(message);
+
+            System.out.println("message sent successfully");
+
+        }finally {
+
+        }
 
     }
-    //_init_(self)
+    **/
+    //check if it has been released or not
 
+    /*fetch datafield based on resultid*/
+    /*return as StringBuilder in case of fetching large content*/
+    public String fetchData(String resultid)
+            throws java.text.ParseException, SQLException, NoItemIsFoundInDBException, IOException
+    {
+     //   String sql = "select datafield from results resultid = " + resultid + ";";
 
-    public ResultRelease()
+        ResultBean result =  DBOperations.getInstance().getResult(resultid);
+
+        InputStream dataField = result.getInputstream();
+        char[] buffer = new char[1024];
+
+        StringBuilder out = new StringBuilder();
+        Reader in = new InputStreamReader(dataField, "UTF-8");
+
+        while(in.read(buffer,0,buffer.length) >= 0)
+        {
+            out.append(buffer,0,in.read(buffer,0,buffer.length));
+        }
+
+        //Output target path?
+        return out.toString();
+    }
+
+    public void wirteZipFile(String filename, String data)
     {
 
-
     }
 
-
-    public void db_ConnectionInit()
-    {
-        cmd
-
-    }
-
-    public void querySQL(String sql)
-    {
-
-    }
-
-    public void snedEmail(String content, String subject, String destination){}
-
-    public void wirteZipFile(String filename, String data){}
-
-
-
-
-
-    public void do_show_release()
-    {
-        String sql = "select * from results where notified=1";
-
-
-    }
 }

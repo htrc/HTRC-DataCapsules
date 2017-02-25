@@ -809,7 +809,7 @@ public class DBOperations {
 			connection = DBConnections.getInstance().getConnection();
 			pst = connection.prepareStatement(getResult);
 			rs = pst.executeQuery();
-			
+
 			if (rs.next()) {
 				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), 
 					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.CREATE_TIME)));
@@ -823,7 +823,38 @@ public class DBOperations {
 				connection.close();
 		}
 	}
-	
+
+	public ResultInfoBean getResultInfo(String randomid) throws SQLException, NoItemIsFoundInDBException, ParseException
+	{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			String getResultInfo = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
+					" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(getResultInfo);
+			rs = pst.executeQuery();
+
+			if (rs.next()) {
+				return new ResultInfoBean(rs.getString("vmid"),
+						rs.getString("resultid"),
+						rs.getString("datafield"),
+						rs.getString("createtime"),
+						rs.getString("notified"),
+						rs.getString("notifiedtime")
+				);
+			} else {
+				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
 	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -915,6 +946,29 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+	public void updateResultTimeStamp(String resultid, java.sql.Timestamp timestamp) throws SQLException
+	{
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.CREATE_TIME, timestamp, DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	
 	public UserBean getUserWithVmid(String vmid) throws SQLException, 
 		NoItemIsFoundInDBException {
