@@ -1,9 +1,5 @@
 package edu.indiana.d2i.sloan;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.*;
 import edu.indiana.d2i.sloan.exception.*;
@@ -23,10 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ruili on 2/18/17.
+ * Created by ruili on 2/25/17.
  */
-@Path("/showreleased")
-public class ShowReleased {
+
+@Path("/showunreleased")
+public class ShowUnreleased {
 
     private static Logger logger = Logger.getLogger(ShowReleased.class);
 
@@ -41,7 +38,7 @@ public class ShowReleased {
         try {
             //query for unreleased content
 
-            String sql = "select * from results where notified=0";
+            String sql = "select * from results where notified=1";
             logger.debug(sql);
             List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
 
@@ -90,3 +87,4 @@ public class ShowReleased {
 
 
 }
+

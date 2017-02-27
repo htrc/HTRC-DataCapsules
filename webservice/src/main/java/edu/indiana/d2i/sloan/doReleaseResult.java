@@ -63,22 +63,20 @@ import java.util.Date.*;
 import java.io.*;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.charset.*;
-import java.nio.file.*;
-import java.util.Objects.*;
 
 
-@Path("/ResultRelease")
-public class ResultRelease {
+
+@Path("/ReleaseResult")
+public class doReleaseResult {
 
     private static Logger logger = Logger.getLogger(CreateVM.class);
     private DBConnections DBConnections;
 
-/**
+
     @POST
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-    @Produces(MediaType.APPLICATION_JSON)
-**/
+    //@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    //@Produces(MediaType.APPLICATION_JSON)
+
 public Response getResourcePost(@FormParam("resultId") String resultid,
                                 @Context HttpHeaders httpHeaders,
                                 @Context HttpServletRequest httpServletRequest) {
@@ -133,36 +131,16 @@ public Response getResourcePost(@FormParam("resultId") String resultid,
         }
         //TODO: add catch update fail, do db.rollback
 
+
         /*3. send out result datafield as content in email*/
         EmailUtil send_email = new EmailUtil();
         //constructor fetch properites automatically
-        try {
-            send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", fetchData(resultid));
-        } catch (ParseException e) {
-            //e.printStackTrace();
-            logger.error(e.getMessage(),e);
-            return Response
-                    .status(400)
-                    .entity(new ErrorBean(400, "Parse Error")).build();
-        } catch (NoItemIsFoundInDBException e) {
-            //e.printStackTrace();
-            logger.error(e.getMessage(),e);
-            return Response
-                    .status(400)
-                    .entity(new ErrorBean(400, "No item found for this result id")).build();
-        } catch (IOException e) {
-            //e.printStackTrace();
-            logger.error(e.getMessage(),e);
-            return Response
-                    .status(400)
-                    .entity(new ErrorBean(400, "IO Exception")).build();
-        } catch (SQLException e) {
-            //e.printStackTrace();
-            logger.error(e.getMessage(),e);
-            return Response
-                    .status(400)
-                    .entity(new ErrorBean(400, "SQL Syntax Error")).build();
-        }
+        String download_addr = String.format(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX, resultid);
+
+        //construct email content
+        String content = String.format("Please download result from the following URL: \n", download_addr);
+        send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", content);
+
 
         /*4. mark this result as released (change notified to 1)*/
 
@@ -227,31 +205,6 @@ public Response getResourcePost(@FormParam("resultId") String resultid,
 
     /*fetch datafield based on resultid*/
     /*return as StringBuilder in case of fetching large content*/
-    public String fetchData(String resultid)
-            throws java.text.ParseException, SQLException, NoItemIsFoundInDBException, IOException
-    {
-     //   String sql = "select datafield from results resultid = " + resultid + ";";
 
-        ResultBean result =  DBOperations.getInstance().getResult(resultid);
-
-        InputStream dataField = result.getInputstream();
-        char[] buffer = new char[1024];
-
-        StringBuilder out = new StringBuilder();
-        Reader in = new InputStreamReader(dataField, "UTF-8");
-
-        while(in.read(buffer,0,buffer.length) >= 0)
-        {
-            out.append(buffer,0,in.read(buffer,0,buffer.length));
-        }
-
-        //Output target path?
-        return out.toString();
-    }
-
-    public void wirteZipFile(String filename, String data)
-    {
-
-    }
 
 }
