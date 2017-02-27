@@ -38,8 +38,10 @@ public class ShowUnreleased {
         try {
             //query for unreleased content
 
-            String sql = "select * from results where notified=1";
+            String sql;
+            sql = new String("select * from results where notified= 'NO' ");
             logger.debug(sql);
+
             List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
 
             Connection conn = null;
