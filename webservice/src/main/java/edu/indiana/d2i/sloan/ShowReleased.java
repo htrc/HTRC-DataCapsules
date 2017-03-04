@@ -39,32 +39,10 @@ public class ShowReleased {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 
 
-        //query for released content
-        String sql;
-        sql = new String("select * from results where notified='YES'");
-        logger.debug(sql);
-
-        List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
-
-        Connection conn = null;
-        PreparedStatement pst = null;
-        ResultSet rs = null;
 
         try {
-            conn = DBConnections.getInstance().getConnection();
-            pst = conn.prepareStatement(sql);
-            rs = pst.executeQuery();
-            while (rs.next()) {
-                ResultInfoBean result = new ResultInfoBean(rs.getString("vmid"),
-                        rs.getString("resultid"),
-                        rs.getString("datafield"),
-                        rs.getString("createtime"),
-                        rs.getString("notified"),
-                        rs.getString("notifiedtime")
-                );
-                res.add(result);
-            }
 
+            List<ResultInfoBean> res = DBOperations.getInstance().getReleased();
             //have res for return
             return Response.status(200).entity(new ResultInfoResponseBean(res)).build();
 
@@ -73,22 +51,9 @@ public class ShowReleased {
             logger.error(e.getMessage(), e);
             return Response.status(500)
                     .entity(new ErrorBean(500, e.getMessage())).build();
-        } finally {
-            if (rs != null)
-                rs.close();
-            if (pst != null)
-                pst.close();
-            if (conn != null)
-                conn.close();
         }
 
 
-        //   return Response.status(200).entity(new ListVmKeyInfoResponseBean(vmKeyInfoBeanList)).build();
-       /* } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            return Response.status(500)
-                    .entity(new ErrorBean(500, e.getMessage())).build();
-        }*/
 
 
     }

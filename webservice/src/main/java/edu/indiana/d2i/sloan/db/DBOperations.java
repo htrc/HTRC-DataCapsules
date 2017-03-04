@@ -855,6 +855,91 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+	public List<ResultInfoBean> getUnreleased() throws SQLException
+	{
+		String sql;
+		sql = new String("select * from results where notified= 'NO' ");
+		logger.debug(sql);
+
+		List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+		//
+            while (rs.next()) {
+				ResultInfoBean result = new ResultInfoBean(rs.getString("vmid"),
+						rs.getString("resultid"),
+						rs.getString("datafield"),
+						rs.getString("createtime"),
+						rs.getString("notified"),
+						rs.getString("notifiedtime")
+				);
+				res.add(result);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+
+		return res;
+
+	}
+
+    public List<ResultInfoBean> getReleased() throws SQLException
+    {
+        String sql;
+        sql = new String("select * from results where notified= 'YES' ");
+        logger.debug(sql);
+
+        List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
+
+        Connection conn = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+        try {
+
+            conn = DBConnections.getInstance().getConnection();
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                ResultInfoBean result = new ResultInfoBean(rs.getString("vmid"),
+                        rs.getString("resultid"),
+                        rs.getString("datafield"),
+                        rs.getString("createtime"),
+                        rs.getString("notified"),
+                        rs.getString("notifiedtime")
+                );
+                res.add(result);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (rs != null)
+                rs.close();
+            if (pst != null)
+                pst.close();
+            if (conn != null)
+                conn.close();
+        }
+
+        return res;
+
+    }
+
+
 	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
