@@ -15,6 +15,14 @@ COMMIT
 #:INPUT - [0:0]
 #:FORWARD - [0:0]
 #:OUTPUT - [0:0]
+
+#Give access to babel.hathitrust.org in the secure mode
+-A FORWARD -p tcp -d 141.213.128.167 --dport 443 -j ACCEPT
+-A OUTPUT  -p tcp -d 141.213.128.167 --dport 443 -j ACCEPT
+
+-A FORWARD -p tcp -d 134.68.125.203 --dport 443 -j ACCEPT
+-A OUTPUT  -p tcp -d 134.68.125.203 --dport 443 -j ACCEPT
+
 -A INPUT   -d 156.56.27.70 -j ACCEPT
 -A FORWARD -d 156.56.27.70 -j ACCEPT
 -A OUTPUT  -d 156.56.27.70 -j ACCEPT
