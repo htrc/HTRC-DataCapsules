@@ -122,20 +122,12 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
-		
-		<!-- htrc oauth2 -->
-		<!--
+
 		<dependency>
 			<groupId>edu.indiana.d2i.htrc</groupId>
-			<artifactId>htrc-auditor</artifactId>
-			<version>0.0.2</version>
+			<artifactId>jwt-servletfilter</artifactId>
+			<version>0.1-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>edu.indiana.d2i.htrc.oauth2</groupId>
-			<artifactId>oauth2-servletfilter</artifactId>
-			<version>1.0</version>
-		</dependency>
-		-->
 
 		<!-- configuration -->
 		<dependency>

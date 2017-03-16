@@ -3,7 +3,7 @@
 	<!-- classes that serve as resources, separated by semicolon -->
     <property>
       	<name>sloan.ws.resources.names</name>
-		<value>edu.indiana.d2i.sloan.ListVMs;edu.indiana.d2i.sloan.GroupOperation;edu.indiana.d2i.sloan.CreateVM;edu.indiana.d2i.sloan.QueryVM;edu.indiana.d2i.sloan.LaunchVM;edu.indiana.d2i.sloan.DeleteVM;edu.indiana.d2i.sloan.StopVM;edu.indiana.d2i.sloan.SwitchVM;edu.indiana.d2i.sloan.ListImage;edu.indiana.d2i.sloan.DownloadResult;edu.indiana.d2i.sloan.UploadResult</value>
+		<value>edu.indiana.d2i.sloan.ListVMs;edu.indiana.d2i.sloan.GroupOperation;edu.indiana.d2i.sloan.CreateVM;edu.indiana.d2i.sloan.QueryVM;edu.indiana.d2i.sloan.LaunchVM;edu.indiana.d2i.sloan.DeleteVM;edu.indiana.d2i.sloan.StopVM;edu.indiana.d2i.sloan.SwitchVM;edu.indiana.d2i.sloan.ListImage;edu.indiana.d2i.sloan.DownloadResult;edu.indiana.d2i.sloan.UploadResult;edu.indiana.d2i.sloan.DownloadResult</value>
     </property>	
 
 	<!-- hypervisor -->
@@ -43,7 +43,7 @@
     </property>
 	<property>
 		<name>sites.xml.path</name>
-		<value>/etc/htrc/conf/sites.xml</value>
+		<value>/etc/htrc/dcapi/sites.xml</value>
 	</property>
 
 </configuration>
