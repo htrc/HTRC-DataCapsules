@@ -15,25 +15,20 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan.db;
 
+import edu.indiana.d2i.sloan.Configuration;
+import edu.indiana.d2i.sloan.bean.*;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMPorts;
+import edu.indiana.d2i.sloan.vm.VMState;
+import org.apache.log4j.Logger;
+
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import edu.indiana.d2i.sloan.bean.*;
-import org.apache.log4j.Logger;
-
-import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.vm.VMPorts;
-import edu.indiana.d2i.sloan.vm.VMMode;
-import edu.indiana.d2i.sloan.vm.VMState;
 
 public class DBOperations {
 	private static Logger logger = Logger.getLogger(DBOperations.class);
@@ -897,6 +892,51 @@ public class DBOperations {
 		return res;
 
 	}
+
+	public List<ReviewInfoBean> getReviewData() throws SQLException
+	{
+		String sql = new String("SELECT results.resultid AS resultid," +
+				" results.vmid AS vmid, " +
+				" users.username AS username, users.useremail AS useremail, " +
+				" results.notified AS notified " +
+				" FROM (users INNER JOIN vms ON users.username=vms.username) INNER JOIN results ON vms.vmid=results.vmid ");
+		logger.debug(sql);
+
+		List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+
+			while (rs.next()) {
+				ReviewInfoBean result = new ReviewInfoBean(rs.getString("vmid"),
+						rs.getString("resultid"),
+						rs.getString("notified"),
+						rs.getString("username"),
+						rs.getString("useremail")
+				);
+				res.add(result);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+
+	}
+
+
 
     public List<ResultInfoBean> getReleased() throws SQLException
     {
