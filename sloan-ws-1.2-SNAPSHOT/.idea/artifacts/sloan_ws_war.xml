@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="sloan-ws:war">
+    <output-path>$PROJECT_DIR$/../webservice/target</output-path>
+    <root id="archive" name="sloan-ws-1.2-SNAPSHOT.war">
+      <element id="artifact" artifact-name="sloan-ws:war exploded" />
+    </root>
+  </artifact>
+</component>

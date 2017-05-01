@@ -23,12 +23,14 @@ import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.InputStream;
 import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.zip.ZipEntry;
 
 public class DBOperations {
 	private static Logger logger = Logger.getLogger(DBOperations.class);
@@ -856,18 +858,14 @@ public class DBOperations {
 		String sql;
 		sql = new String("select * from results where notified= 'NO' ");
 		logger.debug(sql);
-
 		List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
-
 		Connection conn = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
 		try {
-
 			conn = DBConnections.getInstance().getConnection();
 			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
-		//
             while (rs.next()) {
 				ResultInfoBean result = new ResultInfoBean(rs.getString("vmid"),
 						rs.getString("resultid"),
@@ -888,9 +886,41 @@ public class DBOperations {
 			if (conn != null)
 				conn.close();
 		}
-
 		return res;
+	}
 
+	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
+		String sql = new String("select datafield,createtime from results where resultid = '"+resultid+"';");
+		logger.debug(sql);
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		ResultBean res;
+
+		Blob blob = null;
+		ZipEntry zip = null;
+		File file = null;
+		try {
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			if(rs.next()){
+				blob = rs.getBlob("datafield");
+				InputStream in = blob.getBinaryStream();
+				Date dt = rs.getDate("createtime");
+				return (new ResultBean(in, dt));
+			}else{
+				throw new NoItemIsFoundInDBException("Result of " + resultid + " can't be found in db");
+			}
+		}finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
 	}
 
 	public List<ReviewInfoBean> getReviewData() throws SQLException
@@ -898,7 +928,7 @@ public class DBOperations {
 		String sql = new String("SELECT results.resultid AS resultid," +
 				" results.vmid AS vmid, " +
 				" users.username AS username, users.useremail AS useremail, " +
-				" results.notified AS notified " +
+				" results.notified AS notified, results.reviewer AS reviewer" +
 				" FROM (users INNER JOIN vms ON users.username=vms.username) INNER JOIN results ON vms.vmid=results.vmid ");
 		logger.debug(sql);
 
@@ -918,7 +948,8 @@ public class DBOperations {
 						rs.getString("resultid"),
 						rs.getString("notified"),
 						rs.getString("username"),
-						rs.getString("useremail")
+						rs.getString("useremail"),
+						rs.getString("reviewer")
 				);
 				res.add(result);
 			}
@@ -1059,7 +1090,7 @@ public class DBOperations {
 			connection = DBConnections.getInstance().getConnection();
 			String updateResult = String.format(
 				"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
-				DBSchema.ResultTable.NOTIFIED, "1", DBSchema.ResultTable.RESULT_ID, "\""+ resultId + "\"");
+				DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.RESULT_ID, "\""+ resultId + "\"");
 			logger.debug(updateResult);
 			
 			pst = connection.prepareStatement(updateResult);			

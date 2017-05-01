@@ -14,7 +14,7 @@ public class ResultInfoResponseBean {
         this.res = res;
     }
 
-    public List<ResultInfoBean> getVMsInfo() {
+    public List<ResultInfoBean> getRes() {
         return res;
     }
 

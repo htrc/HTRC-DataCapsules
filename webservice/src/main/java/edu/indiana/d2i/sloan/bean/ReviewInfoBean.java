@@ -5,16 +5,17 @@ package edu.indiana.d2i.sloan.bean;
  */
 public class ReviewInfoBean {
     private String vmid, resultid, username, useremail;
-    private String notified;
+    private String notified, reviewer;
 
     public ReviewInfoBean(String vmid, String resultid, String notified, String username,
-                          String useremail)
+                          String useremail, String reviewer)
     {
         this.vmid = vmid;
         this.resultid = resultid;
         this.username = username;
         this.notified = notified;
         this.useremail = useremail;
+        this.reviewer = reviewer;
     }
 
     public String getVmid(){
@@ -37,5 +38,5 @@ public class ReviewInfoBean {
         return useremail;
     }
 
-
+    public String getReviewer(){return reviewer;}
 }
