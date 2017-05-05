@@ -10,20 +10,6 @@
 
 
 	<repositories>
-		<!--  
-		<repository>
-			<id>nexus</id>
-            <name>HTRC Nexus Repository</name>
-            <url>http://htrc.illinois.edu/nexus/content/groups/public/</url>
-			<releases>
-				<enabled>true</enabled>
-				<updatePolicy>daily</updatePolicy>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-		-->
 		<repository>
 			<id>maven2-repository.java.net</id>
 			<name>Java.net Repository for Maven</name>
@@ -122,12 +108,14 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
-
+		
+		<!-- jwt servletfilter  -->
 		<dependency>
 			<groupId>edu.indiana.d2i.htrc</groupId>
 			<artifactId>jwt-servletfilter</artifactId>
 			<version>0.1-SNAPSHOT</version>
 		</dependency>
+		-->
 
 		<!-- configuration -->
 		<dependency>
