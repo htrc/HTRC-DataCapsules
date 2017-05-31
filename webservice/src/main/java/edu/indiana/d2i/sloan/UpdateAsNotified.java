@@ -21,6 +21,8 @@ public class UpdateAsNotified {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getResourcePost(
             @FormParam("resultid") String resultid,
+            @FormParam("status") String status,
+            @FormParam("comment") String comment,
             @Context HttpHeaders httpHeaders,
             @Context HttpServletRequest httpServletRequest) {
 
@@ -32,11 +34,14 @@ public class UpdateAsNotified {
             String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
             //String resultid = httpServletRequest.getHeader("resultid");
             System.out.println(resultid);
-        //return Response.status(200).entity(resultid).build();
             try {
-                DBOperations.getInstance().updateResultAsNotified(resultid);
+                //DBOperations.getInstance().updateResultAsNotified(resultid);
+                if(status.equals("released")) {
+                    DBOperations.getInstance().updateResultAsReleased(resultid, comment);
+                }else if(status.equals("rejected")) {
+                    DBOperations.getInstance().updateResultAsRejected(resultid, comment);
+                }
                 return Response.status(200).build();
-
             } catch (SQLException e) {
                 logger.error(e.getMessage(),e);
                 return Response.status(500).entity(new ErrorBean(500,e.getMessage())).build();

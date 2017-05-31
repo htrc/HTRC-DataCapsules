@@ -112,6 +112,8 @@ public class DBSchema {
 		public static String CREATE_TIME= "createtime";
 		public static String NOTIFIED_TIME= "notifiedtime";
 		public static String REVIEWER="reviewer";
+		public static String STATUS = "status";
+		public static String COMMENT = "comment";
 	}
 
 	public static class HostTable {

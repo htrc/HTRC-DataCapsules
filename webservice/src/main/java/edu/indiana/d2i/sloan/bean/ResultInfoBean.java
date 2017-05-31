@@ -7,10 +7,11 @@ package edu.indiana.d2i.sloan.bean;
 
 
 public class ResultInfoBean {
-    private String vmid, resultId, datafield, createtime, notified, notifiedtime ;
+    private String vmid, resultId, datafield, createtime, notified, notifiedtime, reviewer, status, comment ;
 
     public ResultInfoBean(String vmid, String resultId, String datafield,
-                          String createtime, String notified, String notifiedtime)
+                          String createtime, String notified, String notifiedtime,
+                          String reviewer, String status, String comment)
     {
         this.vmid = vmid;
         this.datafield = datafield;
@@ -18,6 +19,9 @@ public class ResultInfoBean {
         this.createtime = createtime;
         this.notified = notified;
         this.notifiedtime = notifiedtime;
+        this.reviewer = reviewer;
+        this.status = status;
+        this.comment = comment;
     }
 
     public String getVmid() {
@@ -43,5 +47,12 @@ public class ResultInfoBean {
     public String getNotifiedtime(){
         return notifiedtime;
     }
+
+    public String getReviewer(){return reviewer;}
+
+    public String getStatus(){return status;}
+
+    public String getComment(){return comment;}
+
 }
 

@@ -23,7 +23,7 @@
 		<!-- log file path -->
 		<init-param>
 			<param-name>log4j.properties.path</param-name>
-			<param-value>E:\Java\Server\apache-tomcat-6.0.37\webapps\sloan-ws-1.0-SNAPSHOT\WEB-INF\classes\log4j.properties</param-value>
+			<param-value>\opt\tomcat\apache-tomcat-8.5.11\webapps\sloan-ws-1.2-SNAPSHOT\WEB-INF\classes\log4j.properties</param-value>
 		</init-param>
 	</servlet>
 

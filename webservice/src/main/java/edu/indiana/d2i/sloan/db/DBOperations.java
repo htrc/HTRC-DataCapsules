@@ -840,7 +840,10 @@ public class DBOperations {
 						rs.getString("datafield"),
 						rs.getString("createtime"),
 						rs.getString("notified"),
-						rs.getString("notifiedtime")
+						rs.getString("notifiedtime"),
+						rs.getString("reviewer"),
+						rs.getString("status"),
+						rs.getString("comment")
 				);
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
@@ -855,8 +858,8 @@ public class DBOperations {
 
 	public List<ResultInfoBean> getUnreleased() throws SQLException
 	{
-		String sql;
-		sql = new String("select * from results where notified= 'NO' ");
+		String sql = "SELECT * FROM "+ DBSchema.ResultTable.TABLE_NAME +
+				" WHERE " + DBSchema.ResultTable.NOTIFIED + "= 'NO' ";
 		logger.debug(sql);
 		List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
 		Connection conn = null;
@@ -872,7 +875,10 @@ public class DBOperations {
 						rs.getString("datafield"),
 						rs.getString("createtime"),
 						rs.getString("notified"),
-						rs.getString("notifiedtime")
+						rs.getString("notifiedtime"),
+						rs.getString("reviewer"),
+						rs.getString("status"),
+						rs.getString("comment")
 				);
 				res.add(result);
 			}
@@ -890,7 +896,8 @@ public class DBOperations {
 	}
 
 	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
-		String sql = new String("select datafield,createtime from results where resultid = '"+resultid+"';");
+		String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + DBSchema.ResultTable.CREATE_TIME+
+				" FROM "+DBSchema.ResultTable.TABLE_NAME +  " WHERE " + DBSchema.ResultTable.RESULT_ID + " =\""+resultid+"\";";
 		logger.debug(sql);
 		Connection conn = null;
 		PreparedStatement pst = null;
@@ -925,11 +932,19 @@ public class DBOperations {
 
 	public List<ReviewInfoBean> getReviewData() throws SQLException
 	{
-		String sql = new String("SELECT results.resultid AS resultid," +
-				" results.vmid AS vmid, " +
-				" users.username AS username, users.useremail AS useremail, " +
-				" results.notified AS notified, results.reviewer AS reviewer" +
-				" FROM (users INNER JOIN vms ON users.username=vms.username) INNER JOIN results ON vms.vmid=results.vmid ");
+
+		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment"+
+				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
+				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID;
 		logger.debug(sql);
 
 		List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
@@ -944,12 +959,15 @@ public class DBOperations {
 			rs = pst.executeQuery();
 
 			while (rs.next()) {
-				ReviewInfoBean result = new ReviewInfoBean(rs.getString("vmid"),
+				ReviewInfoBean result = new ReviewInfoBean(
+						rs.getString("vmid"),
 						rs.getString("resultid"),
 						rs.getString("notified"),
+						rs.getString("status"),
 						rs.getString("username"),
 						rs.getString("useremail"),
-						rs.getString("reviewer")
+						rs.getString("reviewer"),
+						rs.getString("comment")
 				);
 				res.add(result);
 			}
@@ -991,7 +1009,10 @@ public class DBOperations {
                         rs.getString("datafield"),
                         rs.getString("createtime"),
                         rs.getString("notified"),
-                        rs.getString("notifiedtime")
+                        rs.getString("notifiedtime"),
+						rs.getString("reviewer"),
+						rs.getString("status"),
+						rs.getString("comment")
                 );
                 res.add(result);
             }
@@ -1010,6 +1031,37 @@ public class DBOperations {
 
     }
 
+    public String getComment(String resultid) throws SQLException{
+		String sql =String.format("SELECT %s FROM %s WHERE %s=\"%s\";",
+				DBSchema.ResultTable.COMMENT, DBSchema.ResultTable.TABLE_NAME,
+								DBSchema.ResultTable.RESULT_ID, resultid);
+		logger.debug(sql);
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		String res = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				res = rs.getString("comment");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+
+	}
 
 	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
 		Connection connection = null;
@@ -1082,7 +1134,7 @@ public class DBOperations {
 		return res;
 	}
 	
-	public void updateResultAsNotified(String resultId) throws SQLException {
+	public void updateResultAsNotified(String resultid) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -1090,7 +1142,7 @@ public class DBOperations {
 			connection = DBConnections.getInstance().getConnection();
 			String updateResult = String.format(
 				"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
-				DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.RESULT_ID, "\""+ resultId + "\"");
+				DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
 			logger.debug(updateResult);
 			
 			pst = connection.prepareStatement(updateResult);			
@@ -1102,6 +1154,62 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+	public void updateResultAsReleased(String resultid, String comment) throws SQLException{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		java.util.Date dateobj = new java.util.Date();
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = df.format(dateobj);
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.STATUS,"\"Released\"",
+					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
+					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+	public void updateResultAsRejected(String resultid, String comment) throws SQLException{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		java.util.Date dateobj = new java.util.Date();
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = df.format(dateobj);
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.STATUS,"\"Rejected\"",
+					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
+					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+
 
 	public void updateResultTimeStamp(String resultid, java.sql.Timestamp timestamp) throws SQLException
 	{
