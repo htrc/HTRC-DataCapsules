@@ -2,6 +2,7 @@ package edu.indiana.d2i.sloan;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.utils.EmailUtil;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ public class UpdateAsNotified {
             @FormParam("resultid") String resultid,
             @FormParam("status") String status,
             @FormParam("comment") String comment,
+            @FormParam("reviewer") String reviewer,
             @Context HttpHeaders httpHeaders,
             @Context HttpServletRequest httpServletRequest) {
 
@@ -37,10 +39,19 @@ public class UpdateAsNotified {
             try {
                 //DBOperations.getInstance().updateResultAsNotified(resultid);
                 if(status.equals("released")) {
-                    DBOperations.getInstance().updateResultAsReleased(resultid, comment);
+                    DBOperations.getInstance().updateResultAsReleased(resultid, comment,reviewer);
                 }else if(status.equals("rejected")) {
-                    DBOperations.getInstance().updateResultAsRejected(resultid, comment);
+                    DBOperations.getInstance().updateResultAsRejected(resultid, comment,reviewer);
                 }
+
+                EmailUtil send_email = new EmailUtil();
+                //constructor fetch properites automatically
+                String download_addr = String.format(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX, resultid);
+
+                //construct email content
+                String content = String.format("Please download result from the following URL: \n", download_addr);
+                send_email.sendEMail("li530@indiana.edu", "HTRC Data Capsule Result Download URL", content);
+
                 return Response.status(200).build();
             } catch (SQLException e) {
                 logger.error(e.getMessage(),e);

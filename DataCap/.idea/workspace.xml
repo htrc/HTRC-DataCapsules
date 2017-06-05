@@ -24,18 +24,32 @@
       <file leaf-file-name="DBOperations.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/db/DBOperations.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="124">
-              <caret line="1197" column="82" lean-forward="false" selection-start-line="1197" selection-start-column="82" selection-end-line="1197" selection-end-column="82" />
+            <state relative-caret-position="324">
+              <caret line="1157" column="86" lean-forward="false" selection-start-line="1157" selection-start-column="86" selection-end-line="1157" selection-end-column="86" />
               <folding>
-                <element signature="n#!!doc" expanded="true" />
-                <element signature="imports" expanded="true" />
+                <element signature="initializer##0;class#DBOperations#0" expanded="false" />
+                <element signature="method#executeTransaction#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getVmKeyInfo#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getVmInfoInternal#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#quotasNotExceedLimit#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#insertUserIfNotExists#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getExistingVmInfo#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getVmInfo#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getVmInfo#1;class#DBOperations#0" expanded="false" />
+                <element signature="method#getVmInfoByID#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#addVM#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getInsertActivitySQL#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#deleteVMs#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#deleteVMs#1;class#DBOperations#0" expanded="false" />
                 <element signature="method#restoreQuota#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#updateVMState#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#updateVMState#1;class#DBOperations#0" expanded="false" />
+                <element signature="method#updateVMMode#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#updateVMMode#1;class#DBOperations#0" expanded="false" />
                 <element signature="method#getImagePath#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#getImageInfo#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#getResult#0;class#DBOperations#0" expanded="false" />
+                <element signature="method#getResultInfo#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#getUnreleased#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#viewRleaseFile#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#getReviewData#0;class#DBOperations#0" expanded="false" />
@@ -46,20 +60,20 @@
                 <element signature="method#updateResultAsNotified#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#updateResultTimeStamp#0;class#DBOperations#0" expanded="false" />
                 <element signature="method#getUserWithVmid#0;class#DBOperations#0" expanded="false" />
-                <marker date="1496250496653" expanded="true" signature="2550:3538" ph="SELECT missi... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="8822:8925" ph="SELECT * FRO... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="25568:25679" ph="SELECT * FRO... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="26431:26445" ph="SELECT * FRO... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="27214:27338" ph="SELECT * FRO... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="28123:28247" ph="SELECT * FRO... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="29036:29142" ph="SELECT * FRO... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="30148:30338" ph="SELECT missi... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="31156:31512" ph="SELECT missi... " />
-                <marker date="1496250496653" expanded="true" signature="31156:31645" ph="SELECT missi... " />
-                <marker date="1496250496653" expanded="true" signature="31156:32169" ph="SELECT missi... users" />
-                <marker date="1496250496653" expanded="true" signature="31156:32232" ph="SELECT missi... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="31156:32270" ph="SELECT missi... missingValue" />
-                <marker date="1496250496653" expanded="true" signature="34601:34632" ph="SELECT %s FR... " />
+                <marker date="1496678243320" expanded="false" signature="2550:3538" ph="SELECT missi... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="8822:8925" ph="SELECT * FRO... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="25568:25679" ph="SELECT * FRO... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="26431:26445" ph="SELECT * FRO... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="27214:27338" ph="SELECT * FRO... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="28123:28247" ph="SELECT * FRO... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="29036:29142" ph="SELECT * FRO... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="30148:30338" ph="SELECT missi... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="31156:31512" ph="SELECT missi... " />
+                <marker date="1496678243320" expanded="false" signature="31156:31645" ph="SELECT missi... " />
+                <marker date="1496678243320" expanded="false" signature="31156:32169" ph="SELECT missi... users" />
+                <marker date="1496678243320" expanded="false" signature="31156:32232" ph="SELECT missi... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="31156:32270" ph="SELECT missi... missingValue" />
+                <marker date="1496678243320" expanded="false" signature="34601:34632" ph="SELECT %s FR... " />
               </folding>
             </state>
           </provider>
@@ -68,8 +82,8 @@
       <file leaf-file-name="UpdateAsNotified.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateAsNotified.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="34" column="58" lean-forward="false" selection-start-line="34" selection-start-column="58" selection-end-line="34" selection-end-column="58" />
+            <state relative-caret-position="244">
+              <caret line="51" column="53" lean-forward="false" selection-start-line="51" selection-start-column="48" selection-end-line="51" selection-end-column="54" />
               <folding />
             </state>
           </provider>
@@ -85,38 +99,15 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ResultInfoResponseBean.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/ResultInfoResponseBean.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
-              <caret line="16" column="37" lean-forward="false" selection-start-line="16" selection-start-column="37" selection-end-line="16" selection-end-column="37" />
-              <folding>
-                <element signature="e#375#376#0" expanded="true" />
-                <element signature="e#401#402#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
       <file leaf-file-name="GetResultInfo.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/GetResultInfo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="55" column="20" lean-forward="true" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
+            <state relative-caret-position="149">
+              <caret line="41" column="26" lean-forward="false" selection-start-line="41" selection-start-column="26" selection-end-line="41" selection-end-column="26" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#1661#1677#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="default.xml" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../webservice/src/main/resources/default.xml">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="90">
-              <caret line="5" column="662" lean-forward="false" selection-start-line="5" selection-start-column="662" selection-end-line="5" selection-end-column="662" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -143,13 +134,13 @@
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/viewReleaseFile.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/db/DBSchema.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateResultStatus.java" />
-        <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateAsNotified.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/ReviewInfoBean.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/CommentResponseBean.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/ViewComment.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/ResultInfoBean.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/GetResultInfo.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/resources/default.xml" />
+        <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateAsNotified.java" />
         <option value="$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/db/DBOperations.java" />
       </list>
     </option>
@@ -337,6 +328,36 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="vm" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DataCap" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="webservice" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="main" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="java" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="sloan" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="utils" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -999,12 +1020,12 @@
       <workItem from="1495385781303" duration="7495000" />
       <workItem from="1495423069155" duration="2195000" />
       <workItem from="1495829936619" duration="2117000" />
-      <workItem from="1496078181350" duration="8910000" />
+      <workItem from="1496078181350" duration="17477000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="68816000" />
+    <option name="totallyTimeSpent" value="77383000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
@@ -1109,29 +1130,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/viewReleaseFile.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="53" column="32" lean-forward="false" selection-start-line="53" selection-start-column="32" selection-end-line="53" selection-end-column="32" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateAsNotified.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="810">
-          <caret line="45" column="5" lean-forward="true" selection-start-line="45" selection-start-column="5" selection-end-line="45" selection-end-column="5" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/resources/default.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/StopVM.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1062">
@@ -1145,15 +1143,29 @@
         <state relative-caret-position="12402">
           <caret line="891" column="102" lean-forward="false" selection-start-line="891" selection-start-column="102" selection-end-line="891" selection-end-column="102" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="imports" expanded="true" />
+            <element signature="initializer##0;class#DBOperations#0" expanded="false" />
+            <element signature="method#executeTransaction#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmKeyInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfoInternal#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#quotasNotExceedLimit#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#insertUserIfNotExists#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getExistingVmInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfo#1;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfoByID#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#addVM#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getInsertActivitySQL#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#deleteVMs#0;class#DBOperations#0" expanded="false" />
             <element signature="method#deleteVMs#1;class#DBOperations#0" expanded="false" />
             <element signature="method#restoreQuota#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#updateVMState#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateVMState#1;class#DBOperations#0" expanded="false" />
+            <element signature="method#updateVMMode#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateVMMode#1;class#DBOperations#0" expanded="false" />
             <element signature="method#getImagePath#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getImageInfo#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getResult#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getResultInfo#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getUnreleased#0;class#DBOperations#0" expanded="false" />
             <element signature="method#viewRleaseFile#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getReviewData#0;class#DBOperations#0" expanded="false" />
@@ -1164,20 +1176,20 @@
             <element signature="method#updateResultAsNotified#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateResultTimeStamp#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getUserWithVmid#0;class#DBOperations#0" expanded="false" />
-            <marker date="1496250496653" expanded="true" signature="2550:3538" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="8822:8925" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="25568:25679" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="26431:26445" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="27214:27338" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="28123:28247" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="29036:29142" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="30148:30338" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="31156:31512" ph="SELECT missi... " />
-            <marker date="1496250496653" expanded="true" signature="31156:31645" ph="SELECT missi... " />
-            <marker date="1496250496653" expanded="true" signature="31156:32169" ph="SELECT missi... users" />
-            <marker date="1496250496653" expanded="true" signature="31156:32232" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="31156:32270" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="34601:34632" ph="SELECT %s FR... " />
+            <marker date="1496678243320" expanded="false" signature="2550:3538" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="8822:8925" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="25568:25679" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="26431:26445" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="27214:27338" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="28123:28247" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="29036:29142" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="30148:30338" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="31156:31512" ph="SELECT missi... " />
+            <marker date="1496678243320" expanded="false" signature="31156:31645" ph="SELECT missi... " />
+            <marker date="1496678243320" expanded="false" signature="31156:32169" ph="SELECT missi... users" />
+            <marker date="1496678243320" expanded="false" signature="31156:32232" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="31156:32270" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="34601:34632" ph="SELECT %s FR... " />
           </folding>
         </state>
       </provider>
@@ -1226,15 +1238,29 @@
         <state relative-caret-position="12708">
           <caret line="908" column="45" lean-forward="false" selection-start-line="908" selection-start-column="45" selection-end-line="908" selection-end-column="45" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="imports" expanded="true" />
+            <element signature="initializer##0;class#DBOperations#0" expanded="false" />
+            <element signature="method#executeTransaction#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmKeyInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfoInternal#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#quotasNotExceedLimit#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#insertUserIfNotExists#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getExistingVmInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfo#1;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfoByID#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#addVM#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getInsertActivitySQL#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#deleteVMs#0;class#DBOperations#0" expanded="false" />
             <element signature="method#deleteVMs#1;class#DBOperations#0" expanded="false" />
             <element signature="method#restoreQuota#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#updateVMState#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateVMState#1;class#DBOperations#0" expanded="false" />
+            <element signature="method#updateVMMode#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateVMMode#1;class#DBOperations#0" expanded="false" />
             <element signature="method#getImagePath#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getImageInfo#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getResult#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getResultInfo#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getUnreleased#0;class#DBOperations#0" expanded="false" />
             <element signature="method#viewRleaseFile#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getReviewData#0;class#DBOperations#0" expanded="false" />
@@ -1245,20 +1271,20 @@
             <element signature="method#updateResultAsNotified#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateResultTimeStamp#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getUserWithVmid#0;class#DBOperations#0" expanded="false" />
-            <marker date="1496250496653" expanded="true" signature="2550:3538" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="8822:8925" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="25568:25679" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="26431:26445" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="27214:27338" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="28123:28247" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="29036:29142" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="30148:30338" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="31156:31512" ph="SELECT missi... " />
-            <marker date="1496250496653" expanded="true" signature="31156:31645" ph="SELECT missi... " />
-            <marker date="1496250496653" expanded="true" signature="31156:32169" ph="SELECT missi... users" />
-            <marker date="1496250496653" expanded="true" signature="31156:32232" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="31156:32270" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="34601:34632" ph="SELECT %s FR... " />
+            <marker date="1496678243320" expanded="false" signature="2550:3538" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="8822:8925" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="25568:25679" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="26431:26445" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="27214:27338" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="28123:28247" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="29036:29142" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="30148:30338" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="31156:31512" ph="SELECT missi... " />
+            <marker date="1496678243320" expanded="false" signature="31156:31645" ph="SELECT missi... " />
+            <marker date="1496678243320" expanded="false" signature="31156:32169" ph="SELECT missi... users" />
+            <marker date="1496678243320" expanded="false" signature="31156:32232" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="31156:32270" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="34601:34632" ph="SELECT %s FR... " />
           </folding>
         </state>
       </provider>
@@ -1383,14 +1409,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/Constants.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="54">
-          <caret line="17" column="13" lean-forward="false" selection-start-line="17" selection-start-column="13" selection-end-line="17" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateResultStatus.java" />
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/StopVM.java">
       <provider selected="true" editor-type-id="text-editor">
@@ -1474,14 +1492,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/doReleaseResult.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="252">
-          <caret line="69" column="13" lean-forward="false" selection-start-line="69" selection-start-column="13" selection-end-line="69" selection-end-column="13" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/ResultBean.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -1522,6 +1532,50 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/doReleaseResult.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="144">
+          <caret line="136" column="29" lean-forward="true" selection-start-line="136" selection-start-column="29" selection-end-line="136" selection-end-column="29" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/Constants.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-44">
+          <caret line="20" column="55" lean-forward="false" selection-start-line="20" selection-start-column="55" selection-end-line="20" selection-end-column="55" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar!/javax/servlet/http/HttpServletRequest.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="214">
+          <caret line="25" column="11" lean-forward="false" selection-start-line="25" selection-start-column="11" selection-end-line="25" selection-end-column="11" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/Configuration.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="442">
+          <caret line="139" column="86" lean-forward="false" selection-start-line="139" selection-start-column="86" selection-end-line="139" selection-end-column="86" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/utils/EmailUtil.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="684">
+          <caret line="61" column="50" lean-forward="false" selection-start-line="61" selection-start-column="50" selection-end-line="61" selection-end-column="50" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/resources/default.xml">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="90">
@@ -1530,13 +1584,13 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/GetResultInfo.java">
+    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/ResultInfoResponseBean.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="55" column="20" lean-forward="true" selection-start-line="55" selection-start-column="20" selection-end-line="55" selection-end-column="20" />
+        <state relative-caret-position="234">
+          <caret line="16" column="37" lean-forward="false" selection-start-line="16" selection-start-column="37" selection-end-line="16" selection-end-column="37" />
           <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#1661#1677#0" expanded="true" />
+            <element signature="e#375#376#0" expanded="false" />
+            <element signature="e#401#402#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -1549,31 +1603,34 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/bean/ResultInfoResponseBean.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="16" column="37" lean-forward="false" selection-start-line="16" selection-start-column="37" selection-end-line="16" selection-end-column="37" />
-          <folding>
-            <element signature="e#375#376#0" expanded="true" />
-            <element signature="e#401#402#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/db/DBOperations.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="124">
-          <caret line="1197" column="82" lean-forward="false" selection-start-line="1197" selection-start-column="82" selection-end-line="1197" selection-end-column="82" />
+        <state relative-caret-position="324">
+          <caret line="1157" column="86" lean-forward="false" selection-start-line="1157" selection-start-column="86" selection-end-line="1157" selection-end-column="86" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
-            <element signature="imports" expanded="true" />
+            <element signature="initializer##0;class#DBOperations#0" expanded="false" />
+            <element signature="method#executeTransaction#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmKeyInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfoInternal#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#quotasNotExceedLimit#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#insertUserIfNotExists#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getExistingVmInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfo#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfo#1;class#DBOperations#0" expanded="false" />
+            <element signature="method#getVmInfoByID#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#addVM#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getInsertActivitySQL#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#deleteVMs#0;class#DBOperations#0" expanded="false" />
             <element signature="method#deleteVMs#1;class#DBOperations#0" expanded="false" />
             <element signature="method#restoreQuota#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#updateVMState#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateVMState#1;class#DBOperations#0" expanded="false" />
+            <element signature="method#updateVMMode#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateVMMode#1;class#DBOperations#0" expanded="false" />
             <element signature="method#getImagePath#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getImageInfo#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getResult#0;class#DBOperations#0" expanded="false" />
+            <element signature="method#getResultInfo#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getUnreleased#0;class#DBOperations#0" expanded="false" />
             <element signature="method#viewRleaseFile#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getReviewData#0;class#DBOperations#0" expanded="false" />
@@ -1584,28 +1641,39 @@
             <element signature="method#updateResultAsNotified#0;class#DBOperations#0" expanded="false" />
             <element signature="method#updateResultTimeStamp#0;class#DBOperations#0" expanded="false" />
             <element signature="method#getUserWithVmid#0;class#DBOperations#0" expanded="false" />
-            <marker date="1496250496653" expanded="true" signature="2550:3538" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="8822:8925" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="25568:25679" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="26431:26445" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="27214:27338" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="28123:28247" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="29036:29142" ph="SELECT * FRO... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="30148:30338" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="31156:31512" ph="SELECT missi... " />
-            <marker date="1496250496653" expanded="true" signature="31156:31645" ph="SELECT missi... " />
-            <marker date="1496250496653" expanded="true" signature="31156:32169" ph="SELECT missi... users" />
-            <marker date="1496250496653" expanded="true" signature="31156:32232" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="31156:32270" ph="SELECT missi... missingValue" />
-            <marker date="1496250496653" expanded="true" signature="34601:34632" ph="SELECT %s FR... " />
+            <marker date="1496678243320" expanded="false" signature="2550:3538" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="8822:8925" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="25568:25679" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="26431:26445" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="27214:27338" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="28123:28247" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="29036:29142" ph="SELECT * FRO... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="30148:30338" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="31156:31512" ph="SELECT missi... " />
+            <marker date="1496678243320" expanded="false" signature="31156:31645" ph="SELECT missi... " />
+            <marker date="1496678243320" expanded="false" signature="31156:32169" ph="SELECT missi... users" />
+            <marker date="1496678243320" expanded="false" signature="31156:32232" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="31156:32270" ph="SELECT missi... missingValue" />
+            <marker date="1496678243320" expanded="false" signature="34601:34632" ph="SELECT %s FR... " />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/GetResultInfo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="149">
+          <caret line="41" column="26" lean-forward="false" selection-start-line="41" selection-start-column="26" selection-end-line="41" selection-end-column="26" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#1661#1677#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../webservice/src/main/java/edu/indiana/d2i/sloan/UpdateAsNotified.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="34" column="58" lean-forward="false" selection-start-line="34" selection-start-column="58" selection-end-line="34" selection-end-column="58" />
+        <state relative-caret-position="244">
+          <caret line="51" column="53" lean-forward="false" selection-start-line="51" selection-start-column="48" selection-end-line="51" selection-end-column="54" />
           <folding />
         </state>
       </provider>

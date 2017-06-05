@@ -1155,7 +1155,7 @@ public class DBOperations {
 		}
 	}
 
-	public void updateResultAsReleased(String resultid, String comment) throws SQLException{
+	public void updateResultAsReleased(String resultid, String comment, String reviewer) throws SQLException{
 		Connection connection = null;
 		PreparedStatement pst = null;
 		java.util.Date dateobj = new java.util.Date();
@@ -1165,10 +1165,12 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String updateResult = String.format(
-					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
-					DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.STATUS,"\"Released\"",
+					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"",
+					DBSchema.ResultTable.STATUS,"\"Released\"",
 					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
 					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.REVIEWER, "\"" + reviewer + "\"",
 					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
 			logger.debug(updateResult);
 
@@ -1182,7 +1184,7 @@ public class DBOperations {
 		}
 
 	}
-	public void updateResultAsRejected(String resultid, String comment) throws SQLException{
+	public void updateResultAsRejected(String resultid, String comment, String reviewer) throws SQLException{
 		Connection connection = null;
 		PreparedStatement pst = null;
 		java.util.Date dateobj = new java.util.Date();
@@ -1192,10 +1194,11 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String updateResult = String.format(
-					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
 					DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.STATUS,"\"Rejected\"",
 					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
 					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.REVIEWER, "\"" + reviewer + "\"",
 					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
 			logger.debug(updateResult);
 
