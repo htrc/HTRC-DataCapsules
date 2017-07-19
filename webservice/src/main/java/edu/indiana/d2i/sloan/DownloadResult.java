@@ -15,8 +15,12 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
-import java.io.*;
-import java.sql.SQLException;
+import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.ResultBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -27,14 +31,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-
-import org.apache.log4j.Logger;
-
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.ResultBean;
-import edu.indiana.d2i.sloan.db.DBOperations;
-import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import java.io.*;
+import java.sql.SQLException;
 
 @Path("/download")
 public class DownloadResult {
@@ -116,10 +114,10 @@ public class DownloadResult {
 
 		StringBuilder out = new StringBuilder();
 		Reader in = new InputStreamReader(dataField, "UTF-8");
-
-		while(in.read(buffer,0,buffer.length) >= 0)
-		{
-			out.append(buffer,0,in.read(buffer,0,buffer.length));
+		int l= in.read(buffer,0,buffer.length);
+		while(l >= 0){
+			out.append(buffer,0,l);
+			l=in.read(buffer, 0, l);
 		}
 
 		//Output target path?
