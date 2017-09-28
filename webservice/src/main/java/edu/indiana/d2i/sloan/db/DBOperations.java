@@ -812,7 +812,7 @@ public class DBOperations {
 			
 			if (rs.next()) {
 				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), 
-					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.CREATE_TIME)));
+					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME)));
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
 			}
