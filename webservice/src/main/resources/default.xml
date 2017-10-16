@@ -41,9 +41,14 @@
 		<name>scheduler.max.num.attempts</name>
 		<value>5</value>
     </property>
+	<!-- log4j property file -->
+	<property>
+		<name>log4j.properties.path</name>
+		<value>LOG4J_PROPERTIES_FILE_PATH</value>
+	</property>
 	<property>
 		<name>sites.xml.path</name>
-		<value>/etc/htrc/dcapi/sites.xml</value>
+		<value>SITES.XML_FILE_PATH</value>
 	</property>
 
 </configuration>

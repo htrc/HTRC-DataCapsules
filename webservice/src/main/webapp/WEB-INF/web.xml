@@ -31,7 +31,7 @@
 
 	<!-- JWT servlet filter -->
 
-	<filter>
+	<!--filter>
 		<filter-name>JWTFilter</filter-name>
 		<filter-class>edu.indiana.d2i.htrc.security.JWTServletFilter</filter-class>
 		<init-param>
@@ -49,7 +49,7 @@
 		<url-pattern>/stopvm</url-pattern>
 		<url-pattern>/switchvm</url-pattern>
 		<url-pattern>/listimage</url-pattern>
-	</filter-mapping>
+	</filter-mapping -->
 
 	<servlet-mapping>
 		<servlet-name>jersey-servlet</servlet-name>
