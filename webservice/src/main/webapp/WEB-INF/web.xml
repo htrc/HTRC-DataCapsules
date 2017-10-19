@@ -22,34 +22,7 @@
 			<param-value>true</param-value>
 		</init-param>
 
-		<!-- log file path -->
-		<init-param>
-			<param-name>log4j.properties.path</param-name>
-			<param-value>/etc/htrc/dcapi/log4j.properties</param-value>
-		</init-param>
 	</servlet>
-
-	<!-- JWT servlet filter -->
-
-	<!--filter>
-		<filter-name>JWTFilter</filter-name>
-		<filter-class>edu.indiana.d2i.htrc.security.JWTServletFilter</filter-class>
-		<init-param>
-			<param-name>htrc.jwtfilter.config</param-name>
-			<param-value>/etc/htrc/dcapi/jwtfilter.conf</param-value>
-		</init-param>
-	</filter>
-
-	<filter-mapping>
-		<filter-name>JWTFilter</filter-name>
-		<url-pattern>/createvm</url-pattern>
-		<url-pattern>/deletevm</url-pattern>
-		<url-pattern>/launchvm</url-pattern>
-		<url-pattern>/show</url-pattern>
-		<url-pattern>/stopvm</url-pattern>
-		<url-pattern>/switchvm</url-pattern>
-		<url-pattern>/listimage</url-pattern>
-	</filter-mapping -->
 
 	<servlet-mapping>
 		<servlet-name>jersey-servlet</servlet-name>
