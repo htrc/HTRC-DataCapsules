@@ -3,7 +3,7 @@
 	<!-- classes that serve as resources, separated by semicolon -->
     <property>
       	<name>sloan.ws.resources.names</name>
-		<value>edu.indiana.d2i.sloan.ListVMs;edu.indiana.d2i.sloan.GroupOperation;edu.indiana.d2i.sloan.CreateVM;edu.indiana.d2i.sloan.QueryVM;edu.indiana.d2i.sloan.LaunchVM;edu.indiana.d2i.sloan.DeleteVM;edu.indiana.d2i.sloan.StopVM;edu.indiana.d2i.sloan.SwitchVM;edu.indiana.d2i.sloan.ListImage;edu.indiana.d2i.sloan.DownloadResult;edu.indiana.d2i.sloan.UploadResult;edu.indiana.d2i.sloan.DownloadResult</value>
+		<value>edu.indiana.d2i.sloan.ListVMs;edu.indiana.d2i.sloan.GroupOperation;edu.indiana.d2i.sloan.CreateVM;edu.indiana.d2i.sloan.QueryVM;edu.indiana.d2i.sloan.LaunchVM;edu.indiana.d2i.sloan.DeleteVM;edu.indiana.d2i.sloan.StopVM;edu.indiana.d2i.sloan.SwitchVM;edu.indiana.d2i.sloan.ListImage;edu.indiana.d2i.sloan.DownloadResult;edu.indiana.d2i.sloan.UploadResult</value>
     </property>	
 
 	<!-- hypervisor -->
@@ -26,11 +26,15 @@
     <property>
       	<name>use.retry.task</name>
 		<value>true</value>
-    </property>  
-    <property>
-      	<name>hypervisor.full.class.name</name>
-		<value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value>
     </property> 
+	
+    < property>
+      	<name>hypervisor.full.class.name</name>
+        <!-- Enable AlwaysSuccessHypervisor if you want to test DC API without DC backend. Please comment CapsuleHypervisor property value. -->
+        <!-- value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value -->
+	<value>edu.indiana.d2i.sloan.hyper.CapsuleHypervisor</value>
+    </property> 
+	
     
     <!-- scheduler -->
     <property>
