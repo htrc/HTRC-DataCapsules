@@ -7,7 +7,7 @@
     </property>
     <property>
 		<name>sloan.ws.db.jdbcurl</name>
-		<value>jdbc:mysql://localhost:3306/htrcvirtdb</value>
+		<value>jdbc:mysql://<DB_HOST>:<DB_PORT>/<DB_NAME></value>
     </property>
     <property>
 		<name>sloan.ws.db.user</name>
@@ -20,25 +20,25 @@
     
     <property>
       	<name>sloan.ws.vm.workdir.prefix</name>
-		<value>/u/hathitrust/htrc-sloan/script-simulator/vm-workingdir</value>
+		<value>xxxxx</value>
     </property> 
     
     <!--  -->
     <property>
 		<name>sloan.ws.hosts</name>
-		<value>smoketree.cs.indiana.edu</value>
+		<value><DC_HOST></value>
     </property>
     <property>
 		<name>sloan.ws.port.range.min</name>
-		<value>2000</value>
+		<value>xxx</value>
     </property>
     <property>
 		<name>sloan.ws.port.range.max</name>
-		<value>2019</value>
+		<value>xxx</value>
     </property>
     <property>
 		<name>host.ssh.username</name>
-		<value>hathitrust</value>
+		<value>xxx</value>
     </property>
     <property>
 		<name>host.ssh.passwd</name>
@@ -114,7 +114,7 @@
     <!-- result download url prefix -->
     <property>
       	<name>result.download.prefix</name>
-		<value>${URL}/download?randomid=</value>
+		<value><DC_API_URL>/download?randomid=</value>
     </property>     
     <property>
     	<!-- -1 means never expire -->
