@@ -26,6 +26,7 @@ The following are the available scripts:
 -installSpark.sh 
 -negotiator-guest.sh 
 -postprocessor.sh
+-releaseScripts.sh
 
 Configuration
 ==========
