@@ -74,6 +74,7 @@
         "scripts/installAnaconda.sh",
         "scripts/installSpark.sh",
         "scripts/desktop.sh",
+        "scripts/installVoyantServer.sh",
         "scripts/postprocessor.sh"
       ],
       "type": "shell"
