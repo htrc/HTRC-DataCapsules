@@ -47,6 +47,7 @@ Oracle JDK 8
 R
 Spark (/opt/spark)
 Anaconda (/opt/anaconda)
+VoyantServer (/opt/VoyantServer)
 Scala
 SBT
 Pytables
