@@ -36,7 +36,7 @@ import javax.mail.*;
 import javax.mail.internet.*;
 import javax.mail.internet.MimeMessage.RecipientType;
 
-import com.sun.xml.internal.ws.server.sei.EndpointResponseMessageBuilder;
+//import com.sun.xml.internal.ws.server.sei.EndpointResponseMessageBuilder;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBConnections;
 import edu.indiana.d2i.sloan.db.DBSchema;

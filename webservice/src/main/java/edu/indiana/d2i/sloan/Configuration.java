@@ -46,7 +46,8 @@ public final class Configuration {
 	private Configuration() {
 		properties = new HashMap<String, String>();
 		loadConfigurations("default.xml");
-		loadConfigurations("sites.xml");
+		String sitesXmlPath = properties.get("sites.xml.path");
+		loadConfigurations(sitesXmlPath);
 		logger.info(properties.toString());
 	}
 
