@@ -6,9 +6,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -28,15 +26,15 @@ import java.text.ParseException;
 @Path("/viewreleasefile")
 public class viewReleaseFile {
 
-    private static Logger logger = Logger.getLogger(ShowReleased.class);
+    private static Logger logger = Logger.getLogger(viewReleaseFile.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(//@FormParam("resultid") String resultid,
+    public Response getResourcePost(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-        String resultid = httpServletRequest.getHeader("resultid");
+        //String resultid = httpServletRequest.getHeader("resultid");
 
         if(resultid == null) {
             return Response.status(400).entity(new ErrorBean(400, "Resultid is null!")).build();

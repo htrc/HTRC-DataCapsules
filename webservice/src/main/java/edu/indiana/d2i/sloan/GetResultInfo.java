@@ -29,7 +29,7 @@ import java.util.List;
 
 @Path("/getresultinfo")
 public class GetResultInfo{
-    private static Logger logger = Logger.getLogger(ShowReleased.class);
+    private static Logger logger = Logger.getLogger(GetResultInfo.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

@@ -1,7 +1,5 @@
 package edu.indiana.d2i.sloan;
 
-import edu.indiana.d2i.sloan.Constants;
-import edu.indiana.d2i.sloan.ShowReleased;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import org.apache.log4j.Logger;

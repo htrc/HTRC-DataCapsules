@@ -855,7 +855,7 @@ public class DBOperations {
 				connection.close();
 		}
 	}
-
+/**
 	public List<ResultInfoBean> getUnreleased() throws SQLException
 	{
 		String sql = "SELECT * FROM "+ DBSchema.ResultTable.TABLE_NAME +
@@ -894,7 +894,7 @@ public class DBOperations {
 		}
 		return res;
 	}
-
+**/
 	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
 		String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + DBSchema.ResultTable.CREATE_TIME+
 				" FROM "+DBSchema.ResultTable.TABLE_NAME +  " WHERE " + DBSchema.ResultTable.RESULT_ID + " =\""+resultid+"\";";
@@ -986,7 +986,7 @@ public class DBOperations {
 	}
 
 
-
+/**
     public List<ResultInfoBean> getReleased() throws SQLException
     {
         String sql;
@@ -1030,6 +1030,8 @@ public class DBOperations {
         return res;
 
     }
+
+ **/
 
     public String getComment(String resultid) throws SQLException{
 		String sql =String.format("SELECT %s FROM %s WHERE %s=\"%s\";",

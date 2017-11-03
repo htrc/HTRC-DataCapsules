@@ -22,11 +22,15 @@ import java.text.ParseException;
 
 /**
  * Created by ruili on 5/21/17.
+ *
+ * param: result id
+ *
+ * return: comment text content
  */
 
 @Path("/viewcomment")
 public class ViewComment {
-    private static Logger logger = Logger.getLogger(ShowReleased.class);
+    private static Logger logger = Logger.getLogger(ViewComment.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -34,7 +38,6 @@ public class ViewComment {
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-        //String resultid = httpServletRequest.getHeader("resultid");
 
         if(resultid == null) {
             return Response.status(400).entity(new ErrorBean(400, "This result does not exist!")).build();
