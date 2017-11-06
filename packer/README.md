@@ -27,6 +27,7 @@ The following are the available scripts:
 -negotiator-guest.sh 
 -postprocessor.sh
 -releaseScripts.sh
+-userProvisioning.sh
 
 Configuration
 ==========
@@ -37,6 +38,11 @@ you can validate the config file using the command,
 
 'packer validate ubuntu.json'
 
+ROOT Key
+=========
+
+To add your key to login to the VM as root, replace the key in the 
+uploads/root_authorized_keys file.
 
 Setup Details
 ===================

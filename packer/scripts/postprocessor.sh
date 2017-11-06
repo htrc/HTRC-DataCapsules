@@ -2,4 +2,4 @@
 
 # Remove the uploaded files
 
-rm -rf /home/dcuser/uploads
+rm -rf $USER_HOME_DIR/uploads

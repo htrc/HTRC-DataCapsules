@@ -47,7 +47,7 @@
       {
       "type":"file",
       "source":"uploads",
-      "destination":"/home/dcuser"
+      "destination":"{{user `user_home_dir`}}"
       },
       {
       "environment_vars": [
@@ -55,6 +55,7 @@
         "UPDATE={{user `update`}}",
         "SSH_USERNAME={{user `ssh_username`}}",
         "SSH_PASSWORD={{user `ssh_password`}}",
+        "USER_HOME_DIR={{user `user_home_dir`}}",
         "JDK_DOWNLOAD_URL={{user `jdk_download_url`}}",
         "SCALA_DOWNLOAD_URL={{user `scala_download_url`}}",
         "SBT_DOWNLOAD_URL={{user `sbt_download_url`}}",
@@ -75,6 +76,7 @@
         "scripts/installSpark.sh",
         "scripts/desktop.sh",
         "scripts/installVoyantServer.sh",
+	"scripts/userProvisioning.sh",
         "scripts/postprocessor.sh"
       ],
       "type": "shell"
@@ -98,10 +100,11 @@
     "iso_url": "http://releases.ubuntu.com/16.04/ubuntu-16.04.3-server-amd64.iso",
     "locale": "en_US",
     "memory": "2048",
-    "hostname": "dcuser",
+    "hostname": "DataCapsule",
     "ssh_fullname": "dcuser",
     "ssh_password": "dcuser",
     "ssh_username": "dcuser",
+    "user_home_dir": "/home/dcuser",
     "update": "true",
     "vm_name": "ubuntu1604",
     "preseed" : "preseed.cfg",
