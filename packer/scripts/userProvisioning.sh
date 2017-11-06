@@ -12,3 +12,6 @@ cat  /home/$SSH_USERNAME/uploads/enableSyslogging >> /root/.bashrc
 cp /home/$SSH_USERNAME/uploads/dcuserSudoAccessRestrictions /etc/sudoers.d/dcuserSudoAccessRestrictions
 chmod 0440 /etc/sudoers.d/dcuserSudoAccessRestrictions
 passwd -d $SSH_USERNAME
+
+# Removing password authentication for SSH for the DC
+sed -i -e 's/#PasswordAuthentication\syes/PasswordAuthentication no/g' /etc/ssh/sshd_config
