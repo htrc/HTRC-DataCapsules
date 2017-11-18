@@ -40,7 +40,7 @@ public class ViewComment {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 
         if(resultid == null) {
-            return Response.status(400).entity(new ErrorBean(400, "This result does not exist!")).build();
+            return Response.status(204).entity(new ErrorBean(204, "This result does not exist!")).build();
         }
 
         try {

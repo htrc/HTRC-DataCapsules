@@ -34,6 +34,14 @@ import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.sql.SQLException;
 
+/**
+ * param:
+ *   resultid: identifier of a specific entry
+ *
+ *
+ *   return: data field of the given resultid
+ */
+
 @Path("/download")
 public class DownloadResult {
 	private static Logger logger = Logger.getLogger(DownloadResult.class);

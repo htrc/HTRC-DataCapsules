@@ -25,7 +25,6 @@
 	</servlet>
 
 	<!-- JWT servlet filter -->
-
 	<filter>
 		<filter-name>JWTFilter</filter-name>
 		<filter-class>edu.indiana.d2i.htrc.security.JWTServletFilter</filter-class>

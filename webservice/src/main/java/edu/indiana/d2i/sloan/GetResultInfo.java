@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ruili on 5/29/17.
+ * param: resultid
+ *
+ * return: all details include binary content of specific result entry
  */
 
 @Path("/getresultinfo")
@@ -36,11 +38,9 @@ public class GetResultInfo{
     public Response getResourcePost(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
-        String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-        //String resultid = httpServletRequest.getHeader("resultid");
 
         if(resultid == null) {
-            return Response.status(400).entity(new ErrorBean(400, "This result does not exist!")).build();
+            return Response.status(204).entity(new ErrorBean(204, "This result does not exist!")).build();
         }
 
         try {

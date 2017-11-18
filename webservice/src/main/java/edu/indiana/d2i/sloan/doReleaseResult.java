@@ -65,7 +65,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 
+/**
+ * Deprecated
+ *
+ * param:
+ *   resultid: identified of record in result table
+ *
+ *   process release jobs including:
+ *     create download link
+ *     send emails
+ */
 
+@Deprecated
 @Path("/ReleaseResult")
 public class doReleaseResult {
 

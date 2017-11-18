@@ -1,15 +1,20 @@
 package edu.indiana.d2i.sloan.bean;
 
 /**
- * Created by ruili on 4/12/17.
+ *
+ * List metadata for all entries in result table
+ * Create a reviewer dashboard index view
+ *
  */
+
 public class ReviewInfoBean {
     private String vmid, resultid, username, useremail;
     private String notified, status, reviewer;
     private String comment;
+    private String createtime;
 
     public ReviewInfoBean(String vmid, String resultid, String notified, String status, String username,
-                          String useremail, String reviewer, String comment)
+                          String useremail, String reviewer, String comment, String createtime)
     {
         this.vmid = vmid;
         this.resultid = resultid;
@@ -19,6 +24,7 @@ public class ReviewInfoBean {
         this.reviewer = reviewer;
         this.status = status;
         this.comment = comment;
+        this.createtime = createtime;
     }
 
     public String getVmid(){
@@ -46,4 +52,6 @@ public class ReviewInfoBean {
     public String getStatus(){return status;};
 
     public  String getComment(){return comment;}
+
+    public String getCreatetime() { return createtime; }
 }

@@ -1,13 +1,16 @@
 package edu.indiana.d2i.sloan.bean;
 
 /**
- * Created by ruili on 2/18/17.
- */
+ *
+ * List info for a given resultid
+ * Create a snapshot for individual result (per id)
+ *
+ **/
 
 
 
 public class ResultInfoBean {
-    private String vmid, resultId, datafield, createtime, notified, notifiedtime, reviewer, status, comment ;
+    private String vmid, resultId, datafield, createtime, notified, notifiedtime, reviewer, status, comment;
 
     public ResultInfoBean(String vmid, String resultId, String datafield,
                           String createtime, String notified, String notifiedtime,
@@ -54,5 +57,6 @@ public class ResultInfoBean {
 
     public String getComment(){return comment;}
 
+    //public String getUseremail() { return useremail; }
 }
 

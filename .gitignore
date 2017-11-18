@@ -17,3 +17,7 @@ webservice/sloan-ws.ipr
 webservice/sloan-ws.iws
 
 webservice/.idea/
+
+webservice/src/main/resources/sites.xml
+
+webservice/src/main/webapp

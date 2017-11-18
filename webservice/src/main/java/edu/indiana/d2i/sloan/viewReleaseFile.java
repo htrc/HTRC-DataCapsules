@@ -20,9 +20,14 @@ import java.text.ParseException;
 
 
 /**
- * Created by ruili on 4/23/17.
+ * Deprecated: use DownloadResult API instead
+ * param:
+ *   resultid: identified of entry in result table
+ *
+ *   return: create output stream of data field of the given resultid
  */
 
+@Deprecated
 @Path("/viewreleasefile")
 public class viewReleaseFile {
 
@@ -33,11 +38,9 @@ public class viewReleaseFile {
     public Response getResourcePost(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
-        String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-        //String resultid = httpServletRequest.getHeader("resultid");
 
         if(resultid == null) {
-            return Response.status(400).entity(new ErrorBean(400, "Resultid is null!")).build();
+            return Response.status(204).entity(new ErrorBean(204, "Resultid is null!")).build();
         }
 
         try {

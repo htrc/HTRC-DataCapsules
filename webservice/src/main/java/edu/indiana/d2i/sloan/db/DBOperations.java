@@ -855,46 +855,8 @@ public class DBOperations {
 				connection.close();
 		}
 	}
-/**
-	public List<ResultInfoBean> getUnreleased() throws SQLException
-	{
-		String sql = "SELECT * FROM "+ DBSchema.ResultTable.TABLE_NAME +
-				" WHERE " + DBSchema.ResultTable.NOTIFIED + "= 'NO' ";
-		logger.debug(sql);
-		List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
-		Connection conn = null;
-		PreparedStatement pst = null;
-		ResultSet rs = null;
-		try {
-			conn = DBConnections.getInstance().getConnection();
-			pst = conn.prepareStatement(sql);
-			rs = pst.executeQuery();
-            while (rs.next()) {
-				ResultInfoBean result = new ResultInfoBean(rs.getString("vmid"),
-						rs.getString("resultid"),
-						rs.getString("datafield"),
-						rs.getString("createtime"),
-						rs.getString("notified"),
-						rs.getString("notifiedtime"),
-						rs.getString("reviewer"),
-						rs.getString("status"),
-						rs.getString("comment")
-				);
-				res.add(result);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			if (rs != null)
-				rs.close();
-			if (pst != null)
-				pst.close();
-			if (conn != null)
-				conn.close();
-		}
-		return res;
-	}
-**/
+
+
 	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
 		String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + DBSchema.ResultTable.CREATE_TIME+
 				" FROM "+DBSchema.ResultTable.TABLE_NAME +  " WHERE " + DBSchema.ResultTable.RESULT_ID + " =\""+resultid+"\";";
@@ -940,7 +902,8 @@ public class DBOperations {
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
-				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment"+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
 				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
 				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
 				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
@@ -967,7 +930,8 @@ public class DBOperations {
 						rs.getString("username"),
 						rs.getString("useremail"),
 						rs.getString("reviewer"),
-						rs.getString("comment")
+						rs.getString("comment"),
+						rs.getString("createtime")
 				);
 				res.add(result);
 			}
@@ -986,14 +950,25 @@ public class DBOperations {
 	}
 
 
-/**
-    public List<ResultInfoBean> getReleased() throws SQLException
+    public List<ReviewInfoBean> getReleased() throws SQLException
     {
-        String sql;
-        sql = new String("select * from results where notified= 'YES' ");
-        logger.debug(sql);
+		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
+				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
+				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + "=\"Released\"";
+		logger.debug(sql);
 
-        List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
+        List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
 
         Connection conn = null;
         PreparedStatement pst = null;
@@ -1004,15 +979,16 @@ public class DBOperations {
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             while (rs.next()) {
-                ResultInfoBean result = new ResultInfoBean(rs.getString("vmid"),
+                ReviewInfoBean result = new ReviewInfoBean(
+                		rs.getString("vmid"),
                         rs.getString("resultid"),
-                        rs.getString("datafield"),
-                        rs.getString("createtime"),
-                        rs.getString("notified"),
-                        rs.getString("notifiedtime"),
+                        "",
+                        "",
+                        rs.getString("username"),
+						rs.getString("useremail"),
 						rs.getString("reviewer"),
-						rs.getString("status"),
-						rs.getString("comment")
+						"",
+						rs.getString("createtime")
                 );
                 res.add(result);
             }
@@ -1031,7 +1007,62 @@ public class DBOperations {
 
     }
 
- **/
+
+	public List<ReviewInfoBean> getUnreleased() throws SQLException
+	{
+		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
+				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
+				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " IN {\"Pending\", \"Rejected\"}";
+		logger.debug(sql);
+
+		List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				ReviewInfoBean result = new ReviewInfoBean(
+						rs.getString("vmid"),
+						rs.getString("resultid"),
+						"",
+						"",
+						rs.getString("username"),
+						rs.getString("useremail"),
+						rs.getString("reviewer"),
+						"",
+						rs.getString("createtime")
+				);
+				res.add(result);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+	}
+
 
     public String getComment(String resultid) throws SQLException{
 		String sql =String.format("SELECT %s FROM %s WHERE %s=\"%s\";",

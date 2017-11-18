@@ -1,7 +1,13 @@
 package edu.indiana.d2i.sloan;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import edu.indiana.d2i.sloan.bean.*;
-import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.db.*;
+import edu.indiana.d2i.sloan.exception.*;
+import edu.indiana.d2i.sloan.exception.ResultExpireException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,18 +18,20 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * param: null
  *
- * return: summary info of all result entries excluding the binary content field
+ * return: All resultids and their correspondent information which has been released(Released)
  */
 
-@Path("/showreviewdata")
-public class ShowReviewData {
-    private static Logger logger = Logger.getLogger(ShowReviewData.class);
+@Path("/showreleased")
+public class ShowReleased {
+
+    private static Logger logger = Logger.getLogger(ShowReleased.class);
 
 
     @GET
@@ -31,9 +39,10 @@ public class ShowReviewData {
 
     public Response getResourcePost(@Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException {
+
         try {
 
-            List<ReviewInfoBean> res = DBOperations.getInstance().getReviewData();
+            List<ReviewInfoBean> res = DBOperations.getInstance().getReleased();
             //have res for return
             return Response.status(200).entity(new ReviewInfoResponseBean(res)).build();
 
@@ -45,5 +54,8 @@ public class ShowReviewData {
         }
 
 
+
+
     }
+
 }

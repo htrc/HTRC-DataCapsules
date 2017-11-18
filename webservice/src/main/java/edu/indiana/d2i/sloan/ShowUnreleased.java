@@ -18,12 +18,13 @@ import java.util.List;
 /**
  * param: null
  *
- * return: summary info of all result entries excluding the binary content field
+ * return: All resultids and their correspondent information which has NOT been released(Pending or Rejected)
  */
 
-@Path("/showreviewdata")
-public class ShowReviewData {
-    private static Logger logger = Logger.getLogger(ShowReviewData.class);
+@Path("/showunreleased")
+public class ShowUnreleased {
+
+    private static Logger logger = Logger.getLogger(ShowUnreleased.class);
 
 
     @GET
@@ -31,9 +32,10 @@ public class ShowReviewData {
 
     public Response getResourcePost(@Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException {
+
         try {
 
-            List<ReviewInfoBean> res = DBOperations.getInstance().getReviewData();
+            List<ReviewInfoBean> res = DBOperations.getInstance().getUnreleased();
             //have res for return
             return Response.status(200).entity(new ReviewInfoResponseBean(res)).build();
 
@@ -45,5 +47,8 @@ public class ShowReviewData {
         }
 
 
+
+
     }
+
 }

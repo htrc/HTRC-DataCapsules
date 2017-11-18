@@ -13,6 +13,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 
+/**
+ * param:
+ *   resultid: identifier of the record to be updated
+ *   status: updated record's status (Pending to Released/Rejected)
+ *   comment: comment input by reviewer
+ *   reviewer: signature by reviewer
+ *
+ * return: null (POST method)
+ */
+
 @Path("/updateasnotified")
 public class UpdateAsNotified {
     private static Logger logger = Logger.getLogger(LaunchVM.class);
@@ -29,12 +39,9 @@ public class UpdateAsNotified {
             @Context HttpServletRequest httpServletRequest) {
 
             if(resultid == null){
-                return Response.status(400).entity(new ErrorBean(400, "Resultid is null")).build();
+                return Response.status(204).entity(new ErrorBean(204, "Resultid is null")).build();
             }
 
-            String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-            String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-            //String resultid = httpServletRequest.getHeader("resultid");
             System.out.println(resultid);
             try {
                 //DBOperations.getInstance().updateResultAsNotified(resultid);
