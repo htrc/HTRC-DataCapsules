@@ -1064,7 +1064,41 @@ public class DBOperations {
 	}
 
 
-    public String getComment(String resultid) throws SQLException{
+	public String getStatus(String resulitid) throws SQLException {
+		String sql = String.format("SELECT %s FROM %s WHERE %s=\"%s\";",
+				DBSchema.ResultTable.STATUS, DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.RESULT_ID, resulitid
+		);
+		logger.debug(sql);
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		String res = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				res = rs.getString("status");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+
+	}
+
+
+	public String getComment(String resultid) throws SQLException{
 		String sql =String.format("SELECT %s FROM %s WHERE %s=\"%s\";",
 				DBSchema.ResultTable.COMMENT, DBSchema.ResultTable.TABLE_NAME,
 								DBSchema.ResultTable.RESULT_ID, resultid);
@@ -1187,6 +1221,36 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+
+	public void updateResult(String resultid, String status) throws SQLException{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		java.util.Date dateobj = new java.util.Date();
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = df.format(dateobj);
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s, %s=\"%s\", %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"",
+					DBSchema.ResultTable.STATUS, status,
+					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+
 
 	public void updateResultAsReleased(String resultid, String comment, String reviewer) throws SQLException{
 		Connection connection = null;

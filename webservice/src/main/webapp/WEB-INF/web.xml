@@ -25,15 +25,16 @@
 	</servlet>
 
 	<!-- JWT servlet filter -->
+
 	<filter>
 		<filter-name>JWTFilter</filter-name>
 		<filter-class>edu.indiana.d2i.htrc.security.JWTServletFilter</filter-class>
 		<init-param>
 			<param-name>htrc.jwtfilter.config</param-name>
-			<param-value>/etc/htrc/dcapi/jwtfilter.conf</param-value>
+			<param-value>/Users/ruili/htrc/HTRC-DataCapsules/webservice/src/main/resources/jwtfilter.conf</param-value>
+			<!-- <param-value>/etc/htrc/dcapi/jwtfilter.conf</param-value> -->
 		</init-param>
 	</filter>
-
 	<filter-mapping>
 		<filter-name>JWTFilter</filter-name>
 		<url-pattern>/createvm</url-pattern>

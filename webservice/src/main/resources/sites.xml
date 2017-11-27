@@ -24,7 +24,7 @@
 	<property>
 		<name>hypervisor.full.class.name</name>
 		<!-- Enable AlwaysSuccessHypervisor if you want to test DC API without DC backend. Please comment CapsuleHypervisor property value. -->
-		<!-- value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value -->
+		<!-- value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value> -->
 		<value>edu.indiana.d2i.sloan.hyper.CapsuleHypervisor</value>
 	</property>
 
@@ -144,17 +144,17 @@
 	</property>
 	<property>
 		<name>sloan.ws.db.jdbcurl</name>
-		<value>jdbc:mysql://DB_HOST:DB_PORT/DB_NAME</value>
-		<!--<value>jdbc:mysql://localhost:3306/htrcvirtdb</value>-->
+		<!-- <value>jdbc:mysql://DB_HOST:DB_PORT/DB_NAME</value> -->
+		<value>jdbc:mysql://localhost:3306/htrcvirtdb</value>
 	</property>
 	<property>
 		<name>sloan.ws.db.user</name>
-		<value>xxxxxx</value>
-		<!--<value>root</value>-->
+		<!-- <value>xxxxxx</value> -->
+		<value>root</value>
 	</property>
 	<property>
 		<name>sloan.ws.db.pwd</name>
-		<!--<value>lee091120115</value>-->
+		<value>lee091120115</value>
 	</property>
 
 	<property>
@@ -162,7 +162,6 @@
 		<value>xxxxxxxx</value>
 	</property>
 
-	<!--  -->
 	<property>
 		<name>sloan.ws.hosts</name>
 		<value>xxxxxxxx</value>
