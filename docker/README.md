@@ -1,4 +1,4 @@
-#HTRC Data Capsule API
+HTRC Data Capsule API
 ================================
 
 This contains the Dockerized Data Capsule API
