@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("serial")
-class DBSchema {
+public class DBSchema {
 	public static String DB_NAME = "htrcvirtdb";
 
 	public static class VmTable {
@@ -111,6 +111,9 @@ class DBSchema {
 		public static String NOTIFIED = "notified";
 		public static String CREATE_TIME= "createtime";
 		public static String NOTIFIED_TIME= "notifiedtime";
+		public static String REVIEWER="reviewer";
+		public static String STATUS = "status";
+		public static String COMMENT = "comment";
 	}
 
 	public static class HostTable {

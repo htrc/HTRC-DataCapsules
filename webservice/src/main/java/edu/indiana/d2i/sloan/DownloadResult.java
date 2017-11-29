@@ -15,9 +15,12 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.ResultBean;
+import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
@@ -28,14 +31,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
-
-import org.apache.log4j.Logger;
-
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.ResultBean;
-import edu.indiana.d2i.sloan.db.DBOperations;
-import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import java.io.*;
+import java.sql.SQLException;
 
 @Path("/download")
 public class DownloadResult {
@@ -49,8 +46,8 @@ public class DownloadResult {
 		}
 		
 		@Override
-		public void write(OutputStream output) throws IOException,
-				WebApplicationException {
+		public void write(OutputStream output) throws IOException, WebApplicationException
+		{
 			byte[] buf = new byte[1024];
 			int length = 0;
 			while ((length = input.read(buf)) != -1) {
@@ -63,7 +60,8 @@ public class DownloadResult {
 	public Response getResourcePost(
 		@QueryParam("randomid") String randomid,
 		@Context HttpHeaders httpHeaders,
-		@Context HttpServletRequest httpServletRequest) {
+		@Context HttpServletRequest httpServletRequest)
+	{
 		if (randomid == null) {
 			return Response.status(400)
 				.entity(new ErrorBean(400, "Invalid download URL!")).build();
@@ -80,10 +78,16 @@ public class DownloadResult {
 				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
 			if (span > 0 && ((currentT-startT)/1000) > span) 
 				throw new ResultExpireException(randomid + " expires!");			
-			
+
+
+				writeFile(randomid, fetchData(randomid),"default");
+
+
 			return Response.ok(new ResultOutputStream(result.getInputstream())).
 				header("Content-Type", "application/zip").
 				header("Content-Disposition", "filename=\"result.zip\"").build();
+
+
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error("Invalid " + randomid + " attempts", e);
 			return Response.status(404).entity("Invalid download URL!").build();
@@ -95,4 +99,48 @@ public class DownloadResult {
 			return Response.status(500).entity("Internal error.").build();
 		}
 	}
+
+
+	//fetch content from db to write into output file
+	public String fetchData(String resultid)
+			throws java.text.ParseException, SQLException, NoItemIsFoundInDBException, IOException
+	{
+		//   String sql = "select datafield from results resultid = " + resultid + ";";
+
+		ResultBean result =  DBOperations.getInstance().getResult(resultid);
+
+		InputStream dataField = result.getInputstream();
+		char[] buffer = new char[1024];
+
+		StringBuilder out = new StringBuilder();
+		Reader in = new InputStreamReader(dataField, "UTF-8");
+		int l= in.read(buffer,0,buffer.length);
+		while(l >= 0){
+			out.append(buffer,0,l);
+			l=in.read(buffer, 0, l);
+		}
+
+		//Output target path?
+		return out.toString();
+	}
+
+	public void writeFile(String resultid, String content,
+						  String destination	/*default*/)
+	{
+
+
+
+		String filename = String.format("resuld", resultid, ".txt");
+		try {
+			PrintWriter out = new PrintWriter(filename);
+			out.println(content);
+
+		} catch (FileNotFoundException e) {
+			logger.error(e.getMessage(),e);
+		}
+	}
+
+
+
+
 }

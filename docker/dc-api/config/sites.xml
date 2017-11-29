@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<configuration>
+	<!-- hypervisor -->
+	<property>
+		<name>sloan.ws.hyper.workers</name>
+		<value>64</value>
+	</property>
+	<property>
+		<name>hypervisor.task.timeout.in.ms</name>
+		<value>180000</value>
+	</property>
+	<property>
+		<name>retry.task.wait.in.millis</name>
+		<value>30000</value>
+	</property>
+	<property>
+		<name>retry.task.max.attempt</name>
+		<value>3</value>
+	</property>
+	<property>
+		<name>use.retry.task</name>
+		<value>true</value>
+	</property>
+	<property>
+		<name>hypervisor.full.class.name</name>
+		<!-- Enable AlwaysSuccessHypervisor if you want to test DC API without DC backend. Please comment CapsuleHypervisor property value. -->
+		<value>edu.indiana.d2i.sloan.hyper.AlwaysSuccessHypervisor</value>
+		<!-- value>edu.indiana.d2i.sloan.hyper.CapsuleHypervisor</value -->
+	</property>
+
+	<!-- hypervisor scripts -->
+	<property>
+		<name>resp.kv.delimiter</name>
+		<value>\t</value>
+	</property>
+	<property>
+		<name>resp.vm.status.key</name>
+		<value>Status</value>
+	</property>
+	<property>
+		<name>cmd.create.vm</name>
+		<value>DC_HOST_SCRIPT_DIR/createvm.sh</value>
+	</property>
+	<property>
+		<name>cmd.launch.vm</name>
+		<value>DC_HOST_SCRIPT_DIR/startvm.sh</value>
+	</property>
+	<property>
+		<name>cmd.query.vm</name>
+		<value>DC_HOST_SCRIPT_DIR/vmstatus.sh</value>
+	</property>
+	<property>
+		<name>cmd.switch.vm</name>
+		<value>DC_HOST_SCRIPT_DIR/switch.sh</value>
+	</property>
+	<property>
+		<name>cmd.stop.vm</name>
+		<value>DC_HOST_SCRIPT_DIR/stopvm.sh</value>
+	</property>
+	<property>
+		<name>cmd.delete.vm</name>
+		<value>DC_HOST_SCRIPT_DIR/deletevm.sh</value>
+	</property>
+
+	<!-- fire wall policy -->
+	<property>
+		<name>hypervisor.fw.maintenance</name>
+		<value>DC_HOST_SCRIPT_DIR/example2.fw</value>
+	</property>
+	<property>
+		<name>hypervisor.fw.secure</name>
+		<value>DC_HOST_SCRIPT_DIR/example.fw</value>
+	</property>
+
+	<!-- email setting -->
+	<property>
+		<name>email.sendername</name>
+		<value>xxx</value>
+	</property>
+	<property>
+		<name>email.sender.addr</name>
+		<value>xxx@xxx.xxx</value>
+	</property>
+	<property>
+		<name>email.password</name>
+		<value>xxxxxx</value>
+	</property>
+	<property>
+		<name>email.smtp.host</name>
+		<value>xxxxxx</value>
+	</property>
+	<property>
+		<name>email.smtp.port</name>
+		<value>xxxx</value>
+	</property>
+
+	<!-- result download url prefix -->
+	<property>
+		<name>result.download.prefix</name>
+		<value>DC_API_ENDPOINT/download?randomid=</value>
+	</property>
+	<property>
+		<!-- -1 means never expire -->
+		<name>result.expire.sec</name>
+		<value>43200</value>
+	</property>
+
+	<!-- reviewer email addresses -->
+	<property><name>result.review.human</name><value>true</value></property>
+	<property><name>result.review.email</name><value>xxxxxx</value></property>
+
+	<!-- volume size, user quota -->
+	<property>
+		<name>sloan.ws.volume.size.gb</name>
+		<value>10</value>
+	</property>
+	<property>
+		<name>user.disk.quota.in.gb</name>
+		<value>100</value>
+	</property>
+	<property>
+		<name>user.cpu.quota.in.num</name>
+		<value>10</value>
+	</property>
+	<property>
+		<name>user.memory.quota.in.mb</name>
+		<value>20480</value>
+	</property>
+
+	<!-- scheduler -->
+	<property>
+		<name>scheduler.impl.class</name>
+		<value>edu.indiana.d2i.sloan.scheduler.RoundRobinScheduler</value>
+	</property>
+	<property>
+		<name>scheduler.max.num.attempts</name>
+		<value>5</value>
+	</property>
+
+	<!-- db configuration -->
+	<property>
+		<name>sloan.ws.db.driverclass</name>
+		<value>com.mysql.jdbc.Driver</value>
+	</property>
+	<property>
+		<name>sloan.ws.db.jdbcurl</name>
+		<value>jdbc:mysql://mysql/htrcvirtdb</value>
+	</property>
+	<property>
+		<name>sloan.ws.db.user</name>
+		<value>htrcvirt</value>
+	</property>
+	<property>
+		<name>sloan.ws.db.pwd</name>
+		<value>htrcvirtpassword</value>
+	</property>
+
+	<property>
+		<name>sloan.ws.vm.workdir.prefix</name>
+		<value>xxxxxxxx</value>
+	</property>
+
+	<!--  -->
+	<property>
+		<name>sloan.ws.hosts</name>
+		<value>oilpalm2.pti.indiana.edu</value>
+	</property>
+	<property>
+		<name>sloan.ws.port.range.min</name>
+		<value>16000</value>
+	</property>
+	<property>
+		<name>sloan.ws.port.range.max</name>
+		<value>16100</value>
+	</property>
+	<property>
+		<name>host.ssh.username</name>
+		<value>xxxxx</value>
+	</property>
+	<!--
+    <property>
+                <name>host.ssh.passwd</name>
+                <value>XXX</value>
+    </property>
+    -->
+	<property>
+		<name>host.ssh.private.key.path</name>
+		<value>xxxxx</value>
+	</property>
+</configuration>

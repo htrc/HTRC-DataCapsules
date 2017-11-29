@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="sloan-ws" default="all">
+  
+  
+  <property file="sloan-ws.properties"/>
+  <!-- Uncomment the following property if no tests compilation is needed -->
+  <!-- 
+  <property name="skip.tests" value="true"/>
+   -->
+  
+  <!-- Compiler options -->
+  
+  <property name="compiler.debug" value="on"/>
+  <property name="compiler.generate.no.warnings" value="off"/>
+  <property name="compiler.args" value=""/>
+  <property name="compiler.max.memory" value="700m"/>
+  <patternset id="ignored.files">
+    <exclude name="**/*.hprof/**"/>
+    <exclude name="**/*.pyc/**"/>
+    <exclude name="**/*.pyo/**"/>
+    <exclude name="**/*.rbc/**"/>
+    <exclude name="**/*.yarb/**"/>
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+    <exclude name="**/.hg/**"/>
+    <exclude name="**/.svn/**"/>
+    <exclude name="**/CVS/**"/>
+    <exclude name="**/__pycache__/**"/>
+    <exclude name="**/_svn/**"/>
+    <exclude name="**/vssver.scc/**"/>
+    <exclude name="**/vssver2.scc/**"/>
+  </patternset>
+  <patternset id="library.patterns">
+    <include name="*.egg"/>
+    <include name="*.jar"/>
+    <include name="*.ear"/>
+    <include name="*.swc"/>
+    <include name="*.war"/>
+    <include name="*.ane"/>
+    <include name="*.zip"/>
+  </patternset>
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.groovy"/>
+    <exclude name="**/?*.scala"/>
+    <exclude name="**/?*.flex"/>
+    <exclude name="**/?*.kt"/>
+    <exclude name="**/?*.clj"/>
+    <exclude name="**/?*.aj"/>
+  </patternset>
+  
+  <!-- JDK definitions -->
+  
+  <property name="jdk.bin.9" value="${jdk.home.9}/bin"/>
+  <path id="jdk.classpath.9">
+    <fileset dir="${jdk.home.9}">
+      <include name="jre/lib/charsets.jar"/>
+      <include name="jre/lib/deploy.jar"/>
+      <include name="jre/lib/ext/cldrdata.jar"/>
+      <include name="jre/lib/ext/dnsns.jar"/>
+      <include name="jre/lib/ext/jaccess.jar"/>
+      <include name="jre/lib/ext/jfxrt.jar"/>
+      <include name="jre/lib/ext/localedata.jar"/>
+      <include name="jre/lib/ext/nashorn.jar"/>
+      <include name="jre/lib/ext/sunec.jar"/>
+      <include name="jre/lib/ext/sunjce_provider.jar"/>
+      <include name="jre/lib/ext/sunpkcs11.jar"/>
+      <include name="jre/lib/ext/zipfs.jar"/>
+      <include name="jre/lib/javaws.jar"/>
+      <include name="jre/lib/jce.jar"/>
+      <include name="jre/lib/jfr.jar"/>
+      <include name="jre/lib/jfxswt.jar"/>
+      <include name="jre/lib/jsse.jar"/>
+      <include name="jre/lib/management-agent.jar"/>
+      <include name="jre/lib/plugin.jar"/>
+      <include name="jre/lib/resources.jar"/>
+      <include name="jre/lib/rt.jar"/>
+      <include name="lib/ant-javafx.jar"/>
+      <include name="lib/dt.jar"/>
+      <include name="lib/javafx-mx.jar"/>
+      <include name="lib/jconsole.jar"/>
+      <include name="lib/packager.jar"/>
+      <include name="lib/sa-jdi.jar"/>
+      <include name="lib/tools.jar"/>
+    </fileset>
+  </path>
+  
+  <property name="project.jdk.home" value="${jdk.home.9}"/>
+  <property name="project.jdk.bin" value="${jdk.bin.9}"/>
+  <property name="project.jdk.classpath" value="jdk.classpath.9"/>
+  
+  
+  <!-- Project Libraries -->
+  
+  <path id="library.maven:_asm:asm:3.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/asm/asm/3.1/asm-3.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.jcraft:jsch:0.1.50.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/jcraft/jsch/0.1.50/jsch-0.1.50.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.mchange:c3p0:0.9.2.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/mchange/c3p0/0.9.2.1/c3p0-0.9.2.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.mchange:mchange-commons-java:0.2.3.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/mchange/mchange-commons-java/0.2.3.4/mchange-commons-java-0.2.3.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.jersey.contribs:jersey-multipart:1.17.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/jersey/contribs/jersey-multipart/1.17/jersey-multipart-1.17.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.jersey:jersey-bundle:1.17.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-bundle/1.17/jersey-bundle-1.17.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.jersey:jersey-core:1.8.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.8/jersey-core-1.8.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.jersey:jersey-json:1.8.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.8/jersey-json-1.8.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.jersey:jersey-server:1.17.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-server/1.17/jersey-server-1.17.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.jersey:jersey-servlet:1.17.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/jersey/jersey-servlet/1.17/jersey-servlet-1.17.jar"/>
+  </path>
+  
+  <path id="library.maven:_com.sun.xml.bind:jaxb-impl:2.2.3-1.classpath">
+    <pathelement location="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-cli:commons-cli:1.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-cli/commons-cli/1.2/commons-cli-1.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-codec:commons-codec:1.9.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-codec/commons-codec/1.9/commons-codec-1.9.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-configuration:commons-configuration:1.9.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-configuration/commons-configuration/1.9/commons-configuration-1.9.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-io:commons-io:2.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-lang:commons-lang:2.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-lang/commons-lang/2.6/commons-lang-2.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_commons-logging:commons-logging:1.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.activation:activation:1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.mail:mail:1.4.7.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.servlet:servlet-api:2.5.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.ws.rs:jsr311-api:1.1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.xml.bind:jaxb-api:2.2.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_javax.xml.stream:stax-api:1.0-2.classpath">
+    <pathelement location="${path.variable.maven_repository}/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar"/>
+  </path>
+  
+  <path id="library.maven:_junit:junit:4.8.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/junit/junit/4.8.1/junit-4.8.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_log4j:log4j:1.2.16.classpath">
+    <pathelement location="${path.variable.maven_repository}/log4j/log4j/1.2.16/log4j-1.2.16.jar"/>
+  </path>
+  
+  <path id="library.maven:_mysql:mysql-connector-java:5.1.26.classpath">
+    <pathelement location="${path.variable.maven_repository}/mysql/mysql-connector-java/5.1.26/mysql-connector-java-5.1.26.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.httpcomponents:httpclient:4.5.2.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.5.2/httpclient-4.5.2.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.apache.httpcomponents:httpcore:4.4.4.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.4.4/httpcore-4.4.4.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.jackson:jackson-core-asl:1.7.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.7.1/jackson-core-asl-1.7.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.jackson:jackson-jaxrs:1.7.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.7.1/jackson-jaxrs-1.7.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.jackson:jackson-mapper-asl:1.7.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.7.1/jackson-mapper-asl-1.7.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.jackson:jackson-xc:1.7.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.7.1/jackson-xc-1.7.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.codehaus.jettison:jettison:1.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar"/>
+  </path>
+  
+  <path id="library.maven:_org.jvnet:mimepull:1.6.classpath">
+    <pathelement location="${path.variable.maven_repository}/org/jvnet/mimepull/1.6/mimepull-1.6.jar"/>
+  </path>
+  
+  <path id="library.maven:_stax:stax-api:1.0.1.classpath">
+    <pathelement location="${path.variable.maven_repository}/stax/stax-api/1.0.1/stax-api-1.0.1.jar"/>
+  </path>
+  <!-- Register Custom Compiler Taskdefs -->
+  <property name="javac2.home" value="${idea.home}/lib"/>
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+  <target name="register.custom.compilers">
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+    <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
+  </target>
+  
+  <!-- Modules -->
+  
+  <import file="${basedir}/module_sloan-ws.xml"/>
+  
+  <target name="init" description="Build initialization">
+    <!-- Perform any build initialization in this target -->
+  </target>
+  
+  <target name="clean" depends="clean.module.sloan-ws, clean.artifact.sloan-ws:war_exploded" description="cleanup all"/>
+  
+  <target name="build.modules" depends="init, clean, compile.module.sloan-ws" description="build all modules"/>
+  
+  <target name="init.artifacts">
+    <property name="artifacts.temp.dir" value="${basedir}/__artifacts_temp"/>
+    <property name="artifact.output.sloan-ws:war" value="${basedir}/target"/>
+    <property name="artifact.output.sloan-ws:war_exploded" value="${basedir}/target/sloan-ws-1.2-SNAPSHOT"/>
+    <mkdir dir="${artifacts.temp.dir}"/>
+    <property name="temp.jar.path.sloan-ws-1.2-SNAPSHOT.war" value="${artifacts.temp.dir}/sloan-ws-1.2-SNAPSHOT.war"/>
+  </target>
+  
+  <target name="clean.artifact.sloan-ws:war_exploded" description="clean sloan-ws:war exploded artifact output">
+    <delete dir="${artifact.output.sloan-ws:war_exploded}"/>
+  </target>
+  
+  <target name="artifact.sloan-ws:war" depends="init.artifacts, artifact.sloan-ws:war_exploded" description="Build &#39;sloan-ws:war&#39; artifact">
+    <property name="artifact.temp.output.sloan-ws:war" value="${artifacts.temp.dir}/sloan_ws_war"/>
+    <mkdir dir="${artifact.temp.output.sloan-ws:war}"/>
+    <zip destfile="${temp.jar.path.sloan-ws-1.2-SNAPSHOT.war}">
+      <zipfileset dir="${artifact.output.sloan-ws:war_exploded}"/>
+    </zip>
+    <copy file="${temp.jar.path.sloan-ws-1.2-SNAPSHOT.war}" tofile="${artifact.temp.output.sloan-ws:war}/sloan-ws-1.2-SNAPSHOT.war"/>
+  </target>
+  
+  <target name="artifact.sloan-ws:war_exploded" depends="init.artifacts, compile.module.sloan-ws" description="Build &#39;sloan-ws:war exploded&#39; artifact">
+    <mkdir dir="${artifact.output.sloan-ws:war_exploded}"/>
+    <mkdir dir="${artifact.output.sloan-ws:war_exploded}/WEB-INF"/>
+    <mkdir dir="${artifact.output.sloan-ws:war_exploded}/WEB-INF/classes"/>
+    <copy todir="${artifact.output.sloan-ws:war_exploded}/WEB-INF/classes">
+      <fileset dir="${sloan-ws.output.dir}"/>
+    </copy>
+    <mkdir dir="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib"/>
+    <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpclient/4.5.2/httpclient-4.5.2.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/httpclient-4.5.2.jar"/>
+    <copy file="${path.variable.maven_repository}/org/apache/httpcomponents/httpcore/4.4.4/httpcore-4.4.4.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/httpcore-4.4.4.jar"/>
+    <copy file="${path.variable.maven_repository}/commons-logging/commons-logging/1.2/commons-logging-1.2.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/commons-logging-1.2.jar"/>
+    <copy file="${path.variable.maven_repository}/commons-codec/commons-codec/1.9/commons-codec-1.9.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/commons-codec-1.9.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-bundle/1.17/jersey-bundle-1.17.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jersey-bundle-1.17.jar"/>
+    <copy file="${path.variable.maven_repository}/javax/ws/rs/jsr311-api/1.1.1/jsr311-api-1.1.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jsr311-api-1.1.1.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-servlet/1.17/jersey-servlet-1.17.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jersey-servlet-1.17.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-server/1.17/jersey-server-1.17.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jersey-server-1.17.jar"/>
+    <copy file="${path.variable.maven_repository}/asm/asm/3.1/asm-3.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/asm-3.1.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-json/1.8/jersey-json-1.8.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jersey-json-1.8.jar"/>
+    <copy file="${path.variable.maven_repository}/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jettison-1.1.jar"/>
+    <copy file="${path.variable.maven_repository}/stax/stax-api/1.0.1/stax-api-1.0.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/stax-api-1.0.1.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jaxb-impl-2.2.3-1.jar"/>
+    <copy file="${path.variable.maven_repository}/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jaxb-api-2.2.2.jar"/>
+    <copy file="${path.variable.maven_repository}/javax/xml/stream/stax-api/1.0-2/stax-api-1.0-2.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/stax-api-1.0-2.jar"/>
+    <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-core-asl/1.7.1/jackson-core-asl-1.7.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jackson-core-asl-1.7.1.jar"/>
+    <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-mapper-asl/1.7.1/jackson-mapper-asl-1.7.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jackson-mapper-asl-1.7.1.jar"/>
+    <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-jaxrs/1.7.1/jackson-jaxrs-1.7.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jackson-jaxrs-1.7.1.jar"/>
+    <copy file="${path.variable.maven_repository}/org/codehaus/jackson/jackson-xc/1.7.1/jackson-xc-1.7.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jackson-xc-1.7.1.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/jersey/jersey-core/1.8/jersey-core-1.8.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jersey-core-1.8.jar"/>
+    <copy file="${path.variable.maven_repository}/com/sun/jersey/contribs/jersey-multipart/1.17/jersey-multipart-1.17.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jersey-multipart-1.17.jar"/>
+    <copy file="${path.variable.maven_repository}/org/jvnet/mimepull/1.6/mimepull-1.6.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/mimepull-1.6.jar"/>
+    <copy file="${path.variable.maven_repository}/com/mchange/c3p0/0.9.2.1/c3p0-0.9.2.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/c3p0-0.9.2.1.jar"/>
+    <copy file="${path.variable.maven_repository}/com/mchange/mchange-commons-java/0.2.3.4/mchange-commons-java-0.2.3.4.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/mchange-commons-java-0.2.3.4.jar"/>
+    <copy file="${path.variable.maven_repository}/mysql/mysql-connector-java/5.1.26/mysql-connector-java-5.1.26.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/mysql-connector-java-5.1.26.jar"/>
+    <copy file="${path.variable.maven_repository}/com/jcraft/jsch/0.1.50/jsch-0.1.50.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/jsch-0.1.50.jar"/>
+    <copy file="${path.variable.maven_repository}/commons-io/commons-io/2.4/commons-io-2.4.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/commons-io-2.4.jar"/>
+    <copy file="${path.variable.maven_repository}/commons-cli/commons-cli/1.2/commons-cli-1.2.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/commons-cli-1.2.jar"/>
+    <copy file="${path.variable.maven_repository}/javax/mail/mail/1.4.7/mail-1.4.7.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/mail-1.4.7.jar"/>
+    <copy file="${path.variable.maven_repository}/javax/activation/activation/1.1/activation-1.1.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/activation-1.1.jar"/>
+    <copy file="${path.variable.maven_repository}/commons-configuration/commons-configuration/1.9/commons-configuration-1.9.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/commons-configuration-1.9.jar"/>
+    <copy file="${path.variable.maven_repository}/commons-lang/commons-lang/2.6/commons-lang-2.6.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/commons-lang-2.6.jar"/>
+    <copy file="${path.variable.maven_repository}/log4j/log4j/1.2.16/log4j-1.2.16.jar" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/lib/log4j-1.2.16.jar"/>
+    <mkdir dir="${artifact.output.sloan-ws:war_exploded}/META-INF"/>
+    <copy file="${basedir}/target/sloan-ws-1.2-SNAPSHOT/META-INF/MANIFEST.MF" tofile="${artifact.output.sloan-ws:war_exploded}/META-INF/MANIFEST.MF"/>
+    <copy todir="${artifact.output.sloan-ws:war_exploded}">
+      <fileset dir="${basedir}/src/main/webapp"/>
+    </copy>
+    <mkdir dir="${artifact.output.sloan-ws:war_exploded}/WEB-INF"/>
+    <copy file="${basedir}/src/main/webapp/WEB-INF/web.xml" tofile="${artifact.output.sloan-ws:war_exploded}/WEB-INF/web.xml"/>
+  </target>
+  
+  <target name="build.all.artifacts" depends="artifact.sloan-ws:war, artifact.sloan-ws:war_exploded" description="Build all artifacts">
+    <mkdir dir="${artifact.output.sloan-ws:war}"/>
+    <copy todir="${artifact.output.sloan-ws:war}">
+      <fileset dir="${artifact.temp.output.sloan-ws:war}"/>
+    </copy>
+    
+    <!-- Delete temporary files -->
+    <delete dir="${artifacts.temp.dir}"/>
+  </target>
+  
+  <target name="all" depends="build.modules, build.all.artifacts" description="build all"/>
+</project>

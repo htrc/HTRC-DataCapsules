@@ -25,7 +25,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import edu.indiana.d2i.sloan.Configuration;
 
-class DBConnections {
+public class DBConnections {
 	private static Logger logger = Logger.getLogger(DBConnections.class);
 	private static DBConnections instance = null;
 	private static ComboPooledDataSource dataSource = null; 

@@ -52,7 +52,7 @@ def delete_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/deletevm', params, headers)
+    conn.request("POST", '/sloan-ws/deletevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -69,7 +69,7 @@ def stop_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/stopvm', params, headers)
+    conn.request("POST", '/sloan-ws/stopvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -86,7 +86,7 @@ def start_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/launchvm', params, headers)
+    conn.request("POST", '/sloan-ws/launchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -103,7 +103,7 @@ def switch_vm(vmid, username, useremail, mode):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/switchvm', params, headers)
+    conn.request("POST", '/sloan-ws/switchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -120,7 +120,7 @@ def create_vm(username, useremail, imagename, loginusername, loginpassword, memo
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/createvm', params, headers)
+    conn.request("POST", '/sloan-ws/createvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
