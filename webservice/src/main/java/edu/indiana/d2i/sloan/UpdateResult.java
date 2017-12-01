@@ -2,7 +2,9 @@ package edu.indiana.d2i.sloan;
 
 import com.sun.org.apache.regexp.internal.RE;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
+import edu.indiana.d2i.sloan.bean.UserBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
 import org.apache.log4j.Logger;
 
@@ -37,7 +39,7 @@ public class UpdateResult {
             @Context HttpServletRequest httpServletRequest) {
 
             if(resultid == null){
-                return Response.status(204).entity(new ErrorBean(204, "Resultid is null")).build();
+                return Response.status(400).entity(new ErrorBean(400, "Resultid is null")).build();
             }
 
 
@@ -57,23 +59,59 @@ public class UpdateResult {
 
             System.out.println(resultid);
             try {
+                //result table is not directly linked to user table
+                //need vm to query for username
+                String vmid = DBOperations.getInstance().getVMIDWithResultid(resultid);
+                UserBean ub = DBOperations.getInstance().getUserWithVmid(vmid);
+                String userEmail = ub.getUserEmail();
+
 
                 DBOperations.getInstance().updateResult(resultid, status);
 
-                EmailUtil send_email = new EmailUtil();
+                //Do not send email if rejected
+                if(!status.equals("Rejected")) {
+                    EmailUtil send_email = new EmailUtil();
 
-                //constructor fetch properites automatically
-                String download_addr = String.format(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX, resultid);
+                    //constructor fetch properites automatically
+                    String download_addr = String.format(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX, resultid);
 
-                //construct email content
-                String content = String.format("Please download result from the following URL: \n", download_addr);
-                send_email.sendEMail("li530@indiana.edu", "HTRC Data Capsule Result Download URL", content);
+                    //construct email content for user
+                    String contentUser = String.format("Please download result from the following URL: \n", download_addr);
+                    send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
+
+                    //construct email content for reviewer
+                    String contentReviewer = String.format("Result \"%s\" \nhas been released to user \"%s\" \nemail: %s",
+                            resultid, ub.getUserName(), userEmail);
+                    send_email.sendEMail("dicksone@illinois.edu", "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
+
+                    return Response.status(200).build();
+
+                }else{
+                    EmailUtil send_email = new EmailUtil();
+
+                    //construct email content for user
+                    //String contentUser = String.format("Unfortunately, we are not able to approve your request of recent result release." +
+                    //       "\nPlease consult htrc for more details");
+                    //send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
+
+                    //construct email content for reviewer
+                    String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom user \"%s\", email: %s",
+                            resultid, ub.getUserName(), userEmail);
+                    send_email.sendEMail("dicksone@illinois.edu", "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
 
 
-                return Response.status(200).build();
+                    return Response.status(400).
+                            entity(new ErrorBean(400, resultid + " has been rejected")).build();
+                }
+
             } catch (SQLException e) {
                 logger.error(e.getMessage(),e);
-                return Response.status(500).entity(new ErrorBean(500,e.getMessage())).build();
+                return Response.status(500).
+                        entity(new ErrorBean(500,e.getMessage())).build();
+            } catch (NoItemIsFoundInDBException e) {
+                logger.error("Invalid " + resultid + " attempts", e);
+                return Response.status(404).
+                        entity(String.format("No vmid is found for result %s", resultid)).build();
             }
 
 

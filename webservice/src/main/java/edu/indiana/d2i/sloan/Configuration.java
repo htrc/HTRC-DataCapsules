@@ -45,8 +45,8 @@ public final class Configuration {
 	
 	private Configuration() {
 		properties = new HashMap<String, String>();
-		//loadConfigurations("/Users/ruili/htrc/HTRC-DataCapsules/webservice/src/main/resources/default.xml");
-		loadConfigurations("default.xml");
+		loadConfigurations("/Users/ruili/htrc/HTRC-DataCapsules/webservice/src/main/resources/default.xml");
+		//loadConfigurations("default.xml");
 		String sitesXmlPath = properties.get("sites.xml.path");
 		loadConfigurations(sitesXmlPath);
 		logger.info(properties.toString());

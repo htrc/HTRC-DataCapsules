@@ -801,10 +801,10 @@ public class DBOperations {
 		ResultSet rs = null;
 
 		try {
-			String getResult = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME + 
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
 				" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";			
 			connection = DBConnections.getInstance().getConnection();
-			pst = connection.prepareStatement(getResult);
+			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 
 			if (rs.next()) {
@@ -828,16 +828,15 @@ public class DBOperations {
 		ResultSet rs = null;
 
 		try {
-			String getResultInfo = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
 					" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";
 			connection = DBConnections.getInstance().getConnection();
-			pst = connection.prepareStatement(getResultInfo);
+			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 
 			if (rs.next()) {
 				return new ResultInfoBean(rs.getString("vmid"),
 						rs.getString("resultid"),
-						rs.getString("datafield"),
 						rs.getString("createtime"),
 						rs.getString("notified"),
 						rs.getString("notifiedtime"),
@@ -965,7 +964,7 @@ public class DBOperations {
 				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
 				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
-				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + "=\"Released\"";
+				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"YES\"";
 		logger.debug(sql);
 
         List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
@@ -1023,7 +1022,7 @@ public class DBOperations {
 				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
 				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
-				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " IN {\"Pending\", \"Rejected\"}";
+				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"NO\"";
 		logger.debug(sql);
 
 		List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
@@ -1364,6 +1363,43 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+
+	public String getVMIDWithResultid(String resultid)
+			throws SQLException, NoItemIsFoundInDBException
+	{
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+
+			String query = String.format(
+					"SELECT %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.VmTable.VM_ID,
+					DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.RESULT_ID, resultid);
+
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+
+			if (result.next()) {
+				String res = result.getString(DBSchema.ResultTable.VM_ID);
+				return res;
+			} else {
+				throw new NoItemIsFoundInDBException(resultid + " is not associated with any user!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	
 	public void close() {
 		DBConnections.getInstance().close();

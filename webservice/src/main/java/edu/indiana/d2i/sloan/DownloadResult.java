@@ -23,14 +23,8 @@ import edu.indiana.d2i.sloan.exception.ResultExpireException;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
 import java.io.*;
 import java.sql.SQLException;
 
@@ -65,21 +59,28 @@ public class DownloadResult {
 	}
 	
 	@GET
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)ra
 	public Response getResourcePost(
 		@QueryParam("randomid") String randomid,
+		@QueryParam("filename") String filename,
 		@Context HttpHeaders httpHeaders,
 		@Context HttpServletRequest httpServletRequest)
 	{
+
+
 		if (randomid == null) {
 			return Response.status(400)
 				.entity(new ErrorBean(400, "Invalid download URL!")).build();
-		}		
-		
+		}
+
+
 		try {
 			ResultBean result = DBOperations.getInstance().getResult(randomid);
+
 			logger.info("Result with " + randomid + " is being downloaded.");
 			
 			// check if result expires
+
 			long currentT = new java.util.Date().getTime();
 			long startT = result.getStartdate().getTime();
 			long span = Configuration.getInstance().getLong(
@@ -88,12 +89,13 @@ public class DownloadResult {
 				throw new ResultExpireException(randomid + " expires!");			
 
 
-				writeFile(randomid, fetchData(randomid),"default");
+			writeFile(randomid, fetchData(randomid),"default");
 
 
-			return Response.ok(new ResultOutputStream(result.getInputstream())).
-				header("Content-Type", "application/zip").
-				header("Content-Disposition", "filename=\"result.zip\"").build();
+			return Response.status(200).entity(new ResultOutputStream(result.getInputstream())).build();
+
+			//	header("Content-Type", "application/zip").
+			//	header("Content-Disposition", String.format("filename=\"%s.zip\"", filename)).build();
 
 
 		} catch (NoItemIsFoundInDBException e) {
@@ -113,7 +115,6 @@ public class DownloadResult {
 	public String fetchData(String resultid)
 			throws java.text.ParseException, SQLException, NoItemIsFoundInDBException, IOException
 	{
-		//   String sql = "select datafield from results resultid = " + resultid + ";";
 
 		ResultBean result =  DBOperations.getInstance().getResult(resultid);
 
