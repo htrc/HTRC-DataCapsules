@@ -88,7 +88,7 @@ public class DownloadResult {
 				throw new ResultExpireException(randomid + " expires!");
 
 
-			writeFile(randomid, fetchData(randomid),"default");
+			writeFile(randomid, fetchData(randomid),filename);
 
 
 			return Response.status(200).entity(new ResultOutputStream(result.getInputstream())).build();
@@ -132,13 +132,11 @@ public class DownloadResult {
 		return out.toString();
 	}
 
-	public void writeFile(String resultid, String content,
-						  String destination	/*default*/)
-	{
+	public void writeFile(String resultid, String content, String filename) {
 
 
 
-		String filename = String.format("resuld", resultid, ".txt");
+		//String filename = String.format("resuld", resultid, ".txt");
 		try {
 			PrintWriter out = new PrintWriter(filename);
 			out.println(content);
