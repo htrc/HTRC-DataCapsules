@@ -59,7 +59,7 @@ public class DownloadResult {
 	}
 	
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)ra
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response getResourcePost(
 		@QueryParam("randomid") String randomid,
 		@QueryParam("filename") String filename,
@@ -80,13 +80,12 @@ public class DownloadResult {
 			logger.info("Result with " + randomid + " is being downloaded.");
 			
 			// check if result expires
-
 			long currentT = new java.util.Date().getTime();
 			long startT = result.getStartdate().getTime();
 			long span = Configuration.getInstance().getLong(
 				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
 			if (span > 0 && ((currentT-startT)/1000) > span) 
-				throw new ResultExpireException(randomid + " expires!");			
+				throw new ResultExpireException(randomid + " expires!");
 
 
 			writeFile(randomid, fetchData(randomid),"default");

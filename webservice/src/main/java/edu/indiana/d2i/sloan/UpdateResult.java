@@ -39,15 +39,21 @@ public class UpdateResult {
             @Context HttpServletRequest httpServletRequest) {
 
             if(resultid == null){
+                logger.info("result id is null!");
                 return Response.status(400).entity(new ErrorBean(400, "Resultid is null")).build();
             }
 
+            if(!status.equals("Rejected") && !status.equals("Released")){
+                logger.info("invalid status input");
+                return Response.status(400).entity(new ErrorBean(400, "Invalid status update")).build();
+            }
 
             //check whether this record has been updated yet
             //if yes (not pending), return conflict code 409
             try {
                 String currStatus = DBOperations.getInstance().getStatus(resultid);
                 if(!currStatus.equals("Pending")){
+                    logger.info(resultid+" has been "+currStatus);
                     return Response.status(409).
                             entity(new ErrorBean(409, resultid+" has been "+currStatus)).build();
                 }
@@ -82,9 +88,7 @@ public class UpdateResult {
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" \nhas been released to user \"%s\" \nemail: %s",
                             resultid, ub.getUserName(), userEmail);
-                    send_email.sendEMail("dicksone@illinois.edu", "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
-
-                    return Response.status(200).build();
+                    send_email.sendEMail(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
 
                 }else{
                     EmailUtil send_email = new EmailUtil();
@@ -97,12 +101,11 @@ public class UpdateResult {
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom user \"%s\", email: %s",
                             resultid, ub.getUserName(), userEmail);
-                    send_email.sendEMail("dicksone@illinois.edu", "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
-
-
-                    return Response.status(400).
-                            entity(new ErrorBean(400, resultid + " has been rejected")).build();
+                    send_email.sendEMail(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
+
+                //release and reject are both legal operations
+                return Response.status(200).build();
 
             } catch (SQLException e) {
                 logger.error(e.getMessage(),e);
@@ -114,11 +117,6 @@ public class UpdateResult {
                         entity(String.format("No vmid is found for result %s", resultid)).build();
             }
 
-
-
-            //
-            //
-            //
     }
 
 }

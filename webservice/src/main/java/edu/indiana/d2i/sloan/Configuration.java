@@ -143,6 +143,8 @@ public final class Configuration {
 		public static final String RESULT_EXPIRE_IN_SECOND = "result.expire.sec";
 		public static final String RESULT_HUMAN_REVIEW = "result.review.human";
 		public static final String RESULT_HUMAN_REVIEW_EMAIL = "result.review.email";
+
+
 	}
 	
 	public static synchronized Configuration getInstance() {
