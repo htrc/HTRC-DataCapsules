@@ -101,7 +101,9 @@ public class UpdateResult {
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom user \"%s\", email: %s",
                             resultid, ub.getUserName(), userEmail);
-                    send_email.sendEMail(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
+                    String reviewer_email = Configuration.getInstance().
+                            getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
+                    send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
 
                 //release and reject are both legal operations
