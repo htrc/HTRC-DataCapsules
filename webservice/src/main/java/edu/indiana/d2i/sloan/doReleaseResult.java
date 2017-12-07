@@ -88,7 +88,7 @@ public class doReleaseResult {
     //@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     //@Produces(MediaType.APPLICATION_JSON)
 
-public Response getResourcePost(@FormParam("resultId") String resultid,
+public Response releaseResult(@FormParam("resultId") String resultid,
                                 @Context HttpHeaders httpHeaders,
                                 @Context HttpServletRequest httpServletRequest) {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);

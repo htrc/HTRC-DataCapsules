@@ -32,7 +32,7 @@ public class UpdateResult {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(
+    public Response updateResult(
             @FormParam("resultid") String resultid,
             @FormParam("status") String status,
             @Context HttpHeaders httpHeaders,
@@ -70,7 +70,8 @@ public class UpdateResult {
                 String vmid = DBOperations.getInstance().getVMIDWithResultid(resultid);
                 UserBean ub = DBOperations.getInstance().getUserWithVmid(vmid);
                 String userEmail = ub.getUserEmail();
-
+                String reviewer_email = Configuration.getInstance().
+                        getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
 
                 DBOperations.getInstance().updateResult(resultid, status);
 
@@ -79,7 +80,9 @@ public class UpdateResult {
                     EmailUtil send_email = new EmailUtil();
 
                     //constructor fetch properites automatically
-                    String download_addr = String.format(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX, resultid);
+                    String download_url = Configuration.getInstance().
+                            getString(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX);
+                    String download_addr = String.format(download_url, resultid);
 
                     //construct email content for user
                     String contentUser = String.format("Please download result from the following URL: \n", download_addr);
@@ -88,7 +91,7 @@ public class UpdateResult {
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" \nhas been released to user \"%s\" \nemail: %s",
                             resultid, ub.getUserName(), userEmail);
-                    send_email.sendEMail(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
+                    send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
 
                 }else{
                     EmailUtil send_email = new EmailUtil();
@@ -101,8 +104,6 @@ public class UpdateResult {
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom user \"%s\", email: %s",
                             resultid, ub.getUserName(), userEmail);
-                    String reviewer_email = Configuration.getInstance().
-                            getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
 

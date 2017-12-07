@@ -29,7 +29,7 @@ public class ShowReviewData {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
 
-    public Response getResourcePost(@Context HttpHeaders httpHeaders,
+    public Response showReviewData(@Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException {
         try {
 

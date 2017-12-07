@@ -34,7 +34,7 @@ public class ViewComment {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(@QueryParam("resultid") String resultid,
+    public Response viewComment(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);

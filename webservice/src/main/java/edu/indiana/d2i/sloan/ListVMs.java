@@ -25,7 +25,7 @@ public class ListVMs {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(@Context HttpHeaders httpHeaders,
+    public Response listVMs(@Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) {
         String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 

@@ -37,7 +37,7 @@ public class ShowReleased {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
 
-    public Response getResourcePost(@Context HttpHeaders httpHeaders,
+    public Response showReleased(@Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException {
 
         try {

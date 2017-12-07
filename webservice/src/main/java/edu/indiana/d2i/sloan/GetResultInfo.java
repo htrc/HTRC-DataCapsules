@@ -35,7 +35,7 @@ public class GetResultInfo{
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(@QueryParam("resultid") String resultid,
+    public Response getResultInfo(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
 

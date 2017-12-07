@@ -41,7 +41,7 @@ public class ListImage {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(@Context HttpHeaders httpHeaders,
+	public Response listImages(@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 

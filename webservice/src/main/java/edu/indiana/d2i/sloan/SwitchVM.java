@@ -45,7 +45,7 @@ public class SwitchVM {
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(
+	public Response switchVM(
 			@FormParam("vmid") String vmid,
 			@FormParam("mode") String mode, 
 			@Context HttpHeaders httpHeaders,

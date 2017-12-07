@@ -30,7 +30,7 @@ public class ShowUnreleased {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
 
-    public Response getResourcePost(@Context HttpHeaders httpHeaders,
+    public Response showUnreleased(@Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException {
 
         try {

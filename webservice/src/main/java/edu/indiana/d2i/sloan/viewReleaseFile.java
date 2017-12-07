@@ -35,7 +35,7 @@ public class viewReleaseFile {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(@QueryParam("resultid") String resultid,
+    public Response viewReleasedFile(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
                                     @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
 

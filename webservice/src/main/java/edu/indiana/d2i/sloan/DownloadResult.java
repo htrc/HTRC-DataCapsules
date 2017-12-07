@@ -60,7 +60,7 @@ public class DownloadResult {
 	
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response getResourcePost(
+	public Response downloadResult(
 		@QueryParam("randomid") String randomid,
 		@QueryParam("filename") String filename,
 		@Context HttpHeaders httpHeaders,
@@ -73,6 +73,9 @@ public class DownloadResult {
 				.entity(new ErrorBean(400, "Invalid download URL!")).build();
 		}
 
+		if (filename==null || filename.length()==0){
+			filename = String.format("resuld", randomid, ".txt");
+		}
 
 		try {
 			ResultBean result = DBOperations.getInstance().getResult(randomid);
@@ -86,6 +89,8 @@ public class DownloadResult {
 				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
 			if (span > 0 && ((currentT-startT)/1000) > span) 
 				throw new ResultExpireException(randomid + " expires!");
+
+
 
 
 			writeFile(randomid, fetchData(randomid),filename);
@@ -134,9 +139,6 @@ public class DownloadResult {
 
 	public void writeFile(String resultid, String content, String filename) {
 
-
-
-		//String filename = String.format("resuld", resultid, ".txt");
 		try {
 			PrintWriter out = new PrintWriter(filename);
 			out.println(content);

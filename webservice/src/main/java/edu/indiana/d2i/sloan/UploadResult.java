@@ -48,7 +48,7 @@ public class UploadResult {
 	
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response getResourcePost(
+	public Response uploadResult(
 		@FormDataParam("vmid") String vmid, @FormDataParam("file") InputStream input,
 		@Context HttpHeaders httpHeaders,
 		@Context HttpServletRequest httpServletRequest) {
