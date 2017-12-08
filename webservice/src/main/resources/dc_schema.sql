@@ -115,8 +115,11 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`results` (
   `resultid` VARCHAR(128) NOT NULL,
   `datafield` LONGBLOB NULL,
   `createtime` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `notified` ENUM('YES', 'NO', 'REJECTED') NOT NULL DEFAULT 'NO',
+  `notified` ENUM('YES', 'NO') NOT NULL DEFAULT 'NO',
   `notifiedtime` TIMESTAMP NULL,
+  `reviewer` VARCHAR(128),
+  `status` ENUM('Released', 'Rejected', 'Pending') DEFAULT 'Pending',
+  `comment` MEDIUMTEXT NULL,
   PRIMARY KEY (`vmid`, `resultid`),
   CONSTRAINT `fk_vms`
     FOREIGN KEY (`vmid`)

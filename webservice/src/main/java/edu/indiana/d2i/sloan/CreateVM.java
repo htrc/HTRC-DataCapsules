@@ -51,7 +51,7 @@ public class CreateVM {
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response getResourcePost(
+	public Response createVM(
 			@FormParam("imagename") String imageName,
 			@FormParam("loginusername") String loginusername,
 			@FormParam("loginpassword") String loginpassword,

@@ -32,7 +32,7 @@ public class GroupOperation {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getResourcePost(@FormParam("vmids") String vmids,
+    public Response groupOperation(@FormParam("vmids") String vmids,
                                     @FormParam("usernames") String usernames,
                                     @FormParam("operation") String operation,
                                     @Context HttpHeaders httpHeaders,

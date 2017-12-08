@@ -15,25 +15,22 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan.db;
 
+import edu.indiana.d2i.sloan.Configuration;
+import edu.indiana.d2i.sloan.bean.*;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMPorts;
+import edu.indiana.d2i.sloan.vm.VMState;
+import org.apache.log4j.Logger;
+
+import java.io.File;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import edu.indiana.d2i.sloan.bean.*;
-import org.apache.log4j.Logger;
-
-import edu.indiana.d2i.sloan.Configuration;
-import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.vm.VMPorts;
-import edu.indiana.d2i.sloan.vm.VMMode;
-import edu.indiana.d2i.sloan.vm.VMState;
+import java.util.zip.ZipEntry;
 
 public class DBOperations {
 	private static Logger logger = Logger.getLogger(DBOperations.class);
@@ -804,12 +801,12 @@ public class DBOperations {
 		ResultSet rs = null;
 
 		try {
-			String getResult = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME + 
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
 				" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";			
 			connection = DBConnections.getInstance().getConnection();
-			pst = connection.prepareStatement(getResult);
+			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
-			
+
 			if (rs.next()) {
 				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), 
 					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME)));
@@ -823,7 +820,315 @@ public class DBOperations {
 				connection.close();
 		}
 	}
-	
+
+	public ResultInfoBean getResultInfo(String randomid) throws SQLException, NoItemIsFoundInDBException, ParseException
+	{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
+					" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+
+			if (rs.next()) {
+				return new ResultInfoBean(rs.getString("vmid"),
+						rs.getString("resultid"),
+						rs.getString("createtime"),
+						rs.getString("notified"),
+						rs.getString("notifiedtime"),
+						rs.getString("reviewer"),
+						rs.getString("status"),
+						rs.getString("comment")
+				);
+			} else {
+				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+
+	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
+		String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + DBSchema.ResultTable.CREATE_TIME+
+				" FROM "+DBSchema.ResultTable.TABLE_NAME +  " WHERE " + DBSchema.ResultTable.RESULT_ID + " =\""+resultid+"\";";
+		logger.debug(sql);
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		ResultBean res;
+
+		Blob blob = null;
+		ZipEntry zip = null;
+		File file = null;
+		try {
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			if(rs.next()){
+				blob = rs.getBlob("datafield");
+				InputStream in = blob.getBinaryStream();
+				Date dt = rs.getDate("createtime");
+				return (new ResultBean(in, dt));
+			}else{
+				throw new NoItemIsFoundInDBException("Result of " + resultid + " can't be found in db");
+			}
+		}finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+	}
+
+	public List<ReviewInfoBean> getReviewData() throws SQLException
+	{
+
+		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
+				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID;
+		logger.debug(sql);
+
+		List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+
+			while (rs.next()) {
+				ReviewInfoBean result = new ReviewInfoBean(
+						rs.getString("vmid"),
+						rs.getString("resultid"),
+						rs.getString("notified"),
+						rs.getString("status"),
+						rs.getString("username"),
+						rs.getString("useremail"),
+						rs.getString("reviewer"),
+						rs.getString("comment"),
+						rs.getString("createtime")
+				);
+				res.add(result);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+
+	}
+
+
+    public List<ReviewInfoBean> getReleased() throws SQLException
+    {
+		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
+				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
+				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"YES\"";
+		logger.debug(sql);
+
+        List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
+
+        Connection conn = null;
+        PreparedStatement pst = null;
+        ResultSet rs = null;
+        try {
+
+            conn = DBConnections.getInstance().getConnection();
+            pst = conn.prepareStatement(sql);
+            rs = pst.executeQuery();
+            while (rs.next()) {
+                ReviewInfoBean result = new ReviewInfoBean(
+                		rs.getString("vmid"),
+                        rs.getString("resultid"),
+                        "",
+                        "",
+                        rs.getString("username"),
+						rs.getString("useremail"),
+						rs.getString("reviewer"),
+						"",
+						rs.getString("createtime")
+                );
+                res.add(result);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if (rs != null)
+                rs.close();
+            if (pst != null)
+                pst.close();
+            if (conn != null)
+                conn.close();
+        }
+
+        return res;
+
+    }
+
+
+	public List<ReviewInfoBean> getUnreleased() throws SQLException
+	{
+		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
+				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
+				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"NO\"";
+		logger.debug(sql);
+
+		List<ReviewInfoBean> res = new ArrayList<ReviewInfoBean>();
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				ReviewInfoBean result = new ReviewInfoBean(
+						rs.getString("vmid"),
+						rs.getString("resultid"),
+						"",
+						"",
+						rs.getString("username"),
+						rs.getString("useremail"),
+						rs.getString("reviewer"),
+						"",
+						rs.getString("createtime")
+				);
+				res.add(result);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+	}
+
+
+	public String getStatus(String resulitid) throws SQLException {
+		String sql = String.format("SELECT %s FROM %s WHERE %s=\"%s\";",
+				DBSchema.ResultTable.STATUS, DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.RESULT_ID, resulitid
+		);
+		logger.debug(sql);
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		String res = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				res = rs.getString("status");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+
+	}
+
+
+	public String getComment(String resultid) throws SQLException{
+		String sql =String.format("SELECT %s FROM %s WHERE %s=\"%s\";",
+				DBSchema.ResultTable.COMMENT, DBSchema.ResultTable.TABLE_NAME,
+								DBSchema.ResultTable.RESULT_ID, resultid);
+		logger.debug(sql);
+
+		Connection conn = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		String res = null;
+		try {
+
+			conn = DBConnections.getInstance().getConnection();
+			pst = conn.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				res = rs.getString("comment");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (conn != null)
+				conn.close();
+		}
+		return res;
+
+	}
+
 	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -895,7 +1200,7 @@ public class DBOperations {
 		return res;
 	}
 	
-	public void updateResultAsNotified(String resultId) throws SQLException {
+	public void updateResultAsNotified(String resultid) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -903,7 +1208,7 @@ public class DBOperations {
 			connection = DBConnections.getInstance().getConnection();
 			String updateResult = String.format(
 				"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
-				DBSchema.ResultTable.NOTIFIED, "1", DBSchema.ResultTable.RESULT_ID, "\""+ resultId + "\"");
+				DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
 			logger.debug(updateResult);
 			
 			pst = connection.prepareStatement(updateResult);			
@@ -915,6 +1220,118 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+
+	public void updateResult(String resultid, String status) throws SQLException{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		java.util.Date dateobj = new java.util.Date();
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = df.format(dateobj);
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s, %s=\"%s\", %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"",
+					DBSchema.ResultTable.STATUS, status,
+					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+
+
+	public void updateResultAsReleased(String resultid, String comment, String reviewer) throws SQLException{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		java.util.Date dateobj = new java.util.Date();
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = df.format(dateobj);
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"",
+					DBSchema.ResultTable.STATUS,"\"Released\"",
+					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
+					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.REVIEWER, "\"" + reviewer + "\"",
+					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+	public void updateResultAsRejected(String resultid, String comment, String reviewer) throws SQLException{
+		Connection connection = null;
+		PreparedStatement pst = null;
+		java.util.Date dateobj = new java.util.Date();
+		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		String currentTime = df.format(dateobj);
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.STATUS,"\"Rejected\"",
+					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
+					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
+					DBSchema.ResultTable.REVIEWER, "\"" + reviewer + "\"",
+					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+
+
+	public void updateResultTimeStamp(String resultid, java.sql.Timestamp timestamp) throws SQLException
+	{
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.CREATE_TIME, timestamp, DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	
 	public UserBean getUserWithVmid(String vmid) throws SQLException, 
 		NoItemIsFoundInDBException {
@@ -946,6 +1363,43 @@ public class DBOperations {
 				connection.close();
 		}
 	}
+
+
+	public String getVMIDWithResultid(String resultid)
+			throws SQLException, NoItemIsFoundInDBException
+	{
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+
+			String query = String.format(
+					"SELECT %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.VmTable.VM_ID,
+					DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.RESULT_ID, resultid);
+
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+
+			if (result.next()) {
+				String res = result.getString(DBSchema.ResultTable.VM_ID);
+				return res;
+			} else {
+				throw new NoItemIsFoundInDBException(resultid + " is not associated with any user!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	
 	public void close() {
 		DBConnections.getInstance().close();

@@ -17,3 +17,14 @@ webservice/sloan-ws.ipr
 webservice/sloan-ws.iws
 
 webservice/.idea/
+
+webservice/src/main/resources/sites.xml
+
+webservice/src/main/webapp
+.idea/
+sloan-ws.iml
+
+/webservice/src/main/resources/default.xml
+/webservice/src/main/resources/sites.xml
+/out/
+/sloan-ws-1.2-SNAPSHOT/
