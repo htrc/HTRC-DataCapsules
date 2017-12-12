@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2014 The Trustees of Indiana University
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,14 +39,14 @@ import java.sql.SQLException;
 @Path("/download")
 public class DownloadResult {
 	private static Logger logger = Logger.getLogger(DownloadResult.class);
-	
+
 	private class ResultOutputStream implements StreamingOutput {
 		private final InputStream input;
-		
+
 		public ResultOutputStream(InputStream input) {
 			this.input = input;
 		}
-		
+
 		@Override
 		public void write(OutputStream output) throws IOException, WebApplicationException
 		{
@@ -57,38 +57,44 @@ public class DownloadResult {
 			}
 		}
 	}
-	
+
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
 	public Response downloadResult(
-		@QueryParam("randomid") String randomid,
-		@QueryParam("filename") String filename,
-		@Context HttpHeaders httpHeaders,
-		@Context HttpServletRequest httpServletRequest)
+			@QueryParam("randomid") String randomid,
+			@QueryParam("filename") String filename,
+			@Context HttpHeaders httpHeaders,
+			@Context HttpServletRequest httpServletRequest)
 	{
 
 
 		if (randomid == null) {
 			return Response.status(400)
-				.entity(new ErrorBean(400, "Invalid download URL!")).build();
+					.entity(new ErrorBean(400, "Invalid download URL!")).build();
 		}
 
 		if (filename==null || filename.length()==0){
-			filename = String.format("resuld", randomid, ".txt");
+			filename = String.format("result-", randomid, ".txt");
 		}
 
 		try {
 			ResultBean result = DBOperations.getInstance().getResult(randomid);
 
+			String currStatus = DBOperations.getInstance().getStatus(randomid);
+			if (currStatus.equals("Pending") || currStatus.equals("Rejected")) {
+				return Response.status(400)
+						.entity(new ErrorBean(400, "Cannot download results! Result with id " + randomid + " is " + currStatus)).build();
+			}
+
 			logger.info("Result with " + randomid + " is being downloaded.");
-			
+
 			// check if result expires
 			long currentT = new java.util.Date().getTime();
 			long startT = result.getStartdate().getTime();
 			long span = Configuration.getInstance().getLong(
-				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
-			if (span > 0 && ((currentT-startT)/1000) > span) 
-				throw new ResultExpireException(randomid + " expires!");
+					Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
+			if (span > 0 && ((currentT-startT)/1000) > span)
+				throw new ResultExpireException(randomid + " has been expired!");
 
 
 
