@@ -808,8 +808,10 @@ public class DBOperations {
 			rs = pst.executeQuery();
 
 			if (rs.next()) {
-				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), 
-					DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME)));
+				java.util.Date startDate = rs.getString(DBSchema.ResultTable.NOTIFIED_TIME) != null
+						? DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
+						: null;
+				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), startDate);
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
 			}
@@ -1063,7 +1065,7 @@ public class DBOperations {
 	}
 
 
-	public String getStatus(String resulitid) throws SQLException {
+	public String getStatus(String resulitid) throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT %s FROM %s WHERE %s=\"%s\";",
 				DBSchema.ResultTable.STATUS, DBSchema.ResultTable.TABLE_NAME,
 					DBSchema.ResultTable.RESULT_ID, resulitid
@@ -1079,8 +1081,10 @@ public class DBOperations {
 			conn = DBConnections.getInstance().getConnection();
 			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
-			while (rs.next()) {
-				res = rs.getString("status");
+			if (rs.next()) {
+				res = rs.getString(DBSchema.ResultTable.STATUS);
+			} else {
+				throw new NoItemIsFoundInDBException("Result of " + resulitid + " can't be found in db!");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

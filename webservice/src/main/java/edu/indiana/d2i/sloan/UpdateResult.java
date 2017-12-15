@@ -39,12 +39,12 @@ public class UpdateResult {
             @Context HttpServletRequest httpServletRequest) {
 
             if(resultid == null){
-                logger.info("result id is null!");
+                logger.error("result id is null!");
                 return Response.status(400).entity(new ErrorBean(400, "Resultid is null")).build();
             }
 
             if(!status.equals("Rejected") && !status.equals("Released")){
-                logger.info("invalid status input");
+                logger.error("invalid status input");
                 return Response.status(400).entity(new ErrorBean(400, "Invalid status update")).build();
             }
 
@@ -53,18 +53,19 @@ public class UpdateResult {
             try {
                 String currStatus = DBOperations.getInstance().getStatus(resultid);
                 if(!currStatus.equals("Pending")){
-                    logger.info(resultid+" has been "+currStatus);
+                    logger.error(resultid + " has been already " + currStatus);
                     return Response.status(409).
-                            entity(new ErrorBean(409, resultid+" has been "+currStatus)).build();
+                            entity(new ErrorBean(409, resultid+" has been already "+currStatus)).build();
                 }
+            } catch (NoItemIsFoundInDBException e) {
+                logger.error("No Result with id " + resultid + " is found!", e);
+                return Response.status(404).entity("No Result with id " + resultid + " is found!").build();
             } catch (SQLException e){
                 logger.error(e.getMessage(),e);
                 return Response.status(500).entity(new ErrorBean(500,e.getMessage())).build();
             }
 
-
-            System.out.println(resultid);
-            try {
+         try {
                 //result table is not directly linked to user table
                 //need vm to query for username
                 String vmid = DBOperations.getInstance().getVMIDWithResultid(resultid);
@@ -74,6 +75,7 @@ public class UpdateResult {
                         getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
 
                 DBOperations.getInstance().updateResult(resultid, status);
+                logger.info("Updated results table - ResultID : " + resultid + " status : " + status);
 
                 //Do not send email if rejected
                 if(!status.equals("Rejected")) {
@@ -82,11 +84,12 @@ public class UpdateResult {
                     //constructor fetch properites automatically
                     String download_url = Configuration.getInstance().
                             getString(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX);
-                    String download_addr = String.format(download_url, resultid);
+                    String download_addr = download_url +  resultid;
 
                     //construct email content for user
-                    String contentUser = String.format("Please download result from the following URL: \n", download_addr);
+                    String contentUser = String.format("Please download result from the following URL: %s \n", download_addr);
                     send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
+                    logger.info("Download result email sent to user - download URL : " + download_addr);
 
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" \nhas been released to user \"%s\" \nemail: %s",
@@ -108,16 +111,17 @@ public class UpdateResult {
                 }
 
                 //release and reject are both legal operations
-                return Response.status(200).build();
+                return Response.status(200).entity("Result " + status + " successfully!").build();
 
             } catch (SQLException e) {
                 logger.error(e.getMessage(),e);
                 return Response.status(500).
-                        entity(new ErrorBean(500,e.getMessage())).build();
+                        entity(new ErrorBean(500,"Internal error - " + e.getMessage())).build();
             } catch (NoItemIsFoundInDBException e) {
-                logger.error("Invalid " + resultid + " attempts", e);
-                return Response.status(404).
-                        entity(String.format("No vmid is found for result %s", resultid)).build();
+                logger.error("No Result with id " + resultid + " is found!", e);
+                return Response.status(404)
+                        .entity(new ErrorBean(404,"No Result with id " + resultid + " is found!"))
+                        .build();
             }
 
     }

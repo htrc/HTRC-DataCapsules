@@ -16,104 +16,60 @@
 
 package edu.indiana.d2i.sloan;
 
-import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.*;
-import javax.ws.rs.core.*;
-import java.io.*;
-import java.sql.SQLException;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/retrieveresultfile")
 public class RetrieveResultFile {
 	private static Logger logger = Logger.getLogger(RetrieveResultFile.class);
 
-	private class ResultOutputStream implements StreamingOutput {
-		private final InputStream input;
-
-		public ResultOutputStream(InputStream input) {
-			this.input = input;
-		}
-
-		@Override
-		public void write(OutputStream output) throws IOException, WebApplicationException
-		{
-			byte[] buf = new byte[1024];
-			int length = 0;
-			while ((length = input.read(buf)) != -1) {
-				output.write(buf, 0, length);
-			}
-		}
-	}
-
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)
-	public Response downloadResult(
+	public Response retrieveResultFile(
 			@QueryParam("randomid") String randomid,
 			@QueryParam("filename") String filename,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest)
 	{
+
 		if (randomid == null) {
-			return Response.status(400)
-					.entity(new ErrorBean(400, "Invalid download URL!")).build();
+			logger.error("Invalid download URL! randomid is null");
+			return Response.status(400).entity("Invalid download URL!").build();
 		}
 
 		if (filename==null || filename.length()==0){
-			filename = String.format("result-", randomid, ".txt");
+			filename = "result-" + randomid;
 		}
 
 		try {
-			ResultBean result = DBOperations.getInstance().getResult(randomid);
 
-			writeFile(fetchData(randomid),filename);
-			return Response.status(200).entity(new ResultOutputStream(result.getInputstream())).build();
+			ResultBean result = DBOperations.getInstance().getResult(randomid);
+			logger.info("Result with " + randomid + " is being downloaded.");
+
+			return Response.ok(IOUtils.toByteArray(result.getInputstream()))
+					.type("application/zip")
+					.header("Content-Disposition", "attachment; filename=\"" + filename + ".zip\"")
+					.build();
 
 		} catch (NoItemIsFoundInDBException e) {
-			logger.error("Invalid " + randomid + " attempts", e);
-			return Response.status(404).entity("Invalid download URL!").build();
+			logger.error("No Result with id " + randomid + " is found!", e);
+			return Response.status(404).entity("No Result with id " + randomid + " is found!").build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return Response.status(500).entity("Internal error.").build();
+			return Response.status(500).entity("Internal error - " + e.getMessage()).build();
 		}
 	}
-
-	//fetch content from db to write into output file
-	public String fetchData(String resultid)
-			throws java.text.ParseException, SQLException, NoItemIsFoundInDBException, IOException
-	{
-
-		ResultBean result =  DBOperations.getInstance().getResult(resultid);
-
-		InputStream dataField = result.getInputstream();
-		char[] buffer = new char[1024];
-
-		StringBuilder out = new StringBuilder();
-		Reader in = new InputStreamReader(dataField, "UTF-8");
-		int l= in.read(buffer,0,buffer.length);
-		while(l >= 0){
-			out.append(buffer,0,l);
-			l=in.read(buffer, 0, l);
-		}
-
-		//Output target path?
-		return out.toString();
-	}
-
-	public void writeFile(String content, String filename) {
-
-		try {
-			PrintWriter out = new PrintWriter(filename);
-			out.println(content);
-
-		} catch (FileNotFoundException e) {
-			logger.error(e.getMessage(),e);
-		}
-	}
-
 }
