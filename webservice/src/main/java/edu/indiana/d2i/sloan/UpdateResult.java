@@ -87,7 +87,10 @@ public class UpdateResult {
                     String download_addr = download_url +  resultid;
 
                     //construct email content for user
-                    String contentUser = String.format("Please download result from the following URL: %s \n", download_addr);
+                    String contentUser = "Dear " + ub.getUserName() + ",\n\n" +
+                            "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
+                            download_addr + "\n\n" +
+                            "Please note this link is active for 24 hours.";
                     send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
                     logger.info("Download result email sent to user - download URL : " + download_addr);
 
