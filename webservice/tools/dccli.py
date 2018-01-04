@@ -145,7 +145,7 @@ def show_unrelease():
     headers = {'Content-Type': 'application/json'}
 
     # GET the request
-    conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
+    conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/showunreleased')
     response = conn.getresponse()
 
@@ -157,7 +157,7 @@ def show_unrelease():
 def retrieve_file(result_id):
 
     # GET the request
-    conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
+    conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/retrieveresultfile?randomid=' + result_id)
     response = conn.getresponse()
 
@@ -173,7 +173,7 @@ def retrieve_file(result_id):
 def download_file(result_id):
 
     # GET the request
-    conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
+    conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/download?randomid=' + result_id)
     response = conn.getresponse()
 
@@ -191,7 +191,7 @@ def update_result(result_id, status):
     params = urllib.urlencode({'resultid': result_id, 'status': status})
 
     # POST the request
-    conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
+    conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/updateresult', params)
     response = conn.getresponse()
 
