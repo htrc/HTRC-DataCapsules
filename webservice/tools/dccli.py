@@ -10,7 +10,7 @@ import httplib
 
 # DC
 DC_API = 'localhost'
-PORT = '8080'
+PORT = '80'
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -52,7 +52,7 @@ def delete_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/deletevm', params, headers)
+    conn.request("POST", '/sloan-ws/deletevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -69,7 +69,7 @@ def stop_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/stopvm', params, headers)
+    conn.request("POST", '/sloan-ws/stopvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -86,7 +86,7 @@ def start_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/launchvm', params, headers)
+    conn.request("POST", '/sloan-ws/launchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -103,7 +103,7 @@ def switch_vm(vmid, username, useremail, mode):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/switchvm', params, headers)
+    conn.request("POST", '/sloan-ws/switchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -120,7 +120,7 @@ def create_vm(username, useremail, imagename, loginusername, loginpassword, memo
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws-1.2-SNAPSHOT/createvm', params, headers)
+    conn.request("POST", '/sloan-ws/createvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -132,8 +132,8 @@ def show_release():
     headers = {'Content-Type': 'application/json'}
 
     # GET the request
-    conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
-    conn.request("GET", "/showreleased")
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/showreleased')
     response = conn.getresponse()
 
     data = response.read()
@@ -146,7 +146,7 @@ def show_unrelease():
 
     # GET the request
     conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
-    conn.request("GET", "/showunreleased")
+    conn.request("GET", '/sloan-ws/showunreleased')
     response = conn.getresponse()
 
     data = response.read()
@@ -158,7 +158,7 @@ def retrieve_file(result_id):
 
     # GET the request
     conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
-    conn.request("GET", "/retrieveresultfile?randomid=" + result_id)
+    conn.request("GET", '/sloan-ws/retrieveresultfile?randomid=' + result_id)
     response = conn.getresponse()
 
     if(response.status != 200):
@@ -174,7 +174,7 @@ def download_file(result_id):
 
     # GET the request
     conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
-    conn.request("GET", "/download?randomid=" + result_id)
+    conn.request("GET", '/sloan-ws/download?randomid=' + result_id)
     response = conn.getresponse()
 
     if(response.status != 200):
@@ -192,7 +192,7 @@ def update_result(result_id, status):
 
     # POST the request
     conn = httplib.HTTPSConnection('dcapi.devstack.htrc.indiana.edu')
-    conn.request("POST", "/updateresult", params)
+    conn.request("POST", '/sloan-ws/updateresult', params)
     response = conn.getresponse()
 
     print response.read()
