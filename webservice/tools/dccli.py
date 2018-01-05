@@ -154,7 +154,7 @@ def show_unrelease():
     print json.dumps(parsed, indent=4, sort_keys=True)
 
 
-def retrieve_file(result_id):
+def retrieve_file(result_id, out_file):
 
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
@@ -165,12 +165,12 @@ def retrieve_file(result_id):
         print response.read()
     else:
         data = response.read()
-        f = open('results.zip','w')
+        f = open(out_file,'w')
         f.write(data)
         f.close()
-        print 'Result written to results.zip file...'
+        print 'Result written to '+ out_file +' file...'
 
-def download_file(result_id):
+def download_file(result_id, out_file):
 
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
@@ -181,10 +181,10 @@ def download_file(result_id):
         print response.read()
     else:
         data = response.read()
-        f = open('results.zip','w')
+        f = open(out_file,'w')
         f.write(data)
         f.close()
-        print 'Result downloaded to results.zip file...'
+        print 'Result downloaded to '+ out_file +' file...'
 
 def update_result(result_id, status):
 
@@ -237,9 +237,11 @@ if __name__ == '__main__':
 
     retrievefile = subparsers.add_parser('retrievefile', description='Get result file')
     retrievefile.add_argument('rid')
+    retrievefile.add_argument('filename')
 
     downloadfile = subparsers.add_parser('downloadfile', description='Download result file')
     downloadfile.add_argument('rid')
+    downloadfile.add_argument('filename')
 
     releaseresult = subparsers.add_parser('releaseresult', description='Release the result')
     releaseresult.add_argument('rid')
@@ -291,14 +293,14 @@ if __name__ == '__main__':
         confirmation = query_yes_no('Are you sure you want to retrieve file with id ' + parsed.rid )
         if confirmation:
             print 'Retrieving file for result ' + parsed.rid + '....'
-            retrieve_file(parsed.rid)
+            retrieve_file(parsed.rid, parsed.filename)
 
     if parsed.sub_commands == 'downloadfile':
     
         confirmation = query_yes_no('Are you sure you want to download file with id ' + parsed.rid )
         if confirmation:
             print 'Download file for result ' + parsed.rid + '....'
-            download_file(parsed.rid)
+            download_file(parsed.rid, parsed.filename)
 
     if parsed.sub_commands == 'releaseresult':
     
