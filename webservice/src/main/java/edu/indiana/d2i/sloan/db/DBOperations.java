@@ -1404,7 +1404,45 @@ public class DBOperations {
 		}
 	}
 
-	
+	public String getUserPubKey(String userName) throws SQLException,
+			NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"SELECT %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.UserTable.PUB_KEY, DBSchema.UserTable.TABLE_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					userName);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return result.getNString(DBSchema.UserTable.PUB_KEY);
+			} else {
+				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public void updateUserPubKey(String userName, String sshKey) throws SQLException {
+		List<String> updates = new ArrayList<String>();
+		String updateusersql = String.format("UPDATE "
+				+ DBSchema.UserTable.TABLE_NAME + " SET "
+				+ DBSchema.UserTable.PUB_KEY + "=\"%s\" WHERE "
+				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", sshKey, userName);
+		updates.add(updateusersql);
+		executeTransaction(updates);
+	}
+
 	public void close() {
 		DBConnections.getInstance().close();
 	}

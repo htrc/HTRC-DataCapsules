@@ -91,6 +91,9 @@ public class DBSchema {
 		
 		/* currently all users are of the same type */
 		public static String USER_TYPE = "usertype";
+
+		/* SSH public key of the user */
+		public static String PUB_KEY = "pub_key";
 	}
 
 	public static class ImageTable {
