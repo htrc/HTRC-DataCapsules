@@ -61,6 +61,10 @@
 		<name>cmd.delete.vm</name>
 		<value>DB_HOST_SCRIPT_DIR/deletevm.sh</value>
 	</property>
+	<property>
+		<name>cmd.update.key</name>
+		<value>DB_HOST_SCRIPT_DIR/updatekey.sh</value>
+	</property>
 
 	<!-- fire wall policy -->
 	<property>

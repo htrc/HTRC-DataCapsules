@@ -23,6 +23,8 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
+import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 import org.apache.log4j.Logger;
 
@@ -65,11 +67,19 @@ public class UpdateUserKey {
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-			DBOperations.getInstance().updateUserPubKey(userName, pubkey);
 
-			logger.info("Public key of user '" + userName + "' was updated successfully!");
+			logger.info("User " + userName + " tries to update the public key");
 
+			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
+			vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
+			for (VmInfoBean vminfo : vmInfoList) {
+				// update the public key of VMs that are in Running state
+				if (vminfo.getVmstate() == VMState.RUNNING) {
+					HypervisorProxy.getInstance().addCommand(
+							new UpdatePublicKeyCommand(vminfo, userName, operator, pubkey));
+				}
+			}
 
 			return Response.status(200).build();
 		} catch (Exception e) {

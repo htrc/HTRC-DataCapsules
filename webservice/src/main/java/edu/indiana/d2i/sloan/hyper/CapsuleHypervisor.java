@@ -352,4 +352,37 @@ class CapsuleHypervisor implements IHypervisor {
 				sshProxy.close();
 		}
 	}
+
+	@Override
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+		logger.debug("update public key of vm: " + vminfo);
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--pubkey", pubKey).build();
+
+			Commands updateKeyCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.UPDATE_KEY,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
+					updateKeyCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
 }

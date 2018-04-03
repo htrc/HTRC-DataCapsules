@@ -68,4 +68,9 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
+	@Override
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+		return genFakeResponse(VMState.SHUTDOWN);
+	}
+
 }

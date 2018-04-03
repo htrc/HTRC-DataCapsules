@@ -29,4 +29,6 @@ interface IHypervisor {
 	public HypervisorResponse stopVM(VmInfoBean vminfo) throws Exception;
 
 	public HypervisorResponse delete(VmInfoBean vminfo) throws Exception;
+
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception;
 }

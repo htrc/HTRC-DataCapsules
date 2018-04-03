@@ -118,4 +118,9 @@ public class RandomFailHypervisor implements IHypervisor {
 		return simulateRandProcess();
 	}
 
+	@Override
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+		return simulateRandProcess();
+	}
+
 }
