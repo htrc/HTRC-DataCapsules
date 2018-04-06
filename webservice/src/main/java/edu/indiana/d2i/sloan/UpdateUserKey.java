@@ -24,6 +24,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 import org.apache.log4j.Logger;
@@ -74,8 +75,8 @@ public class UpdateUserKey {
 			vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
 			for (VmInfoBean vminfo : vmInfoList) {
-				// update the public key of VMs that are in Running state
-				if (vminfo.getVmstate() == VMState.RUNNING) {
+				// update the public key of VMs that are in Running state and maintenance mode
+				if (vminfo.getVmstate() == VMState.RUNNING && vminfo.getVmmode() == VMMode.MAINTENANCE) {
 					HypervisorProxy.getInstance().addCommand(
 							new UpdatePublicKeyCommand(vminfo, userName, operator, pubkey));
 				}

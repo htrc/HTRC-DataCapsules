@@ -90,6 +90,10 @@ public class SwitchVM {
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			String pubkey = "";
+			if(DBOperations.getInstance().getUserPubKey(userName) != null ) {
+				pubkey = DBOperations.getInstance().getUserPubKey(userName);
+			}
 
 			VmInfoBean vmInfo;
 			vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
@@ -134,7 +138,7 @@ public class SwitchVM {
 			vmInfo.setPolicypath(policypath);
 
 			HypervisorProxy.getInstance().addCommand(
-					new SwitchVMCommand(vmInfo, operator));
+					new SwitchVMCommand(vmInfo, operator, pubkey));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

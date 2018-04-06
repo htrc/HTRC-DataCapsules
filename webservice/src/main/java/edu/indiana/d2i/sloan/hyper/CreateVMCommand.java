@@ -30,15 +30,17 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 public class CreateVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(CreateVMCommand.class);
 	private String operator;
+	private final String publicKey;
 
-	public CreateVMCommand(VmInfoBean vminfo, String operator) throws Exception {
+	public CreateVMCommand(VmInfoBean vminfo, String operator, String publicKey) throws Exception {
 		super(vminfo);
 		this.operator = operator;
+		this.publicKey = publicKey;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.createVM(vminfo);
+		HypervisorResponse resp = hypervisor.createVM(vminfo, publicKey);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
