@@ -142,7 +142,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
 		logger.debug("createvm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -162,7 +162,6 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--loginid", String.valueOf(vminfo.getVNCloginId()))
 					.addArgument("--loginpwd", String.valueOf(vminfo.getVNCloginPwd()))
 					.addArgument("--volsize", String.valueOf(vminfo.getVolumeSizeInGB()) + "G")
-					.addArgument("--pubkey", "\"" + pubKey + "\"")
 					.build();
 
 			Commands createVMCmd = new Commands(
@@ -184,7 +183,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
 		logger.debug("launch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -201,7 +200,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString().toLowerCase())
-					.addArgument("--policy", vminfo.getPolicypath()).build();
+					.addArgument("--policy", vminfo.getPolicypath())
+					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands launchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils

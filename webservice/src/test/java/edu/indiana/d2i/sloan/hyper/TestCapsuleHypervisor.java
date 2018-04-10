@@ -139,7 +139,7 @@ public class TestCapsuleHypervisor {
 				10, VMMode.NOT_DEFINED, VMState.LAUNCH_PENDING, "ubuntu", 
 				"password", "test-image", "ubuntu", "password", "test-policy", VMMode.MAINTENANCE);
 			
-			HypervisorResponse response = hypervisor.createVM(vminfo, "");
+			HypervisorResponse response = hypervisor.createVM(vminfo);
 			Assert.assertEquals(0, response.getResponseCode());
 			Assert.assertEquals(SUCCESSFUL_STATE, response.getVmState());			
 			Assert.assertEquals(SUCCESSFUL_DESCRIPTION, response.getDescription());

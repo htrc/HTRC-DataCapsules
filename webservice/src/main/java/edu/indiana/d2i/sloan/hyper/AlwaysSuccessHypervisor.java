@@ -39,12 +39,12 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 	
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
 		return genFakeResponse(VMState.RUNNING);
 	}
 

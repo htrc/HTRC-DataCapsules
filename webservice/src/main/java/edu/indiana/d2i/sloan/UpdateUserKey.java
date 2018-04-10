@@ -71,6 +71,9 @@ public class UpdateUserKey {
 
 			logger.info("User " + userName + " tries to update the public key");
 
+			DBOperations.getInstance().updateUserPubKey(userName, pubkey);
+			logger.info("Public key of user '" + userName + "' was updated in database successfully!");
+
 			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
 			vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 

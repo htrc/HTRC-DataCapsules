@@ -56,8 +56,8 @@ public class UpdatePublicKeyCommand extends HypervisorCommand {
 				new Callable<Void>() {
 					@Override
 					public Void call() throws Exception {
-						DBOperations.getInstance().updateUserPubKey(username, publicKey);
-						logger.info("Public key of user '" + username + "' was updated successfully!");
+						logger.info("Public key of user '" + username + "' was updated in data capsule "
+								+ vminfo.getVmid() + " successfully!");
 						return null;
 					}
 				},  1000, 3,
