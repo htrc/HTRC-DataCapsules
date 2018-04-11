@@ -25,9 +25,11 @@ import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.sql.*;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -1405,7 +1407,7 @@ public class DBOperations {
 	}
 
 	public String getUserPubKey(String userName) throws SQLException,
-			NoItemIsFoundInDBException {
+			NoItemIsFoundInDBException, UnsupportedEncodingException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -1420,7 +1422,13 @@ public class DBOperations {
 
 			ResultSet result = pst.executeQuery();
 			if (result.next()) {
-				return result.getNString(DBSchema.UserTable.PUB_KEY);
+				String encodedKey = result.getNString(DBSchema.UserTable.PUB_KEY);
+				if(encodedKey != null ) {
+					byte[] asBytes = Base64.getDecoder().decode(encodedKey);
+					return new String(asBytes, "utf-8");
+				} else {
+					return null;
+				}
 			} else {
 				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
 			}
@@ -1433,12 +1441,13 @@ public class DBOperations {
 		}
 	}
 
-	public void updateUserPubKey(String userName, String sshKey) throws SQLException {
+	public void updateUserPubKey(String userName, String sshKey) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
+		String encodedKey = Base64.getEncoder().encodeToString(sshKey.getBytes("utf-8"));
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.PUB_KEY + "=\"%s\" WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", sshKey, userName);
+				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", encodedKey, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
