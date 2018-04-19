@@ -1,0 +1,11 @@
+#!/bin/bash -e
+
+# fix-securevol-permissions:
+# Make EXT4 formatted secure volume writable for dcuser
+udisksctl mount -b /dev/vda
+chown -R dcuser:dcuser /media/secure_volume
+
+# fix-release_spool permissions:
+# Make EXT4 formatted release_spool writable for dcuser
+udisksctl mount -b /dev/vdb
+chown -R dcuser:dcuser /media/release_spool

@@ -228,7 +228,7 @@ EOF
 fi
 
 
-if [ "$IMAGE" != "/home/htrcvirt/images/uncamp2015-demo.img" ]; then
+if [ "$IMAGE" != *"$UBUNTU_12_04_IMAGE"* ]; then
     logger "$VM_DIR:$IMAGE:$VM_IP_ADDR:$VNC_PORT - Enabling negotiator."
     cat <<EOF >> $VM_DIR/config
 
@@ -245,6 +245,12 @@ NEGOTIATOR_ENABLED=0
 EOF
 
 fi
+
+#This is to identify new capsules created after adding passwordless image. In dev-stack, any capsule creates after April 6th 2018 are password less capsules and need to upload ssh pub key to access capsules via ssh
+
+cat <<EOF >> $VM_DIR/config
+     NO_PASSWORD=1
+EOF
 
 # Create the VM's secure volume
 IMG_RES=$(qemu-img create -f raw $VM_DIR/${SECURE_VOL_NAME}.tmp $SECURE_VOL_SIZE 2>&1)

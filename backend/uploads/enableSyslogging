@@ -1,0 +1,10 @@
+==========================
+# Syslog bash history if not in single user mode
+if [ "`runlevel | awk '{print $2}'`" != "S" ]
+then
+ PROMPT_COMMAND='history -a >(tee -a ~/.bash_history | logger -t "bash $USER[$$] $SSH_CONNECTION")'
+ # To temporarily disable:
+ #   unset PROMPT_COMMAND
+ #   set +o history
+fi
+==========================

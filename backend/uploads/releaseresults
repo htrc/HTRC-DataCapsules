@@ -1,0 +1,110 @@
+#!/bin/bash
+
+# Copyright 2013 University of Michigan
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+TIMEOUT=5
+
+usage () {
+
+  echo "Usage: $0 <command> <args>"
+  echo ""
+  echo "This is a tool for releasing results"
+  echo ""
+  echo "Commands:"
+  echo ""
+  echo "  add <files>"
+  echo "       Adds all files specified to the next package to be released."
+  echo ""
+  echo "  done"
+  echo "       Releases all files previously added in a compressed zip file.  A"
+  echo "       link to the file will be sent to the email account provided at"
+  echo "       signup."
+
+}
+
+if [[ $1 ]]; then
+  ACTION=$1
+  shift
+else
+  usage
+  exit 1
+fi
+
+if [[ "$ACTION" = "add" ]]; then
+
+  if [ ! -e /media/release_spool ]; then
+    echo "Error: Unable to add results.  Confirm whether you are in secure"
+    echo "       mode.  If so, please contact an administrator for assistance."
+    exit 2
+  fi
+
+  zip -r /media/release_spool/results.zip "$@"
+  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
+  if [ $size -ge 104857600 ]; then
+    echo "The size of the result released is " $size " bytes which is large. You may expect delay in getting the result back."
+    echo "If you want to start over your result release, please delete the results.zip under /media/release_spool"
+  fi
+
+  exit 0
+
+fi
+
+if [[ "$ACTION" = "done" ]]; then
+
+  sync
+
+  if [ ! -e /media/release_spool ]; then
+    echo "Error: Unable to release results.  Confirm whether you are in secure"
+    echo "       mode.  If so, please contact an administrator for assistance."
+    exit 2
+  else
+    if [ ! -e /media/release_spool/results.zip ]; then
+      echo "Error: Nothing has been added for release.  Use the add command to"
+      echo "       add your files for release."
+      exit 1
+    fi
+   fi
+
+#  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
+#  if [ $size -ge 104857600 ]; then
+#    echo "Result file size exceeds 100 MB! It cannot be released and will be delete! Please start over your release."
+#    rm -f /media/release_spool/results.zip
+#    exit 1
+#  fi
+
+  echo "results.zip" >> /dev/ttyS0
+
+  for time in $(seq 1 $TIMEOUT); do
+    if [ -e /media/release_spool/done ]; then
+      break
+    fi
+    sleep 1
+  done
+
+#  if [ ! -e /media/release_spool/done ]; then
+#    echo "Error: Results release timed out.  Try again, and if problem"
+#    echo "       persists, please contact an administrator for assistance."
+#    exit 3
+#  fi
+
+  rm -rf /media/release_spool/{done,results.zip}
+
+  echo "Your results are under review. We will get back to you in two business days by email."
+  exit 0
+
+fi
+
+usage
+exit 1

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Copyright 2013 University of Michigan
-# 
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ TIMEOUT=30
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --starget <Secure Mode Server> --policy [Policy File]"
+  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --starget <Secure Mode Server> --policy [Policy File] --pubkey <User's ssh key>"
   echo ""
   echo "Launches a VM instance for the VM in the given directory."
   echo ""
@@ -35,6 +35,7 @@ usage () {
 #  echo "--starget Secure Mode Target Server: URL target (and port if applicable) for secure mode server"
 #  echo ""
   echo "--policy  Policy File: The file that contains the policy for restricting this VM."
+  echo "--pubkey  User's ssh public key."
 
 }
 
@@ -53,7 +54,7 @@ if [[ $1 && $1 != -* ]]; then
 fi
 
 declare -A longoptspec
-longoptspec=( [wdir]=1 [mode]=1 [policy]=1 [starget]=1)
+longoptspec=( [wdir]=1 [mode]=1 [policy]=1 [starget]=1 [pubkey]=1)
 optspec=":h-:d:m:s:p:"
 while getopts "$optspec" OPT; do
 
@@ -81,7 +82,7 @@ while getopts "$optspec" OPT; do
         usage
         exit 1
       fi
-      
+
       [ ${RAW_BOOT_MODE:0:1} = 's' ]
       BOOT_SECURE=$?
 
@@ -94,6 +95,9 @@ while getopts "$optspec" OPT; do
       ;;
     p|policy)
       POLICY=$OPTARG
+      ;;
+    k|pubkey)
+      SSH_KEY=${@: -1}
       ;;
     h|help)
       usage;
@@ -300,8 +304,37 @@ fi
 # All VMs start in Maintenance mode initially
 echo "Maintenance" > $VM_DIR/mode
 
+# Add user's ssh key and guacamole client's ssh key
+if [ "$SSH_KEY" ]; then
+     sleep 90       # wait till ssh deamon starts
+     $SCRIPT_DIR/updatekey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
+fi
+
+# Remove password and provision user if NO_PASSWORD is not set.
+if [! $NO_PASSWORD]; then
+    if ["$IMAGE" == *"$UBUNTU_12_04_IMAGE"* ]; then
+        # need to check compatibility of scripts
+        # write NO_PASSWORD=1 >> $VM_DIR/config
+     else
+        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $UPLOADS $SCRIPTS dcuser@$VM_IP_ADDR:
+        sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR /home/dcuser/scripts/existing_capsule_provisioning.sh
+        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/home/dcuser/scripts/remove_password.sh dcuser"
+        cat <<EOF >> $VM_DIR/config
+            NO_PASSWORD=1
+        EOF
+     fi
+fi
+
+
+
+# Add .htrc file
+if [ $NO_PASSWORD ]; then
+      scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:~/.htrc
+fi
+
+
 # Switch machine into secure mode or apply firewall policy as needed
-if [[ $BOOT_SECURE = 0 ]]; then 
+if [[ $BOOT_SECURE = 0 ]]; then
   $SCRIPT_DIR/switch.sh $VM_DIR --mode s --policy $POLICY
   SWITCH_RES=$?
 
