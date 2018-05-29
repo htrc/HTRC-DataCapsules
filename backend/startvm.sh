@@ -310,27 +310,18 @@ if [ "$SSH_KEY" ]; then
      $SCRIPT_DIR/updatekey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
 fi
 
+# Replace .htrc file
 # Remove password and provision user if NO_PASSWORD is not set.
-if [! $NO_PASSWORD]; then
-    if ["$IMAGE" == *"$UBUNTU_12_04_IMAGE"* ]; then
-        # need to check compatibility of scripts
-        # write NO_PASSWORD=1 >> $VM_DIR/config
-     else
-        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $UPLOADS $SCRIPTS dcuser@$VM_IP_ADDR:
+if [ $NO_PASSWORD ] && ["$IMAGE" != *"$UBUNTU_12_04_IMAGE"* ]; then
+      scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
+ elif ["$IMAGE" != *"$UBUNTU_12_04_IMAGE"* ]; then
+       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $UPLOADS $SCRIPTS dcuser@$VM_IP_ADDR:
         sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR /home/dcuser/scripts/existing_capsule_provisioning.sh
         ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/home/dcuser/scripts/remove_password.sh dcuser"
-        cat <<EOF >> $VM_DIR/config
-            NO_PASSWORD=1
-        EOF
-     fi
+        echo "NO_PASSWORD=1" >> $VM_DIR/config
 fi
 
 
-
-# Add .htrc file
-if [ $NO_PASSWORD ]; then
-      scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:~/.htrc
-fi
 
 
 # Switch machine into secure mode or apply firewall policy as needed
