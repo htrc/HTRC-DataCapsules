@@ -1,4 +1,4 @@
-#ut!/bin/bash
+#!/bin/bash
 
 # Copyright 2013 University of Michigan
 # 
