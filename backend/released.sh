@@ -17,6 +17,9 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
+CERT=/home/htrcvirt-bin/certs/dc-prod-client.pem
+KEY=/home/htrcvirt-bin/certs/dc-prod-client.key
+
 usage () {
 
   echo "Usage: $0 <Directory for VM>"
@@ -126,7 +129,7 @@ while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
   sudo mount -o loop,rw $VM_DIR/spool_volume $VM_DIR/release/
 
   # Connect to sql server and upload file
-  curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" $DB_URL
+  curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" --key $KEY --cert $CERT  $DB_URL
   UPLOAD_RES=$?
 
   if [[ $UPLOAD_RES -ne 0 ]]; then
