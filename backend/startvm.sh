@@ -243,7 +243,7 @@ nohup $SCRIPT_DIR/tapinit $SCRIPT_DIR $VM_IP_ADDR $QEMU				\
                    -device virtserialport,chardev=guest2host,name=negotiator-guest-to-host.0 \
 		   -vga vmware                                                  \
 		   -vnc :$(( $VNC_PORT - 5900 ))${VNC_LOGIN:+,password}		\
-		   >>$VM_DIR/last_run						\
+                   >>$VM_DIR/last_run						\
 		   2>&1 &
 #
 #		   -drive file=$VM_DIR/$IMAGE,if=virtio				\
@@ -304,21 +304,25 @@ fi
 # All VMs start in Maintenance mode initially
 echo "Maintenance" > $VM_DIR/mode
 
-# Add user's ssh key and guacamole client's ssh key
-if [ "$SSH_KEY" ]; then
-     sleep 90       # wait till ssh deamon starts
-     $SCRIPT_DIR/updatekey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
-fi
 
 # Replace .htrc file
 # Remove password and provision user if NO_PASSWORD is not set.
-if [ $NO_PASSWORD ] && ["$IMAGE" != *"$UBUNTU_12_04_IMAGE"* ]; then
+# Add user's ssh key and guacamole client's ssh key
+
+sleep 90 # wait till ssh deamon starts
+
+if [ $NO_PASSWORD ]; then
       scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
- elif ["$IMAGE" != *"$UBUNTU_12_04_IMAGE"* ]; then
-       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $UPLOADS $SCRIPTS dcuser@$VM_IP_ADDR:
-        sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR /home/dcuser/scripts/existing_capsule_provisioning.sh
-        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/home/dcuser/scripts/remove_password.sh dcuser"
-        echo "NO_PASSWORD=1" >> $VM_DIR/config
+      $SCRIPT_DIR/updatekey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
+else
+       echo "Uploads $UPLOADS. Scripts $SCRIPTS"
+       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $UPLOADS dcuser@$VM_IP_ADDR:
+       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $SCRIPTS dcuser@$VM_IP_ADDR:
+       sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR /home/dcuser/guest-scripts/existing_capsule_provisioning.sh
+       echo "NO_PASSWORD=1" >> $VM_DIR/config
+       scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
+       $SCRIPT_DIR/updatekey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/home/dcuser/guest-scripts/remove_password.sh dcuser"
 fi
 
 

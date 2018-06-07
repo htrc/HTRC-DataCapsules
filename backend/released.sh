@@ -17,9 +17,6 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
-CERT=/home/htrcvirt-bin/certs/dc-prod-client.pem
-KEY=/home/htrcvirt-bin/certs/dc-prod-client.key
-
 usage () {
 
   echo "Usage: $0 <Directory for VM>"

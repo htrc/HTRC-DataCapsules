@@ -21,7 +21,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy <Policy File>"
+  echo "Usage: $0 <Directory for VM> --mode <Security Mode> --policy <Policy File> --pubkey <User's ssh key>"
   echo ""
   echo "(--wdir)  Directory: The directory where this VM's data will be held"
   echo ""
@@ -29,6 +29,7 @@ usage () {
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
   echo "--policy  Policy File: The file that contains the policy for restricting this VM."
+  echo "--pubkey  User's ssh public key."
 
 }
 
@@ -48,8 +49,8 @@ if [[ $1 && $1 != -* ]]; then
 fi
 
 declare -A longoptspec
-longoptspec=( [wdir]=1 [mode]=1 [policy]=1 )
-optspec=":h-:d:m:p:"
+longoptspec=( [wdir]=1 [mode]=1 [policy]=1 [pubkey]=1 )
+optspec=":h-:d:m:p:k:"
 while getopts "$optspec" OPT; do
 
   if [[ "x${OPT}x" = "x-x" ]]; then
@@ -86,6 +87,9 @@ while getopts "$optspec" OPT; do
       ;;
     p|policy)
       POLICY=$OPTARG
+      ;;
+    k|pubkey)
+      SSH_KEY=${@: -1}
       ;;
     h|help)
       usage;
@@ -218,6 +222,11 @@ else
 
   # Update Mode File
   echo "Maintenance" > $VM_DIR/mode
+
+  # Add user's ssh key and guacamole client's ssh key
+  if [ "$SSH_KEY" ]; then
+     $SCRIPT_DIR/updatekey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
+  fi
 
 fi
 
