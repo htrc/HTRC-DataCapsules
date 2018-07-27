@@ -17,8 +17,6 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
-FREE_HOSTS=/home/htrcvirt/free_hosts
-VM_BACKUP_DIR=/home/htrcvirt/vm_backup
 
 usage () {
 
