@@ -145,7 +145,7 @@ if [ ! -d $VM_DIR ] ; then
 fi
 
 # Check if VM is already running
-if [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; then
+if [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; then
   echo "Error: VM is already running!"
   exit 10
 fi
@@ -348,7 +348,7 @@ if [ $NO_PASSWORD ]; then
       $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
 
       #add/update user's public key
-      if [ $SSH_KEY ]; then
+      if [ -n "$SSH_KEY" ]; then
             $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
       fi
 else
@@ -371,7 +371,7 @@ else
       $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
 
       #add/update user's public key
-       if [ $SSH_KEY ]; then
+       if [ -n "$SSH_KEY" ]; then
             $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
        fi
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest-scripts/remove_password.sh dcuser"

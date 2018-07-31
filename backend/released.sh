@@ -103,7 +103,7 @@ fi
 
 mkdir $VM_DIR/release
 
-while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
+while [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; do
 
   timeout 60 /bin/bash -c "tail -F -n0 $VM_DIR/release_mon | head -n0"
 

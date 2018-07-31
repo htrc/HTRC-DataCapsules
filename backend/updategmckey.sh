@@ -85,7 +85,7 @@ fi
 . $VM_DIR/config
 
 # Check if VM is running
-if [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Not_Running" ]]; then
+if [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Not_Running" ]]; then
   echo "Error: VM is not running!"
   exit 3
 fi
