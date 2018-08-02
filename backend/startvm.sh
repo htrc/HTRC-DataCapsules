@@ -353,8 +353,8 @@ if [ $NO_PASSWORD ]; then
       fi
 else
        # Add guest scripts and uploads directories into /tmp in DC
-       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $UPLOADS dcuser@$VM_IP_ADDR:/tmp/
-       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $SCRIPTS dcuser@$VM_IP_ADDR:/tmp/
+       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_UPLOADS dcuser@$VM_IP_ADDR:/tmp/
+       sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_SCRIPTS dcuser@$VM_IP_ADDR:/tmp/
        sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest-scripts/existing_capsule_provisioning.sh"
 
        # Install nginx

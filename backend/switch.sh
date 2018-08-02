@@ -165,6 +165,9 @@ fi
 # If secure mode, sync storage, apply policy, take snapshot, mount secure volume, update modefile
 if [ $SECURE_MODE = 0 ]; then
 
+  # Copy .htrc conf file for HTRC WorksetToolKit. If user has updated htrc package in the maintenance mode, existing .htrc file will be replaced by the default file. We need to copy the correct configuration file with actual configuration file.
+  scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
+
   # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
   for time in $(seq 1 30); do
     if [ -e $VM_DIR/$SECURE_VOL ]; then
@@ -189,8 +192,8 @@ if [ $SECURE_MODE = 0 ]; then
   echo "device_add virtio-blk-pci,id=secure_volume,drive=secure_volume" | nc -U $VM_DIR/monitor >/dev/null
 
   # Mount Spool Volume
-  echo "drive_add 1 id=spool,if=none,file=$VM_DIR/spool_volume" | nc -U $VM_DIR/monitor >/dev/null
-  echo "device_add virtio-blk-pci,id=spool,drive=spool" | nc -U $VM_DIR/monitor >/dev/null
+  echo "drive_add 1 id=release_spool,if=none,file=$VM_DIR/spool_volume" | nc -U $VM_DIR/monitor >/dev/null
+  echo "device_add virtio-blk-pci,id=release_spool,drive=release_spool" | nc -U $VM_DIR/monitor >/dev/null
 
 
   # Automount volumes and fix permissions
@@ -225,8 +228,8 @@ else
   # Unmount Secure Volume and Spool Volume
   echo "device_del secure_volume" | nc -U $VM_DIR/monitor >/dev/null
   echo "drive_del secure_volume" | nc -U $VM_DIR/monitor >/dev/null
-  echo "device_del spool" | nc -U $VM_DIR/monitor >/dev/null
-  echo "drive_del spool" | nc -U $VM_DIR/monitor >/dev/null
+  echo "device_del release_spool" | nc -U $VM_DIR/monitor >/dev/null
+  echo "drive_del release_spool" | nc -U $VM_DIR/monitor >/dev/null
 
   # Revert Capsules Snapshot
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
