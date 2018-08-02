@@ -123,8 +123,8 @@ while [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; do
   sudo mount -o loop,rw $VM_DIR/spool_volume $VM_DIR/release/
 
   # Connect to sql server and upload file
-  if [[ -z "$KEY" || -z "$CERT" ]]; then
-    curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" --key $KEY --cert $CERT  $DB_URL
+  if [[ -n "$KEY" || -n "$CERT" ]]; then
+    curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" --key $DC_API_CLIENT_KEY --cert $DC_API_CLIENT_CERT  $DB_URL
     UPLOAD_RES=$?
   else
     curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" $DB_URL
