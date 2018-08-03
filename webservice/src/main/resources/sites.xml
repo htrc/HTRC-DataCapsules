@@ -187,4 +187,9 @@
 		<name>host.ssh.private.key.path</name>
 		<value>xxxxx</value>
 	</property>
+
+	<property>
+		<name>ssh.proxy.thread.sleep.duration</name>
+		<value>1000</value>
+	</property>
 </configuration>

@@ -143,6 +143,7 @@ public final class Configuration {
 		public static final String RESULT_HUMAN_REVIEW = "result.review.human";
 		public static final String RESULT_HUMAN_REVIEW_EMAIL = "result.review.email";
 
+		public static final String THREAD_SLEEP_DURATION = "ssh.proxy.thread.sleep.duration";
 
 	}
 	
