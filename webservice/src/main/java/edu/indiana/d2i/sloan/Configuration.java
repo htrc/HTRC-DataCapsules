@@ -99,7 +99,8 @@ public final class Configuration {
 		public static final String CMD_SWITCH_VM = "cmd.switch.vm";
 		public static final String CMD_STOP_VM = "cmd.stop.vm";
 		public static final String CMD_DELETE_VM = "cmd.delete.vm";
-		
+		public static final String CMD_UPDATE_KEY = "cmd.update.key";
+
 		/* hypervisor fire wall policy */
 		public static final String MAINTENANCE_FIREWALL_POLICY = "hypervisor.fw.maintenance";
 		public static final String SECURE_FIREWALL_POLICY = "hypervisor.fw.secure";

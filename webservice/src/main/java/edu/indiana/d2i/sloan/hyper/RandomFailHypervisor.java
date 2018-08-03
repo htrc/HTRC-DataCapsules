@@ -94,7 +94,7 @@ public class RandomFailHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
 		return simulateRandProcess();
 	}
 
@@ -104,7 +104,7 @@ public class RandomFailHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse switchVM(VmInfoBean vminfo, String pubKey) throws Exception {
 		return simulateRandProcess();
 	}
 
@@ -115,6 +115,11 @@ public class RandomFailHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse delete(VmInfoBean vminfo) throws Exception {
+		return simulateRandProcess();
+	}
+
+	@Override
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
 		return simulateRandProcess();
 	}
 

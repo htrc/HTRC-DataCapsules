@@ -1,0 +1,6 @@
+Cmnd_Alias      SU=/bin/su,/bin/login
+Cmnd_Alias      SHELLS=/bin/sh,/usr/bin/sh,/bin/bash,/usr/bin/bash,/bin/tcsh,/usr/bin/tcsh,/bin/csh,/usr/bin/csh,/bin/zsh,/usr/bin/zsh,/bin/ksh,/usr/bin/ksh,/bin/screen,/usr/bin/screen
+Cmnd_Alias      ALLOWESCAPE=/bin/*vi*,/usr/bin/*vi*,/bin/ex,/usr/bin/ex,/bin/ed,/usr/bin/ed,/bin/*vim*,/usr/bin/*vim*,/bin/less,/usr/bin/less,/bin/more,/usr/bin/more,/bin/*emacs*,/usr/bin/*emacs*,/bin/find,/usr/bin/find
+
+dcuser ALL=(root) NOPASSWD: ALL, !SU, !SHELLS
+dcuser ALL=(root) NOEXEC: ALLOWESCAPE

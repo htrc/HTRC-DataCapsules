@@ -1,0 +1,14 @@
+[idp]
+client_id = <CLIENT_ID>
+client_secret = <CLIENT_SECRET>
+host = idp.analytics.hathitrust.org
+port = 443
+url = /oauth2/token
+
+[data]
+host = dataapi-dc.htrc.indiana.edu
+port = 443
+url = /
+
+[jwt]
+token =

@@ -14,14 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-DD_BLOCK_SIZE=2048k
-
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
-FREE_HOSTS=/home/htrcvirt/free_hosts
-UBUNTU_16_04_IMAGE=ubuntu-16-04.img
-UBUNTU_12_04_IMAGE=uncamp2015-demo.img
 
 usage () {
 
@@ -227,24 +222,16 @@ EOF
 
 fi
 
-
-if [ "$IMAGE" != "/home/htrcvirt/images/uncamp2015-demo.img" ]; then
-    logger "$VM_DIR:$IMAGE:$VM_IP_ADDR:$VNC_PORT - Enabling negotiator."
-    cat <<EOF >> $VM_DIR/config
-
-NEGOTIATOR_ENABLED=1
-
+logger "$VM_DIR:$IMAGE:$VM_IP_ADDR:$VNC_PORT - Enabling negotiator."
+cat <<EOF >> $VM_DIR/config
+     NEGOTIATOR_ENABLED=1
 EOF
 
-else
-    logger "$VM_DIR:$IMAGE:$VM_IP_ADDR:$VNC_PORT - Disabling negotiator."
-    cat <<EOF >> $VM_DIR/config
+#This is to identify new capsules created after adding passwordless image. In dev-stack, any capsule creates after April 6th 2018 are password less capsules and need to upload user's ssh pub key to access capsules via ssh
 
-NEGOTIATOR_ENABLED=0
-
+cat <<EOF >> $VM_DIR/config
+     NO_PASSWORD=1
 EOF
-
-fi
 
 # Create the VM's secure volume
 IMG_RES=$(qemu-img create -f raw $VM_DIR/${SECURE_VOL_NAME}.tmp $SECURE_VOL_SIZE 2>&1)
@@ -262,34 +249,18 @@ if [ $? -ne 0 ]; then
 fi
 
 #Create  mounts for the secure volume and the spool volume 
-if [ "$IMAGE" = "/home/htrcvirt/images/uncamp2015-demo.img" ]; then
-    MKFS_RES=$(echo "y" | /sbin/mkfs.ntfs -F -f -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
+MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
 
-    if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]; then
 	echo "Error formatting secure volume for VM: $MKFS_RES"
 	fail 7
-    fi
+fi
 
-    SPOOL_MKFS_RES=$(echo "y" | /sbin/mkfs.ntfs -F -f -L "release_spool" $VM_DIR/spool_volume 2>&1)
+SPOOL_MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "release_spool" $VM_DIR/spool_volume 2>&1)
 
-    if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]; then
 	echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"
 	fail 9
-    fi
-else
-    MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
-
-    if [ $? -ne 0 ]; then
-	echo "Error formatting secure volume for VM: $MKFS_RES"
-	fail 7
-    fi
-
-    SPOOL_MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "release_spool" $VM_DIR/spool_volume 2>&1)
-
-    if [ $? -ne 0 ]; then
-	echo "Error formatting spool volume for VM: $SPOOL_MKFS_RES"
-	fail 9
-    fi
 fi
 
 # This conversion to qcow2 format saves significant disk space (for example, 10GB file -> 53MB file)

@@ -22,79 +22,75 @@ KEY=/home/htrcvirt-bin/certs/dc-prod-client.key
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM>"
+  echo "Usage: $0 --wdir <Directory for VM>"
   echo ""
   echo "Launches daemon that listens for result release data"
   echo ""
-  echo "(--wdir)  Directory: The directory where this VM's data will be held"
+  echo "--wdir  Directory: The directory where this VM's data will be held"
   echo ""
   echo "--db      Database: The database to upload the results to"
+  echo ""
+  echo "-h|--help Show help."
 
 }
 
-REQUIRED_OPTS="VM_DIR"
+# Initialize all the option variables.
+# This ensures we are not contaminated by variables from the environment.
+VM_DIR=
 
-if [[ "$DB_URL" == "" ]]; then
-  REQUIRED_OPTS="$REQUIRED_OPTS DB_URL"
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            usage    # Display a usage synopsis.
+            exit
+            ;;
+        --wdir)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                VM_DIR=$2
+                shift
+            else
+                die 'ERROR: "--wdir" requires a non-empty option argument.'
+            fi
+            ;;
+        --wdir=?*)
+            VM_DIR=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --wdir=)         # Handle the case of an empty --wdir=
+            die 'ERROR: "--wdir" requires a non-empty option argument.'
+            ;;
+        --db)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                $DB_URL=$2
+                shift
+            fi
+            ;;
+        --db=?*)
+            $DB_URL=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --)              # End of all options.
+            shift
+            break
+            ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            usage
+            exit 1
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+if [ -z "$VM_DIR" ]; then
+  printf 'WARN: Missing required argument working dir (--wdir)'  >&2
+  usage
+  exit 1
 fi
 
-ALL_OPTS="$REQUIRED_OPTS DB_SERVER"
-UNDEFINED=12345capsulesxXxXxundefined54321
-
-for var in $ALL_OPTS; do
-  eval $var=$UNDEFINED
-done
-
-if [[ $1 && $1 != -* ]]; then
-  VM_DIR=$1
-  shift
-fi
-
-declare -A longoptspec
-longoptspec=( [wdir]=1 [db]=1 )
-optspec=":h-:d:s:"
-while getopts "$optspec" OPT; do
-
-  if [[ "x${OPT}x" = "x-x" ]]; then
-    if [[ "${OPTARG}" =~ .*=.* ]]; then
-      OPT=${OPTARG/=*/}
-      OPTARG=${OPTARG#*=}
-      ((OPTIND--))
-    else #with this --key value1 value2 format multiple arguments are possible
-      OPT="$OPTARG"
-      OPTARG=(${@:OPTIND:$((longoptspec[$OPT]))})
-    fi
-    ((OPTIND+=longoptspec[$OPT]))
-  fi
-
-  case "${OPT}" in
-    d|wdir)
-      VM_DIR=$OPTARG
-      ;;
-    s|db)
-      DB_SERVER=$OPTARG
-      ;;
-    h|help)
-      usage;
-      exit 0
-      ;;
-    *)
-      echo "error: Invalid argument '--${OPT}'"
-      usage
-      exit 1
-      ;;
-  esac
-done
-
-MISSING_ARGS=0
-for var in $REQUIRED_OPTS; do
-  if [[ ${!var} = $UNDEFINED ]]; then
-    echo "error: $var not set"
-    MISSING_ARGS=1
-  fi
-done
-
-if [[ $MISSING_ARGS -eq 1 ]]; then
+if [ -z "$DB_URL" ]; then
+  printf 'WARN: Missing required value DB url'  >&2
   usage
   exit 1
 fi
@@ -104,12 +100,13 @@ if [ ! -d $VM_DIR ] ; then
   exit 2
 fi
 
+
 # Load config file
 . $VM_DIR/config
 
 mkdir $VM_DIR/release
 
-while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
+while [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; do
 
   timeout 60 /bin/bash -c "tail -F -n0 $VM_DIR/release_mon | head -n0"
 
@@ -129,8 +126,13 @@ while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
   sudo mount -o loop,rw $VM_DIR/spool_volume $VM_DIR/release/
 
   # Connect to sql server and upload file
-  curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" --key $KEY --cert $CERT  $DB_URL
-  UPLOAD_RES=$?
+  if [[ -n "$KEY" || -n "$CERT" ]]; then
+    curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" --key $DC_API_CLIENT_KEY --cert $DC_API_CLIENT_CERT  $DB_URL
+    UPLOAD_RES=$?
+  else
+    curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" $DB_URL
+    UPLOAD_RES=$?
+  fi
 
   if [[ $UPLOAD_RES -ne 0 ]]; then
     echo "Failed to release file '$RES_FILENAME' (error code $UPLOAD_RES)" >> $VM_DIR/last_run
@@ -142,6 +144,7 @@ while [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; do
 
 done
 
-rm -rf $VM_DIR/release_pid $VM_DIR/release
+rm -rf $VM_DIR/release_pid
+rm -rf $VM_DIR/release
 
 exit 0

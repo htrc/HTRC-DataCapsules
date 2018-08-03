@@ -49,6 +49,7 @@
 		<url-pattern>/stopvm</url-pattern>
 		<url-pattern>/switchvm</url-pattern>
 		<url-pattern>/listimage</url-pattern>
+		<url-pattern>/updateuserkey</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>
