@@ -145,6 +145,17 @@ if [ -e $VM_DIR/pid ]; then
     FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/mode"
   fi
 
+  if [ -e $VM_DIR/release_pid ] ; then
+    RELEASE_PID=`cat $VM_DIR/release_pid`
+    kill $RELEASE_PID
+    FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/release_pid"
+  fi
+
+  if [ -d $VM_DIR/release ] ; then
+    FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/release"
+  fi
+
+
   RM_RES=$(rm -rf $FILES_TO_DELETE 2>&1)
 
   if [ $? -ne 0 ]; then

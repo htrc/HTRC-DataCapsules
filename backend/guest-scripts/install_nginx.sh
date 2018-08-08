@@ -4,8 +4,9 @@ apt-get install -y  nginx
 
 ufw allow 'Nginx HTTP'
 
-cp -rTf /tmp/uploads/nginxConf /etc/nginx/conf.d
-cp -rTf /tmp/uploads/nginxSSL /etc/nginx/ssl
+rm /etc/nginx/sites-enabled/default
+cp -rTf /tmp/guest_uploads/nginxConf /etc/nginx/conf.d
+cp -rTf /tmp/guest_uploads/nginxSSL /etc/nginx/ssl
 
 systemctl restart nginx
 
