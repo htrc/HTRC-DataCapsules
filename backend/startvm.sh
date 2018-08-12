@@ -339,6 +339,9 @@ done
 # Remove password and provision user if NO_PASSWORD is not set.
 # Add user's ssh key and guacamole client's ssh key
 
+logger "$VM_DIR Remove VM IP $VM_IP_ADDR  from known_hosts file."
+ex -s +"g/$VM_IP_ADDR/d" -cwq /home/htrcvirt/.ssh/known_hosts
+
 if [ $NO_PASSWORD ]; then
       #Add .htrc file. this is for HTRC WorksetToolkit
       scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
@@ -351,21 +354,31 @@ if [ $NO_PASSWORD ]; then
       if [ -n "$SSH_KEY" ]; then
             $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
       fi
+
+
+       #logger "$VM_DIR restart nginx" # this necessary since nginx is not starting at vm boot
+       #ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out
+
 else
-       # Add guest scripts and uploads directories into /tmp in DC
+      logger "$VM_DIR Add guest scripts and uploads directories into /tmp in DC"
        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_UPLOADS dcuser@$VM_IP_ADDR:/tmp/
        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_SCRIPTS dcuser@$VM_IP_ADDR:/tmp/
-       sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest-scripts/existing_capsule_provisioning.sh"
 
-       # Install nginx
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest-scripts/install_nginx.sh"
+       logger "$VM_DIR Provisioning the capsule."
+       sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/existing_capsule_provisioning.sh " > $VM_DIR/provisioning_out
 
-       # Update Voyant version to 2.4_M7
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest-scripts/update_voyant.sh dcuser"
+       logger "$VM_DIR Install nginx"
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/install_nginx.sh " > $VM_DIR/install_nginx_out
 
-       #Add .htrc file. this is for HTRC WorksetToolkit
+       logger "$VM_DIR Update Voyant version to 2.4_M7"
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/update_voyant.sh dcuser " > $VM_DIR/update_voyant_out
+
+       logger "$VM_DIR Add .htrc file. this is for HTRC WorksetToolkit"
        scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
+
+       logger "$VM_DIR enable logging of root user activity."
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "cat  /tmp/guest_uploads/enableSyslogging >> /root/.bashrc"
 
        #add/update Guacamole client's public key
       $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
@@ -374,7 +387,28 @@ else
        if [ -n "$SSH_KEY" ]; then
             $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
        fi
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest-scripts/remove_password.sh dcuser"
+
+
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "update-rc.d nginx enable"
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/remove_password.sh dcuser " > $VM_DIR/remove_password_out
+
+       logger "$VM_DIR Waiting for the capsule to come up after reboot"
+
+       sleep 5 # wait till vm is shutdown
+       start=$SECONDS
+       while ! nc -z $VM_IP_ADDR 22; do
+           sleep 0.5 # wait for 1/10 of the second before check again
+           end=$SECONDS
+           elapsed=$(( end - start ))
+           if (( elpased > 180 )); then
+              logger "$VM_DIR Capsule startup timed out."
+              exit 6
+            fi
+        done
+
+       logger "$VM_DIR restart nginx" # this necessary since nginx is not starting at vm boot
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out
+
        echo "NO_PASSWORD=1" >> $VM_DIR/config
 fi
 

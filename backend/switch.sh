@@ -215,7 +215,7 @@ if [ $SECURE_MODE = 0 ]; then
 
   # Start release daemon if not already running
   if [ ! -e $VM_DIR/release_pid ]; then
-    nohup $SCRIPT_DIR/released.sh $VM_DIR 2>>$VM_DIR/release_log &
+    nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log &
     echo "$!" > $VM_DIR/release_pid
   fi
 
