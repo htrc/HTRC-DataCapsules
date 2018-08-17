@@ -365,13 +365,13 @@ else
        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_SCRIPTS dcuser@$VM_IP_ADDR:/tmp/
 
        logger "$VM_DIR Provisioning the capsule."
-       sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/existing_capsule_provisioning.sh " > $VM_DIR/provisioning_out
+       sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/existing_capsule_provisioning.sh " > $VM_DIR/provisioning_out 2>&1
 
        logger "$VM_DIR Install nginx"
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/install_nginx.sh " > $VM_DIR/install_nginx_out
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/install_nginx.sh " > $VM_DIR/install_nginx_out 2>&1
 
        logger "$VM_DIR Update Voyant version to 2.4_M7"
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/update_voyant.sh dcuser " > $VM_DIR/update_voyant_out
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/update_voyant.sh dcuser " > $VM_DIR/update_voyant_out 2>&1
 
        logger "$VM_DIR Add .htrc file. this is for HTRC WorksetToolkit"
        scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
@@ -388,10 +388,10 @@ else
             $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
        fi
 
-
+       
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "update-rc.d nginx enable"
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/remove_password.sh dcuser " > $VM_DIR/remove_password_out
-
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/remove_password.sh dcuser " > $VM_DIR/remove_password_out 2>&1
+       
        logger "$VM_DIR Waiting for the capsule to come up after reboot"
 
        sleep 5 # wait till vm is shutdown
@@ -407,7 +407,7 @@ else
         done
 
        logger "$VM_DIR restart nginx" # this necessary since nginx is not starting at vm boot
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
 
        echo "NO_PASSWORD=1" >> $VM_DIR/config
 fi

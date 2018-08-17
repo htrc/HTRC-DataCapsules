@@ -123,7 +123,7 @@ while [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; do
   sudo mount -o loop,rw $VM_DIR/spool_volume $VM_DIR/release/
 
   # Connect to sql server and upload file
-  if [[ -d "$DC_API_CLIENT_KEY" && -d "$DC_API_CLIENT_CERT" ]]; then
+  if [[ -n "$DC_API_CLIENT_CERT" || -n "$DC_API_CLIENT_KEY" ]]; then
     curl -F "file=@$VM_DIR/release/$RES_FILENAME" -F "vmid=$(basename $VM_DIR)" --key $DC_API_CLIENT_KEY --cert $DC_API_CLIENT_CERT  $DB_URL
     UPLOAD_RES=$?
   else
@@ -135,6 +135,7 @@ while [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; do
     echo "Failed to release file '$RES_FILENAME' (error code $UPLOAD_RES)" >> $VM_DIR/last_run
   else
     touch $VM_DIR/release/done
+    rm -rf $VM_DIR/release/$RES_FILENAME
   fi
 
   sudo umount $VM_DIR/release/
