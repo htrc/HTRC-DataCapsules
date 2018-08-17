@@ -215,12 +215,13 @@ if [ $SECURE_MODE = 0 ]; then
 
   # Start release daemon if not already running
   if [ ! -e $VM_DIR/release_pid ]; then
-    nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log &
+    nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log >>$VM_DIR/release_log &
     echo "$!" > $VM_DIR/release_pid
   fi
 
   # Update Mode File
   echo "Secure" > $VM_DIR/mode
+  logger "$VM_DIR Switched to the secure mode"
 
 # If maintenance, unmount secure volume, revert snapshot, remove policy, update modefile
 else
@@ -254,7 +255,10 @@ else
   if [ "$SSH_KEY" ]; then
      $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
   fi
+  logger "$VM_DIR Switched to the Maintenance mode"
 
 fi
 
+logger "$VM_DIR switch vm success."
+echo "Success"
 exit 0

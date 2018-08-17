@@ -146,13 +146,10 @@ if [ -e $VM_DIR/pid ]; then
   fi
 
   if [ -e $VM_DIR/release_pid ] ; then
+    rm -rf $VM_DIR/release
     RELEASE_PID=`cat $VM_DIR/release_pid`
     kill $RELEASE_PID
     FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/release_pid"
-  fi
-
-  if [ -d $VM_DIR/release ] ; then
-    FILES_TO_DELETE="$FILES_TO_DELETE $VM_DIR/release"
   fi
 
 
