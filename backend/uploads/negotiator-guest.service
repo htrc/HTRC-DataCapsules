@@ -1,0 +1,9 @@
+[Unit]
+Description=QEMU Negotiator Guest
+
+[Service]
+ExecStart=/usr/local/bin/negotiator-guest --daemon
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

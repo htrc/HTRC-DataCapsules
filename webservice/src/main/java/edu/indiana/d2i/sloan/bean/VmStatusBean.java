@@ -17,9 +17,11 @@ package edu.indiana.d2i.sloan.bean;
 
 public class VmStatusBean {
 	private final VmInfoBean vminfo;
+	private final boolean pub_key_exists;
 	
-	public VmStatusBean(VmInfoBean vminfo) {
+	public VmStatusBean(VmInfoBean vminfo, boolean ssh_key_exists) {
 		this.vminfo = vminfo;
+		this.pub_key_exists = ssh_key_exists;
 	}
 	
 	public String getMode() {
@@ -64,4 +66,8 @@ public class VmStatusBean {
 	public String getVmInitialLoginPassword() {
 		return vminfo.getVmLoginPwd();
 	}
+	public boolean getPubKeyExists() {
+		return pub_key_exists;
+	}
+
 }

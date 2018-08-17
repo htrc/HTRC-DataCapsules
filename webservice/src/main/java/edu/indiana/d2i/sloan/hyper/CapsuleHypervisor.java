@@ -183,7 +183,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
 		logger.debug("launch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -200,7 +200,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString().toLowerCase())
-					.addArgument("--policy", vminfo.getPolicypath()).build();
+					.addArgument("--policy", vminfo.getPolicypath())
+					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands launchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -252,7 +253,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse switchVM(VmInfoBean vminfo, String pubKey) throws Exception {
 		logger.debug("switch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -267,7 +268,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString().toLowerCase())
-					.addArgument("--policy", vminfo.getPolicypath()).build();
+					.addArgument("--policy", vminfo.getPolicypath())
+					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands switchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -344,6 +346,39 @@ class CapsuleHypervisor implements IHypervisor {
 			/* execute task */
 			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					deleteVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
+
+	@Override
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+		logger.debug("update public key of vm: " + vminfo);
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--pubkey", "\"" + pubKey + "\"").build();
+
+			Commands updateKeyCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.UPDATE_KEY,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
+					updateKeyCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
 		} finally {

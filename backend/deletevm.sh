@@ -17,8 +17,6 @@
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 . $SCRIPT_DIR/capsules.cfg
 
-FREE_HOSTS=/home/htrcvirt/free_hosts
-VM_BACKUP_DIR=/home/htrcvirt/vm_backup
 
 usage () {
 
@@ -99,11 +97,11 @@ if [ -d $VM_DIR ]; then
   . $VM_DIR/config
 
   # Must check if VM is running before we delete it
-  if [[ `$SCRIPT_DIR/vmstatus.sh $VM_DIR` =~ "Status:  Running" ]]; then
+  if [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; then
   
     if [ $FORCE_STOP = 1 ]; then
 
-      STOP_RES=$($SCRIPT_DIR/stopvm.sh $VM_DIR)
+      STOP_RES=$($SCRIPT_DIR/stopvm.sh --wdir $VM_DIR)
 
       if [ $? -ne 0 ]; then
         echo "Error: VM is currently running and could not be stopped (reason follows):"

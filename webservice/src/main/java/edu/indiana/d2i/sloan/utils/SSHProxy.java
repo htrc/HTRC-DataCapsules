@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import edu.indiana.d2i.sloan.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +44,7 @@ public class SSHProxy {
 
 	private static int BUFFER_SIZE = 1024;
 	/* sleep duration in milliseconds */
-	private static long THREAD_SLEEP_DURATION = 1000;
+	private static long THREAD_SLEEP_DURATION;
 
 	private String hostname;
 	private int port;
@@ -173,7 +174,8 @@ public class SSHProxy {
 		this.username = builder.username;
 		this.passwd = builder.passwd;
 		this.privateKeyPath = builder.privateKeyPath;
-		
+		this.THREAD_SLEEP_DURATION = Configuration.getInstance().getLong(Configuration.PropertyName.THREAD_SLEEP_DURATION);
+
 		int maxtry = 3;
 		for (int i = 0; i < maxtry; i++) {
 			try {

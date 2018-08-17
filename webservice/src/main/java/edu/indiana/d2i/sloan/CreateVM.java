@@ -114,7 +114,8 @@ public class CreateVM {
 			if (!DBOperations.getInstance().quotasNotExceedLimit(request)) {
 				logger.info("Quota exceeds limit for user " + userName);
 				return Response.status(400)
-						.entity(new ErrorBean(400, "Quota exceeds limit!"))
+						.entity(new ErrorBean(400, "Error! You have reached the allocation limit for capsules " +
+								"and capsule size for your account."))
 						.build();
 			}
 

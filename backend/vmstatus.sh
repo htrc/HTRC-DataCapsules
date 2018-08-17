@@ -23,76 +23,67 @@ STAT_NOT_RUNNING="$STAT Not_Running"
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM>"
+  echo "Usage: $0 --wdir <Directory for VM>"
   echo ""
   echo "Determines the operational status of the VM in the given directory."
   echo ""
   echo "(--wdir)  Directory: The directory where this VM's data is held."
+  echo ""
+  echo "-h|--help Show help."
 
 }
 
-REQUIRED_OPTS="VM_DIR"
-UNDEFINED=12345capsulesxXxXxundefined54321
+# Initialize all the option variables.
+# This ensures we are not contaminated by variables from the environment.
+VM_DIR=
 
-for var in $REQUIRED_OPTS; do
-  eval $var=$UNDEFINED
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            usage    # Display a usage synopsis.
+            exit
+            ;;
+        --wdir)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                VM_DIR=$2
+                shift
+            else
+                die 'ERROR: "--wdir" requires a non-empty option argument.'
+            fi
+            ;;
+        --wdir=?*)
+            VM_DIR=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --wdir=)         # Handle the case of an empty --wdir=
+            die 'ERROR: "--wdir" requires a non-empty option argument.'
+            ;;
+        --)              # End of all options.
+            shift
+            break
+            ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            usage
+            exit 1
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
 done
 
-if [[ $1 && $1 != -* ]]; then
-  VM_DIR=$1
-  shift
-fi
-
-declare -A longoptspec
-longoptspec=( [wdir]=1 )
-optspec=":h-:d:"
-while getopts "$optspec" OPT; do
-
-  if [[ "x${OPT}x" = "x-x" ]]; then
-    if [[ "${OPTARG}" =~ .*=.* ]]; then
-      OPT=${OPTARG/=*/}
-      OPTARG=${OPTARG#*=}
-      ((OPTIND--))
-    else #with this --key value1 value2 format multiple arguments are possible
-      OPT="$OPTARG"
-      OPTARG=(${@:OPTIND:$((longoptspec[$OPT]))})
-    fi
-    ((OPTIND+=longoptspec[$OPT]))
-  fi
-
-  case "${OPT}" in
-    d|wdir)
-      VM_DIR=$OPTARG
-      ;;
-    h|help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "error: Invalid argument '--${OPT}'"
-      usage
-      exit 1
-      ;;
-  esac
-done
-
-MISSING_ARGS=0
-for var in $REQUIRED_OPTS; do
-  if [[ ${!var} = $UNDEFINED ]]; then
-    echo "error: $var not set"
-    MISSING_ARGS=1
-  fi
-done
-
-if [[ $MISSING_ARGS -eq 1 ]]; then
+if [ -z "$VM_DIR" ]; then
+  printf 'WARN: Missing required argument working dir (--wdir)'  >&2
   usage
   exit 1
 fi
 
 if [ ! -d $VM_DIR ] ; then
-  echo "Error: Specified VM does not exist"
+  echo "Error: Invalid VM directory specified!"
   exit 2
 fi
+
 
 if [ -e $VM_DIR/pid ]; then
 

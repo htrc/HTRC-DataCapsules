@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2014 The Trustees of Indiana University
+ * Copyright 2018 The Trustees of Indiana University
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +15,6 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.log4j.Logger;
-
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.QueryVmResponseBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
@@ -39,16 +23,29 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
+import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
+import org.apache.log4j.Logger;
 
-@Path("/show")
-public class QueryVM {
-	private static Logger logger = Logger.getLogger(QueryVM.class);
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
+
+@Path("/updateuserkey")
+public class UpdateUserKey {
+	private static Logger logger = Logger.getLogger(UpdateUserKey.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response queryVMs(@FormParam("vmid") String vmid,
+	public Response queryVMs(@FormParam("pubkey") String pubkey,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
@@ -63,55 +60,32 @@ public class QueryVM {
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
 			return Response
-					.status(500)
-					.entity(new ErrorBean(500,
+					.status(400)
+					.entity(new ErrorBean(400,
 							"Username is not present in http header.")).build();
 		}
-
-		// read from db and return first
-		// at the same time, send query to hypervisor async
-		// it might be overwhelmed by other users' requests
-		// ws periodically updates VM status??
 
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
 
-			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
+			logger.info("User " + userName + " tries to update the public key");
+
+			DBOperations.getInstance().updateUserPubKey(userName, pubkey);
+			logger.info("Public key of user '" + userName + "' was updated in database successfully!");
+
 			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
-			if (vmid == null) {
-				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
-				for (VmInfoBean vminfo : vmInfoList) {
-					status.add(new VmStatusBean(vminfo, pub_key_exists));
-				}
-			} else {
-				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
-						userName, vmid);
-				vmInfoList.add(vminfo);
-				status.add(new VmStatusBean(vminfo, pub_key_exists));
-			}
+			vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
-			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());
-			
 			for (VmInfoBean vminfo : vmInfoList) {
-				// query the back-end script only when vm state is not in pending
-				if (!VMStateManager.isPendingState(vminfo.getVmstate())) {
+				// update the public key of VMs that are in Running state and maintenance mode
+				if (vminfo.getVmstate() == VMState.RUNNING && vminfo.getVmmode() == VMMode.MAINTENANCE) {
 					HypervisorProxy.getInstance().addCommand(
-							new QueryVMCommand(vminfo, operator));
+							new UpdatePublicKeyCommand(vminfo, userName, operator, pubkey));
 				}
 			}
 
-			return Response.status(200).entity(new QueryVmResponseBean(status))
-					.build();
-		} catch (NoItemIsFoundInDBException e) {
-			logger.error(e.getMessage(), e);
-			String msg = (vmid == null) ? 
-				"Cannot find VMs with username " + userName: 
-				"Cannot find VMs " + vmid + " with username " + userName;
-			return Response
-					.status(400)
-					.entity(new ErrorBean(400, msg)).build();
+			return Response.status(200).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
