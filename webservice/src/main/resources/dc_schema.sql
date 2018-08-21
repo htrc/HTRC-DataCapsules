@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`users` (
   `diskleftquota` INT NULL,
   `usertype` VARCHAR(64) NULL DEFAULT 'regular',
   `pub_key` varchar(1024) CHARACTER SET utf8 DEFAULT NULL,
+  `tou` boolean DEFAULT false,
   PRIMARY KEY (`username`))
 ENGINE = InnoDB;
 

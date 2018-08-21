@@ -18,10 +18,12 @@ package edu.indiana.d2i.sloan.bean;
 public class VmStatusBean {
 	private final VmInfoBean vminfo;
 	private final boolean pub_key_exists;
-	
-	public VmStatusBean(VmInfoBean vminfo, boolean ssh_key_exists) {
+	private final boolean tou;
+
+	public VmStatusBean(VmInfoBean vminfo, boolean ssh_key_exists, boolean tou) {
 		this.vminfo = vminfo;
 		this.pub_key_exists = ssh_key_exists;
+		this.tou = tou;
 	}
 	
 	public String getMode() {
@@ -95,5 +97,8 @@ public class VmStatusBean {
 	}
 	public String getRr_result_usage() {
 		return vminfo.getRr_result_usage();
+	}
+	public boolean getTou() {
+		return tou;
 	}
 }

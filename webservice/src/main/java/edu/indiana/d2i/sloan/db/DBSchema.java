@@ -107,6 +107,9 @@ public class DBSchema {
 
 		/* SSH public key of the user */
 		public static String PUB_KEY = "pub_key";
+
+		/* user's agreement to TOU*/
+		public static String TOU = "tou";
 	}
 
 	public static class ImageTable {

@@ -1508,6 +1508,46 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+
+	public boolean getUserTOU(String userName) throws SQLException,
+			NoItemIsFoundInDBException, UnsupportedEncodingException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"SELECT %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.UserTable.TOU, DBSchema.UserTable.TABLE_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					userName);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return result.getBoolean(DBSchema.UserTable.TOU);
+			} else {
+				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public void updateUserTOU(String userName, boolean toc) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updateusersql = String.format("UPDATE "
+				+ DBSchema.UserTable.TABLE_NAME + " SET "
+				+ DBSchema.UserTable.TOU + "=%s WHERE "
+				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", toc, userName);
+		updates.add(updateusersql);
+		executeTransaction(updates);
+	}
+
 	public void close() {
 		DBConnections.getInstance().close();
 	}

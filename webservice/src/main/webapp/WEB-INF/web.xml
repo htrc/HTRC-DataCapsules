@@ -50,6 +50,7 @@
 		<url-pattern>/switchvm</url-pattern>
 		<url-pattern>/listimage</url-pattern>
 		<url-pattern>/updateuserkey</url-pattern>
+		<url-pattern>/updateusertou</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>
