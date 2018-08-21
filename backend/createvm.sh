@@ -21,7 +21,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 usage () {
 
   echo "Usage: $0 <Directory for VM> --image <Image Name> --ncpu <Number of CPUs> --mem <Guest Memory Size>"
-  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size>  --type <Capsule Type>"
+  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size> "
   echo ""
   echo "Creates a new VM by allocating a directory for it and instantiating configuration files."
   echo ""
@@ -43,8 +43,6 @@ usage () {
   echo ""
   echo "--loginpwd Login Password: (optional) Password to be used to log in to VNC sessions"
   echo ""
-  echo "--vmtype  Capsule Type - demo or research"
-  echo ""
   echo "-h|--help Show help."
 
 }
@@ -60,7 +58,6 @@ SSH_PORT=
 SECURE_VOL_SIZE=
 LOGIN_ID=
 LOGIN_PWD=
-VM_TYPE=
 
 while :; do
     case $1 in
@@ -194,20 +191,6 @@ while :; do
         --loginpwd=)         # Handle the case of an empty --loginpwd=
             die 'ERROR: "--loginpwd" requires a non-empty option argument.'
             ;;
-        --vmtype)       # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                VM_TYPE=$2
-                shift
-            else
-                die 'ERROR: "--type" requires a non-empty option argument.'
-            fi
-            ;;
-        --vmtype=?*)
-            VM_TYPE=${1#*=} # Delete everything up to "=" and assign the remainder.
-            ;;
-        --vmtype=)         # Handle the case of an empty --vmtype=
-            die 'ERROR: "--vmtype" requires a non-empty option argument.'
-            ;;
         --)              # End of all options.
             shift
             break
@@ -224,6 +207,27 @@ while :; do
     shift
 done
 
+if [[ -z "$VM_DIR" || -z "$IMAGE" || -z "$NUM_VCPU" || -z "$MEM_SIZE" || -z "$VNC_PORT" || -z "$SSH_PORT" || -z "$SECURE_VOL_SIZE" || -z "$LOGIN_ID" || -z "$LOGIN_PWD" ]]; then
+  printf 'WARN: Missing required argument'  >&2
+  usage
+  exit 1
+fi
+
+if ! [[ "$VNC_PORT" =~ ^[0-9]+$ && "$VNC_PORT" -ge 5900 && "$VNC_PORT" -le 65535 ]]; then
+     echo "error: provided vnc port ($VNC_PORT) is invalid;"
+     echo "note: the port value must be at least 5900"
+     exit 1
+fi
+
+if ! [[ "$SSH_PORT" =~ ^[0-9]+$ && "$SSH_PORT" -le 65535 ]]; then
+     echo "error: provided ssh port ($SSH_PORT) is invalid;"
+     exit 1
+fi
+
+if [[ "$LOGIN_PWD" -gt 8 ]] ; then
+     echo "error: login passwords longer than 8 characters are not currently supported"
+     exit 1
+fi
 
 fail () {
 
@@ -231,9 +235,6 @@ fail () {
   exit $1
 
 }
-
-# Name of the secure volume is fixed for now;
-SECURE_VOL_NAME=secure_volume
 
 if [ -e $VM_DIR ]; then
   echo "Error: VM directory already exists"
@@ -279,7 +280,6 @@ IMAGE=$(basename $IMAGE).diff
 SECURE_VOL=$SECURE_VOL_NAME
 VM_MAC_ADDR=$VM_MAC_ADDR
 VM_IP_ADDR=$VM_IP_ADDR
-VM_TYPE=$VM_TYPE
 
 NUM_VCPU=$NUM_VCPU
 MEM_SIZE=$MEM_SIZE
