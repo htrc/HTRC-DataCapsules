@@ -20,7 +20,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 --wdir <Directory for VM>"
+  echo "Usage: $0 --wdir <Directory for VM> "
   echo ""
   echo "Add user's public ssh key to data capsule"
   echo ""
@@ -33,6 +33,7 @@ usage () {
 # Initialize all the option variables.
 # This ensures we are not contaminated by variables from the environment.
 VM_DIR=
+DC_TYPE=
 
 while :; do
     case $1 in
@@ -54,6 +55,20 @@ while :; do
         --wdir=)         # Handle the case of an empty --wdir=
             die 'ERROR: "--wdir" requires a non-empty option argument.'
             ;;
+        --vmtype)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                DC_TYPE=$2
+                shift
+            else
+                die 'ERROR: "--vmtype" requires a non-empty option argument.'
+            fi
+            ;;
+        --vmtype=?*)
+            DC_TYPE=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --vmtype=)         # Handle the case of an empty --vmtype=
+            die 'ERROR: "--vmtype" requires a non-empty option argument.'
+            ;;
         --)              # End of all options.
             shift
             break
@@ -70,8 +85,8 @@ while :; do
     shift
 done
 
-if [ -z "$VM_DIR" ]; then
-  printf 'WARN: Missing required argument working dir (--wdir)'  >&2
+if [[ -z "$VM_DIR" || -z "$DC_TYPE" ]]; then
+  printf 'WARN: Missing required argument'  >&2
   usage
   exit 1
 fi
@@ -93,15 +108,20 @@ fi
 # Check if VM is in Maintenance mode
 if [ `cat $VM_DIR/mode` =  "Secure" ]; then
     echo "Error: Capsule is not in the Maintenance mode. "
-    logger "Cannot add ssh key. Capsule is not in the Maintenance mode. "
+    logger "Cannot add or remove  releaseresult command. Capsule is not in the Maintenance mode. "
     exit 4
 fi
 
-DC_USER_KEY_FILE=$DC_USER_HOME/.ssh/authorized_keys
+# Remove release_results script if capsule type is DEMO and not disabled yet
+if [[ "$DC_TYPE" = "$DEMO_TYPE" && [ ! -e $VM_DIR/release_results || `cat $VM_DIR/release_results` == "Enabled" ] ]]; then
+     ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 744 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
+     echo "Disabled" > $VM_DIR/release_results
+fi
 
-logger "$VM_DIR - Adding GCM SSH public key.."
-
-#Copy user's ssh key to dcuser home folder in the capsule
-ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR " echo $GMC_PUB_KEY > $DC_USER_KEY_FILE "
+# Add release_results script if capsule type is RESEARCH and disabled
+if [[ "$DC_TYPE" = "$RESEARCH_TYPE" && `cat $VM_DIR/release_results` == "Disabled" ]]; then
+      ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
+      echo "Enabled" > $VM_DIR/release_results
+fi
 
 exit 0

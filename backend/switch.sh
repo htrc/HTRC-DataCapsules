@@ -19,14 +19,15 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 --wdir <Directory for VM> --mode <Security Mode> --policy <Policy File> --pubkey <User's ssh key>"
+  echo "Usage: $0 --wdir <Directory for VM> --mode <Security Mode> --vmtype <Capsule Type> --pubkey <User's ssh key>"
   echo ""
   echo "--wdir   Directory: The directory where this VM's data will be held"
   echo ""
   echo "--mode    Boot to Secure Mode: One of 's(ecure)' or 'm(aintenance)', denotes whether the"
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
-  echo "--policy  Policy File: The file that contains the policy for restricting this VM."
+  echo "--vmtype  Capsule Type - DEMO or RESEARCH"
+  echo ""
   echo "--pubkey  User's ssh public key."
   echo ""
   echo "-h|--help Show help."
@@ -37,7 +38,7 @@ usage () {
 # This ensures we are not contaminated by variables from the environment.
 VM_DIR=
 RAW_MODE=
-POLICY=
+DC_TYPE=
 SSH_KEY=
 
 while :; do
@@ -74,19 +75,19 @@ while :; do
         --mode=)         # Handle the case of an empty --mode=
             die 'ERROR: "--mode" requires a non-empty option argument.'
             ;;
-        --policy)       # Takes an option argument; ensure it has been specified.
+        --vmtype)       # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
-                POLICY=$2
+                DC_TYPE=$2
                 shift
             else
-                die 'ERROR: "--policy" requires a non-empty option argument.'
+                die 'ERROR: "--vmtype" requires a non-empty option argument.'
             fi
             ;;
-        --policy=?*)
-            POLICY=${1#*=} # Delete everything up to "=" and assign the remainder.
+        --vmtype=?*)
+            DC_TYPE=${1#*=} # Delete everything up to "=" and assign the remainder.
             ;;
-        --policy=)         # Handle the case of an empty --policy=
-            die 'ERROR: "--policy" requires a non-empty option argument.'
+        --vmtype=)         # Handle the case of an empty --vmtype=
+            die 'ERROR: "--vmtype" requires a non-empty option argument.'
             ;;
         --pubkey)       # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -113,14 +114,8 @@ while :; do
     shift
 done
 
-if [ -z "$VM_DIR" ]; then
-  printf 'WARN: Missing required argument working dir (--wdir)'  >&2
-  usage
-  exit 1
-fi
-
-if [ -z "$RAW_MODE" ]; then
-  printf 'WARN: Missing required argument mode (--mode)'  >&2
+if [[ -z "$VM_DIR" || -z "$DC_TYPE" || -z "$RAW_MODE" ]]; then
+  printf 'WARN: Missing required argument'  >&2
   usage
   exit 1
 fi
@@ -130,12 +125,6 @@ if [ -z $RAW_MODE -o ${RAW_MODE:0:1} != 's' -a ${RAW_MODE:0:1} != 'm' ]; then
    echo "Error: Invalid Mode!"
    usage
    exit 1
-fi
-
-if [ -z "$POLICY" ]; then
-  printf 'WARN: Missing required argument policy (--policy)'  >&2
-  usage
-  exit 1
 fi
 
 
@@ -167,6 +156,9 @@ if [ $SECURE_MODE = 0 ]; then
 
   # Copy .htrc conf file for HTRC WorksetToolKit. If user has updated htrc package in the maintenance mode, existing .htrc file will be replaced by the default file. We need to copy the correct configuration file with actual configuration file.
   scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
+
+   #Add or remove releaseresult command from the capsule
+   $SCRIPT_DIR/managereleaseresults.sh --wdir $VM_DIR --vmtype $DC_TYPE
 
   # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
   for time in $(seq 1 30); do
@@ -203,8 +195,12 @@ if [ $SECURE_MODE = 0 ]; then
   ssh -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY  root@$VM_IP_ADDR "/usr/lib/negotiator/commands/fix-securevol-permissions"
 
 
-   # Apply Firewall Policy
-  sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
+  # Apply Firewall Policy
+  if [ "$DC_TYPE" = "$DEMO_TYPE" ]; then
+      sudo $SCRIPT_DIR/fw.sh $VM_DIR $DEMO_SECURE_POLICY
+  else
+      sudo $SCRIPT_DIR/fw.sh $VM_DIR $RESEARCH_SECURE_POLICY
+  fi
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
@@ -214,7 +210,7 @@ if [ $SECURE_MODE = 0 ]; then
 
 
   # Start release daemon if not already running
-  if [ ! -e $VM_DIR/release_pid ]; then
+  if [[ ! -e $VM_DIR/release_pid && "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
     nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log >>$VM_DIR/release_log &
     echo "$!" > $VM_DIR/release_pid
   fi
@@ -236,7 +232,7 @@ else
   echo "loadvm capsules" | nc -U $VM_DIR/monitor >/dev/null
 
   # Replace Firewall Policy
-  sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
+  sudo $SCRIPT_DIR/fw.sh $VM_DIR $MAINTENANCE_POLICY
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
