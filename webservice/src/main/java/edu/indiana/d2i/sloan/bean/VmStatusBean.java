@@ -69,5 +69,31 @@ public class VmStatusBean {
 	public boolean getPubKeyExists() {
 		return pub_key_exists;
 	}
-
+	public String getType() {
+		return vminfo.getType();
+	}
+	public String getTitle() {
+		return vminfo.getTitle();
+	}
+	public Boolean isConsent() {
+		return vminfo.isConsent();
+	}
+	public String getDesc_nature() {
+		return vminfo.getDesc_nature();
+	}
+	public String getDesc_requirement() {
+		return vminfo.getDesc_requirement();
+	}
+	public String getDesc_links() {
+		return vminfo.getDesc_links();
+	}
+	public String getDesc_outside_data() {
+		return vminfo.getDesc_outside_data();
+	}
+	public String getRr_data_files() {
+		return vminfo.getRr_data_files();
+	}
+	public String getRr_result_usage() {
+		return vminfo.getRr_result_usage();
+	}
 }
