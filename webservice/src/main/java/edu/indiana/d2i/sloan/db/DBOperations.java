@@ -175,7 +175,16 @@ public class DBOperations {
 						rs.getString(DBSchema.ImageTable.IMAGE_LOGIN_ID),
 						rs.getString(DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD),
 						rs.getString(DBSchema.VmTable.IMAGE_NAME),
-						null, null);
+						null, null,
+						rs.getString(DBSchema.VmTable.TYPE),
+						rs.getString(DBSchema.VmTable.TITLE),
+						rs.getBoolean(DBSchema.VmTable.CONSENT),
+						rs.getString(DBSchema.VmTable.DESC_NATURE),
+						rs.getString(DBSchema.VmTable.DESC_REQUIREMENT),
+						rs.getString(DBSchema.VmTable.DESC_LINKS),
+						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
+						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
+						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE));
 				res.add(vminfo);
 			}
 		} finally {
@@ -327,6 +336,11 @@ public class DBOperations {
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.VmTable.DISK_SPACE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.VmTable.TYPE + "," + DBSchema.VmTable.TITLE + ","
+				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
+				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
+				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -351,6 +365,11 @@ public class DBOperations {
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.VmTable.DISK_SPACE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.VmTable.TYPE + "," + DBSchema.VmTable.TITLE + ","
+				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
+				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
+				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -378,6 +397,11 @@ public class DBOperations {
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.VmTable.DISK_SPACE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.VmTable.TYPE + "," + DBSchema.VmTable.TITLE + ","
+				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
+				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
+				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -413,6 +437,11 @@ public class DBOperations {
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.VmTable.DISK_SPACE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.VmTable.TYPE + "," + DBSchema.VmTable.TITLE + ","
+				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
+				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
+				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -435,7 +464,9 @@ public class DBOperations {
 
 	public void addVM(String userName, String vmid, String imageName,
 			String vncLoginId, String vncLoginPwd, VMPorts host,
-			String workDir, int numCPUs, int memorySize, int diskSpace)
+			String workDir, int numCPUs, int memorySize, int diskSpace, String type, String title, Boolean consent,
+			String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
+			String rr_data_files, String rr_result_usage)
 			throws SQLException {
 		String insertvmsql = String
 				.format("INSERT INTO "
@@ -468,13 +499,33 @@ public class DBOperations {
 						+ DBSchema.VmTable.DISK_SPACE
 						+ ","
 						+ DBSchema.VmTable.USERNAME
+						+ ","
+						+ DBSchema.VmTable.TYPE
+						+ ","
+						+ DBSchema.VmTable.TITLE
+						+ ","
+						+ DBSchema.VmTable.CONSENT
+						+ ","
+						+ DBSchema.VmTable.DESC_NATURE
+						+ ","
+						+ DBSchema.VmTable.DESC_REQUIREMENT
+						+ ","
+						+ DBSchema.VmTable.DESC_LINKS
+						+ ","
+						+ DBSchema.VmTable.DESC_OUTSIDE_DATA
+						+ ","
+						+ DBSchema.VmTable.RR_DATA_FILES
+						+ ","
+						+ DBSchema.VmTable.RR_RESULT_USAGE
 						+ ") VALUES"
-						+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\")",
+						+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
+								", \"%s\", \"%s\", \"%b\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
 						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
 						vncLoginId, vncLoginPwd, numCPUs, memorySize,
-						diskSpace, userName);
+						diskSpace, userName, type, title, consent, desc_nature, desc_requirement,  desc_links,
+						desc_outside_data, rr_data_files, rr_result_usage);
 
 
 		logger.debug(insertvmsql);

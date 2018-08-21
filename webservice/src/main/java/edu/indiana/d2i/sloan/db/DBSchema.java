@@ -32,7 +32,8 @@ public class DBSchema {
 		public static String WORKING_DIR = "workingdir";
 		public static String IMAGE_NAME = "imagename";
 		public static String POLICY_NAME = "policyname";
-		
+		public static String TYPE = "type";
+
 		/*
 		 * the username/password pair that user uses to initially login to the
 		 * launched VM. This pair is passed to web service layer from web front
@@ -49,6 +50,18 @@ public class DBSchema {
 		public static String CREATED_AT = "created_at";
 		public static String USERNAME = "username";
 		public static String HOST = "host";
+
+		/*
+		VM parameters for research capsules
+		 */
+		public static String TITLE = "title";
+		public static String CONSENT = "consent";
+		public static String DESC_NATURE = "desc_nature";
+		public static String DESC_REQUIREMENT = "desc_requirement";
+		public static String DESC_LINKS = "desc_links";
+		public static String DESC_OUTSIDE_DATA = "desc_outside_data";
+		public static String RR_DATA_FILES = "rr_data_files";
+		public static String RR_RESULT_USAGE = "rr_result_usage";
 
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{
