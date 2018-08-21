@@ -1538,12 +1538,12 @@ public class DBOperations {
 		}
 	}
 
-	public void updateUserTOU(String userName, boolean toc) throws SQLException, UnsupportedEncodingException {
+	public void updateUserTOU(String userName, boolean tou) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.TOU + "=%s WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", toc, userName);
+				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", tou, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
