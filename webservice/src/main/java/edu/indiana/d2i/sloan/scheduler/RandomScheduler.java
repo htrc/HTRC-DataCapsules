@@ -23,6 +23,7 @@ import edu.indiana.d2i.sloan.Constants;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.db.DBSchema;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.vm.PortsPool;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -65,7 +66,10 @@ public class RandomScheduler extends Scheduler {
 						request.getVmId(), request.getImageName(),
 						request.getVncLoginID(), request.getVncLoginPasswd(),
 						vmhost, workDir, request.getVcpu(), 
-						request.getMemory(), request.getVolumeSizeInGB());
+						request.getMemory(), request.getVolumeSizeInGB(),
+						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
+						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
+						request.getRr_data_files(), request.getRr_result_usage());
 				
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
 						null, // image path
@@ -77,7 +81,10 @@ public class RandomScheduler extends Scheduler {
 						request.getImageName(), 
 						null, null, /* login username && login password */
 						null /* policy name */, 
-						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */);
+						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */,
+						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
+						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
+						request.getRr_data_files(), request.getRr_result_usage());
 			}
 		}
 

@@ -25,6 +25,9 @@ public class VmInfoBean {
 	private VMMode vmmode;
 	private VMMode requestedVMMode;
 	private VMState vmstate;
+	private Boolean consent;
+	private String type, title, desc_nature, desc_requirement, desc_links,
+			desc_outside_data, rr_data_files, rr_result_usage;
 
 	public void setImagePath(String imagePath) {
 		this.imagepath = imagePath;
@@ -47,7 +50,9 @@ public class VmInfoBean {
 			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,
 			VMState vmstate, String vncloginId, String vncloginPwd,
 			String vmloginid, String vmloginpwd,
-			String imagename, String policyname, VMMode requestedVMMode) {
+			String imagename, String policyname, VMMode requestedVMMode, String type, String title,
+					  Boolean consent, String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
+			String rr_data_files, String rr_result_usage ) {
 		this.vmid = vmid;
 		this.publicip = publicip;
 		this.workDir = workDir;
@@ -67,6 +72,15 @@ public class VmInfoBean {
 		this.requestedVMMode = requestedVMMode;
 		this.vmloginid = vmloginid;
 		this.vmloginpwd = vmloginpwd;
+		this.consent = consent;
+		this.type = type;
+		this.title = title;
+		this.desc_nature = desc_nature;
+		this.desc_requirement = desc_requirement;
+		this.desc_links = desc_links;
+		this.desc_outside_data = desc_outside_data;
+		this.rr_data_files = rr_data_files;
+		this.rr_result_usage = rr_result_usage;
 	}
 
 	public String getVmid() {
@@ -138,16 +152,88 @@ public class VmInfoBean {
 	public String getVmLoginPwd() {
 		return vmloginpwd;
 	}
-	
+
+	public Boolean isConsent() {
+		return consent;
+	}
+
+	public void setConsent(Boolean consent) {
+		this.consent = consent;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getDesc_nature() {
+		return desc_nature;
+	}
+
+	public void setDesc_nature(String desc_nature) {
+		this.desc_nature = desc_nature;
+	}
+
+	public String getDesc_requirement() {
+		return desc_requirement;
+	}
+
+	public void setDesc_requirement(String desc_requirement) {
+		this.desc_requirement = desc_requirement;
+	}
+
+	public String getDesc_links() {
+		return desc_links;
+	}
+
+	public void setDesc_links(String desc_links) {
+		this.desc_links = desc_links;
+	}
+
+	public String getDesc_outside_data() {
+		return desc_outside_data;
+	}
+
+	public void setDesc_outside_data(String desc_outside_data) {
+		this.desc_outside_data = desc_outside_data;
+	}
+
+	public String getRr_data_files() {
+		return rr_data_files;
+	}
+
+	public void setRr_data_files(String rr_data_files) {
+		this.rr_data_files = rr_data_files;
+	}
+
+	public String getRr_result_usage() {
+		return rr_result_usage;
+	}
+
+	public void setRr_result_usage(String rr_result_usage) {
+		this.rr_result_usage = rr_result_usage;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("[vmid=%s, publicip=%s, workDir=%s, imagename=%s, " +
 			"imagepath=%s, sshport=%d, vncport=%d, vmloginId=%s, vmloginPwd=%s, " +
 			"numCPUs=%d, memorySize=%d, volumeSize=%d, policypath=%s, vmmode=%s," +
-			"vmstate=%s, requestmode=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
+			"vmstate=%s, requestmode=%s, type=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
 			vncport, vncloginId, vncloginPwd, numCPUs, memorySize, volumeSize, policypath,
 			(vmmode != null) ? vmmode.toString(): null, 
 			(vmstate != null) ? vmstate.toString(): null, 
-			(requestedVMMode != null) ? requestedVMMode.toString(): null);
+			(requestedVMMode != null) ? requestedVMMode.toString(): null, type);
 	}
 }

@@ -198,9 +198,7 @@ class CapsuleHypervisor implements IHypervisor {
 			// maintenance
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("--wdir", vminfo.getWorkDir())
-					.addArgument("--mode",
-							vminfo.getRequestedVMMode().toString().toLowerCase())
-					.addArgument("--policy", vminfo.getPolicypath())
+					.addArgument("--vmtype", vminfo.getType())
 					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands launchVMCmd = new Commands(
@@ -268,7 +266,7 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString().toLowerCase())
-					.addArgument("--policy", vminfo.getPolicypath())
+					.addArgument("--vmtype", vminfo.getType())
 					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands switchVMCmd = new Commands(

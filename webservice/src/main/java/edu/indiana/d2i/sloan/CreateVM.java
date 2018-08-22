@@ -57,6 +57,15 @@ public class CreateVM {
 			@FormParam("loginpassword") String loginpassword,
 			@DefaultValue("1024") @FormParam("memory") int memory,
 			@DefaultValue("1") @FormParam("vcpu") int vcpu,
+			@FormParam("type") String type,
+			@FormParam("consent") Boolean consent,
+			@FormParam("title") String title,
+			@FormParam("desc_nature") String desc_nature,
+			@FormParam("desc_requirement") String desc_requirement,
+			@FormParam("desc_links") String desc_links,
+			@FormParam("desc_outside_data") String desc_outside_data,
+			@FormParam("rr_data_files") String rr_data_files,
+			@FormParam("rr_result_usage") String rr_result_usage,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
@@ -107,7 +116,8 @@ public class CreateVM {
 					Configuration.PropertyName.DEFAULT_VM_WORKDIR_PREFIX), vmid);
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
-					vcpu, volumeSizeInGB, workDir);
+					vcpu, volumeSizeInGB, workDir, type, title, consent, desc_nature, desc_requirement,  desc_links,
+					desc_outside_data, rr_data_files, rr_result_usage);
 			logger.info("User " + userName + " tries to create vm " + request);
 			
 			// check quota
