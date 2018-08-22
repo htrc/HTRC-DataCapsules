@@ -122,11 +122,6 @@ fi
 # Load config file
 . $VM_DIR/config
 
-# If DC-TYPE is not recorded , add it.
-if [[ ! -d $VM_DIR/dc_type || `cat $VM_DIR/dc_type` != "$DC_TYPE" ]]; then
-   echo "$DC_TYPE" > $VM_DIR/dc_type
-fi
-
 
 
 # Check if full disk image is done copying

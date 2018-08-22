@@ -20,7 +20,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --image <Image Name> --ncpu <Number of CPUs> --mem <Guest Memory Size>"
+  echo "Usage: $0 <Directory for VM> --image <Image Name> --vcpu <Number of CPUs> --mem <Guest Memory Size>"
   echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size> "
   echo ""
   echo "Creates a new VM by allocating a directory for it and instantiating configuration files."
@@ -29,7 +29,7 @@ usage () {
   echo ""
   echo "--image    Image Name: Image should be a bootable disk image compatible with qemu"
   echo ""
-  echo "--ncpu     Number of CPUs: The number of virtual CPUs that will be allocated to this VM"
+  echo "--vcpu     Number of CPUs: The number of virtual CPUs that will be allocated to this VM"
   echo ""
   echo "--mem      Guest Memory Size: May be specified with a qualifier (e.g. G, M), otherwise assumed to be in megabytes"
   echo ""
@@ -93,19 +93,19 @@ while :; do
         --image=)         # Handle the case of an empty --image=
             die 'ERROR: "--wdir" requires a non-empty option argument.'
             ;;
-        --ncpu)       # Takes an option argument; ensure it has been specified.
+        --vcpu)       # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
                 NUM_VCPU=$2
                 shift
             else
-                die 'ERROR: "--ncpu" requires a non-empty option argument.'
+                die 'ERROR: "--vcpu" requires a non-empty option argument.'
             fi
             ;;
-        --ncpu=?*)
+        --vcpu=?*)
             NUM_VCPU=${1#*=} # Delete everything up to "=" and assign the remainder.
             ;;
-        --ncpu=)         # Handle the case of an empty --ncpu=
-            die 'ERROR: "--ncpu" requires a non-empty option argument.'
+        --vcpu=)         # Handle the case of an empty --vcpu=
+            die 'ERROR: "--vcpu" requires a non-empty option argument.'
             ;;
         --mem)       # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -224,7 +224,7 @@ if ! [[ "$SSH_PORT" =~ ^[0-9]+$ && "$SSH_PORT" -le 65535 ]]; then
      exit 1
 fi
 
-if [[ "$LOGIN_PWD" -gt 8 ]] ; then
+if [[ ${#LOGIN_PWD} -gt 8 ]] ; then
      echo "error: login passwords longer than 8 characters are not currently supported"
      exit 1
 fi
