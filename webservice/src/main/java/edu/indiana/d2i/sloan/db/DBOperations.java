@@ -1548,6 +1548,16 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	public void updateVmType(String userName, String vmid, String type) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updatevmsql = String.format("UPDATE "
+				+ DBSchema.VmTable.TABLE_NAME + " SET "
+				+ DBSchema.VmTable.TYPE + "=\"%s\" WHERE "
+				+ DBSchema.VmTable.VM_ID + "=\"%s\"", type, vmid);
+		updates.add(updatevmsql);
+		executeTransaction(updates);
+	}
+
 	public void close() {
 		DBConnections.getInstance().close();
 	}

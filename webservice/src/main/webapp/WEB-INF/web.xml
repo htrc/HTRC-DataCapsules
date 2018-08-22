@@ -51,6 +51,7 @@
 		<url-pattern>/listimage</url-pattern>
 		<url-pattern>/updateuserkey</url-pattern>
 		<url-pattern>/updateusertou</url-pattern>
+		<url-pattern>/updatevmtype</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>
