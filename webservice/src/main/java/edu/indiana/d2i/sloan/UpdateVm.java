@@ -33,14 +33,23 @@ import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
-@Path("/updatevmtype")
-public class UpdateVmType {
-	private static Logger logger = Logger.getLogger(UpdateVmType.class);
+@Path("/updatevm")
+public class UpdateVm {
+	private static Logger logger = Logger.getLogger(UpdateVm.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
-	public Response queryVMs(@FormParam("type") String type, @FormParam("vmId") String vmId,
+	public Response queryVMs(@FormParam("vmId") String vmId,
+			@FormParam("type") String type,
+			@FormParam("consent") Boolean consent,
+			@FormParam("title") String title,
+			@FormParam("desc_nature") String desc_nature,
+			@FormParam("desc_requirement") String desc_requirement,
+			@FormParam("desc_links") String desc_links,
+			@FormParam("desc_outside_data") String desc_outside_data,
+			@FormParam("rr_data_files") String rr_data_files,
+			@FormParam("rr_result_usage") String rr_result_usage,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
@@ -64,11 +73,23 @@ public class UpdateVmType {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
-			logger.info("User " + userName + " tries to update the VM type");
+			logger.info("User " + userName + " tries to update the VM");
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
-			DBOperations.getInstance().updateVmType(userName, vmId, type);
-			logger.info("Type of the VM " + vmId + " of user '" + userName + "' was updated to type "
-					+ type + " in database successfully!");
+			if(!vmInfo.getVmmode().equals(VMMode.MAINTENANCE) ||
+					!(vmInfo.getVmstate().equals(VMState.RUNNING) || vmInfo.getVmstate().equals(VMState.SHUTDOWN))) {
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "Capsule can be converted to a Research Capsule " +
+								"only when in \"MAINTENANCE\" mode " +
+								"and in \"RUNNING\" or \"SHUTDOWN\" state. Please make sure that the capsuel is in the " +
+								"right mode/state before trying to convert to a RESEARCH capsule"))
+						.build();
+			}
+
+			DBOperations.getInstance().updateVm(vmId, type, title, consent, desc_nature, desc_requirement, desc_links,
+					desc_outside_data, rr_data_files, rr_result_usage);
+			logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
+					+ type + ") in database successfully!");
 
 			return Response.status(200).build();
 		} catch (Exception e) {

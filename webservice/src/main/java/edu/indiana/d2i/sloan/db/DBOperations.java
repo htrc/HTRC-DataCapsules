@@ -1548,12 +1548,26 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
-	public void updateVmType(String userName, String vmid, String type) throws SQLException, UnsupportedEncodingException {
+	public void updateVm(String vmid, String type, String title, Boolean consent,
+						 String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
+						 String rr_data_files, String rr_result_usage) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
-				+ DBSchema.VmTable.TYPE + "=\"%s\" WHERE "
-				+ DBSchema.VmTable.VM_ID + "=\"%s\"", type, vmid);
+				+ DBSchema.VmTable.TYPE + "=\"%s\", "
+				+ DBSchema.VmTable.TITLE + "=\"%s\", "
+				+ DBSchema.VmTable.CONSENT + "=%s, "
+				+ DBSchema.VmTable.DESC_NATURE + "=\"%s\", "
+				+ DBSchema.VmTable.DESC_REQUIREMENT + "=\"%s\", "
+				+ DBSchema.VmTable.DESC_LINKS + "=\"%s\", "
+				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "=\"%s\", "
+				+ DBSchema.VmTable.RR_DATA_FILES + "=\"%s\", "
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\" "
+				+ "WHERE "
+				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
+				type, title, consent, desc_nature, desc_requirement, desc_links, desc_outside_data,
+				rr_data_files, rr_result_usage,
+				vmid);
 		updates.add(updatevmsql);
 		executeTransaction(updates);
 	}
