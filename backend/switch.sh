@@ -196,10 +196,13 @@ if [ $SECURE_MODE = 0 ]; then
 
 
   # Apply Firewall Policy
-  if [ "$DC_TYPE" = "$DEMO_TYPE" ]; then
+  if [[ "$DC_TYPE" = "$DEMO_TYPE" || "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
       sudo $SCRIPT_DIR/fw.sh $VM_DIR $DEMO_SECURE_POLICY
-  else
+  elif [[ "$DC_TYPE" = "$RESEARCH_IC_TYPE" ]]; then
       sudo $SCRIPT_DIR/fw.sh $VM_DIR $RESEARCH_SECURE_POLICY
+  else
+      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
+      echo "Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_IC_TYPE."
   fi
   FW_RES=$?
 

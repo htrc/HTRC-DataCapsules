@@ -119,14 +119,14 @@ if [[ "$DC_TYPE" = "$DEMO_TYPE" ]]; then
         echo "Disabled" > $VM_DIR/release_results
     fi
 # Add release_results script if capsule type is RESEARCH and disabled
-elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
+elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_IC_TYPE" ]]; then
     if [[ `cat $VM_DIR/release_results` == "Disabled" ]]; then
       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
       echo "Enabled" > $VM_DIR/release_results
     fi
 else
      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
-     echo "Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE."
+     echo "Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_IC_TYPE."
 fi
 
 exit 0
