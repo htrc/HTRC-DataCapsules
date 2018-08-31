@@ -18,7 +18,7 @@ package edu.indiana.d2i.sloan.bean;
 public class CreateVmRequestBean {
 	private String userName, imageName, vmid, vncLoginID, vncLoginPasswd, workDir;
 	private int memory, vcpu, volumeSizeInGB;
-	private Boolean consent;
+	private Boolean consent, full_access;
 	private String type, title, desc_nature, desc_requirement, desc_links,
 			desc_outside_data, rr_data_files, rr_result_usage;
 
@@ -26,7 +26,7 @@ public class CreateVmRequestBean {
 			String vncLoginID, String vncLoginPasswd, int memory, int vcpu,
 			int volumeSizeInGB, String workDir, String type, String title, Boolean consent, String desc_nature,
 			String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage ) {
+			String rr_data_files, String rr_result_usage, Boolean full_access ) {
 		this.userName = userName;
 		this.imageName = imageName;
 		this.vmid = vmid;
@@ -37,6 +37,7 @@ public class CreateVmRequestBean {
 		this.volumeSizeInGB = volumeSizeInGB;
 		this.workDir = workDir;
 		this.consent = consent;
+		this.full_access = full_access;
 		this.type = type;
 		this.title = title;
 		this.desc_nature = desc_nature;
@@ -89,6 +90,14 @@ public class CreateVmRequestBean {
 
 	public void setConsent(Boolean consent) {
 		this.consent = consent;
+	}
+
+	public Boolean isFull_access() {
+		return full_access;
+	}
+
+	public void setFull_access(Boolean full_access) {
+		this.full_access = full_access;
 	}
 
 	public String getType() {

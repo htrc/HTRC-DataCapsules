@@ -80,6 +80,9 @@ public class VmStatusBean {
 	public Boolean isConsent() {
 		return vminfo.isConsent();
 	}
+	public Boolean isFull_access() {
+		return vminfo.isFull_access();
+	}
 	public String getDesc_nature() {
 		return vminfo.getDesc_nature();
 	}

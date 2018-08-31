@@ -26,6 +26,7 @@ public class VmInfoBean {
 	private VMMode requestedVMMode;
 	private VMState vmstate;
 	private Boolean consent;
+	private Boolean full_access;
 	private String type, title, desc_nature, desc_requirement, desc_links,
 			desc_outside_data, rr_data_files, rr_result_usage;
 
@@ -52,7 +53,7 @@ public class VmInfoBean {
 			String vmloginid, String vmloginpwd,
 			String imagename, String policyname, VMMode requestedVMMode, String type, String title,
 					  Boolean consent, String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage ) {
+			String rr_data_files, String rr_result_usage, Boolean full_access ) {
 		this.vmid = vmid;
 		this.publicip = publicip;
 		this.workDir = workDir;
@@ -73,6 +74,7 @@ public class VmInfoBean {
 		this.vmloginid = vmloginid;
 		this.vmloginpwd = vmloginpwd;
 		this.consent = consent;
+		this.full_access = full_access;
 		this.type = type;
 		this.title = title;
 		this.desc_nature = desc_nature;
@@ -159,6 +161,14 @@ public class VmInfoBean {
 
 	public void setConsent(Boolean consent) {
 		this.consent = consent;
+	}
+
+	public Boolean isFull_access() {
+		return full_access;
+	}
+
+	public void setFull_access(Boolean full_access) {
+		this.full_access = full_access;
 	}
 
 	public String getType() {

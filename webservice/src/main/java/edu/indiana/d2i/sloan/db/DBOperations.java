@@ -184,7 +184,8 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.DESC_LINKS),
 						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
-						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE));
+						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
+						rs.getObject(DBSchema.VmTable.FULL_ACCESS) == null ? null : rs.getBoolean(DBSchema.VmTable.FULL_ACCESS));
 				res.add(vminfo);
 			}
 		} finally {
@@ -340,7 +341,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -369,7 +370,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -401,7 +402,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -441,7 +442,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -466,7 +467,7 @@ public class DBOperations {
 			String vncLoginId, String vncLoginPwd, VMPorts host,
 			String workDir, int numCPUs, int memorySize, int diskSpace, String type, String title, Boolean consent,
 			String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage)
+			String rr_data_files, String rr_result_usage, Boolean full_access)
 			throws SQLException {
 		String insertvmsql = String
 				.format("INSERT INTO "
@@ -517,9 +518,11 @@ public class DBOperations {
 								+ DBSchema.VmTable.RR_DATA_FILES
 								+ ","
 								+ DBSchema.VmTable.RR_RESULT_USAGE
+								+ ","
+								+ DBSchema.VmTable.FULL_ACCESS
 								+ ") VALUES"
 								+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
-								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s)",
+								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s, %s)",
 						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
@@ -531,7 +534,7 @@ public class DBOperations {
 						desc_links != null ? "\"" + desc_links + "\"" : desc_links,
 						desc_outside_data != null ? "\"" + desc_outside_data + "\"" : desc_outside_data,
 						rr_data_files != null ? "\"" + rr_data_files + "\"" : rr_data_files,
-						rr_result_usage != null ? "\"" + rr_result_usage + "\"" : rr_result_usage);
+						rr_result_usage != null ? "\"" + rr_result_usage + "\"" : rr_result_usage, full_access);
 
 		logger.debug(insertvmsql);
 
@@ -1550,7 +1553,7 @@ public class DBOperations {
 
 	public void updateVm(String vmid, String type, String title, Boolean consent,
 						 String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-						 String rr_data_files, String rr_result_usage) throws SQLException, UnsupportedEncodingException {
+						 String rr_data_files, String rr_result_usage, Boolean full_access) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
@@ -1562,11 +1565,12 @@ public class DBOperations {
 				+ DBSchema.VmTable.DESC_LINKS + "=\"%s\", "
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "=\"%s\", "
 				+ DBSchema.VmTable.RR_DATA_FILES + "=\"%s\", "
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\" "
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\", "
+				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
 				type, title, consent, desc_nature, desc_requirement, desc_links, desc_outside_data,
-				rr_data_files, rr_result_usage,
+				rr_data_files, rr_result_usage, full_access,
 				vmid);
 		updates.add(updatevmsql);
 		executeTransaction(updates);

@@ -59,6 +59,7 @@ public class CreateVM {
 			@DefaultValue("1") @FormParam("vcpu") int vcpu,
 			@FormParam("type") String type,
 			@FormParam("consent") Boolean consent,
+			@FormParam("full_access") Boolean full_access,
 			@FormParam("title") String title,
 			@FormParam("desc_nature") String desc_nature,
 			@FormParam("desc_requirement") String desc_requirement,
@@ -117,7 +118,7 @@ public class CreateVM {
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
 					vcpu, volumeSizeInGB, workDir, type, title, consent, desc_nature, desc_requirement,  desc_links,
-					desc_outside_data, rr_data_files, rr_result_usage);
+					desc_outside_data, rr_data_files, rr_result_usage, full_access);
 			logger.info("User " + userName + " tries to create vm " + request);
 			
 			// check quota

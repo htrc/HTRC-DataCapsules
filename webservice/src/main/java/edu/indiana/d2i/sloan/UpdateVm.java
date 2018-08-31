@@ -22,6 +22,7 @@ import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
+import edu.indiana.d2i.sloan.vm.VMType;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -43,6 +44,7 @@ public class UpdateVm {
 	public Response queryVMs(@FormParam("vmId") String vmId,
 			@FormParam("type") String type,
 			@FormParam("consent") Boolean consent,
+			@FormParam("full_access") Boolean full_access,
 			@FormParam("title") String title,
 			@FormParam("desc_nature") String desc_nature,
 			@FormParam("desc_requirement") String desc_requirement,
@@ -76,18 +78,36 @@ public class UpdateVm {
 			logger.info("User " + userName + " tries to update the VM");
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
-			if(!vmInfo.getVmmode().equals(VMMode.MAINTENANCE) ||
-					!(vmInfo.getVmstate().equals(VMState.RUNNING) || vmInfo.getVmstate().equals(VMState.SHUTDOWN))) {
+			if(!vmInfo.getType().equals(VMType.RESEARCH.getName())) {
 				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Capsule can be converted to a Research Capsule " +
-								"only when in \"MAINTENANCE\" mode " +
-								"and in \"RUNNING\" or \"SHUTDOWN\" state. Please make sure that the capsuel is in the " +
-								"right mode/state before trying to convert to a RESEARCH capsule"))
+						.entity(new ErrorBean(400, "Only a " + VMType.RESEARCH.getName() +
+								" capsule can be converted to a " + VMType.RESEARCH_FULL.getName() + " capsule!"))
+						.build();
+			} else if(vmInfo.isFull_access()!= null && vmInfo.isFull_access() == false) {
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "You have already requested to convert this " +
+								"capsule to a " + VMType.RESEARCH_FULL.getName() + " capsule!"))
+						.build();
+			}  else if(vmInfo.isFull_access()!= null && vmInfo.isFull_access() == true) {
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "This capsule is already a " +
+								VMType.RESEARCH_FULL.getName() + " capsule!"))
+						.build();
+			} else if(!(vmInfo.getVmstate().equals(VMState.SHUTDOWN)) &&
+					!(vmInfo.getVmstate().equals(VMState.RUNNING) && vmInfo.getVmmode().equals(VMMode.MAINTENANCE))) {
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "A Capsule can be converted to a " +
+								VMType.RESEARCH_FULL.getName() + " Capsule " +
+								"only when in \"" + VMState.SHUTDOWN + "\" state or in " +
+								" \"" + VMState.RUNNING + "\" state and \"" + VMMode.MAINTENANCE + "\" mode. " +
+								"Please make sure that the Capsule is in the " +
+								"right mode/state before trying to convert to a " +
+								VMType.RESEARCH_FULL.getName() + " capsule"))
 						.build();
 			}
 
 			DBOperations.getInstance().updateVm(vmId, type, title, consent, desc_nature, desc_requirement, desc_links,
-					desc_outside_data, rr_data_files, rr_result_usage);
+					desc_outside_data, rr_data_files, rr_result_usage, full_access);
 			logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 					+ type + ") in database successfully!");
 

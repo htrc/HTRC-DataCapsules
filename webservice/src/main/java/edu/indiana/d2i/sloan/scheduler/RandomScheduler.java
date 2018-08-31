@@ -69,7 +69,7 @@ public class RandomScheduler extends Scheduler {
 						request.getMemory(), request.getVolumeSizeInGB(),
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
-						request.getRr_data_files(), request.getRr_result_usage());
+						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
 				
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
 						null, // image path
@@ -84,7 +84,7 @@ public class RandomScheduler extends Scheduler {
 						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */,
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
-						request.getRr_data_files(), request.getRr_result_usage());
+						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
 			}
 		}
 
