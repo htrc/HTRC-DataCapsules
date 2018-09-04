@@ -1576,6 +1576,19 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	public void updateVmType(String vmid, String type, Boolean full_access) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updatevmsql = String.format("UPDATE "
+				+ DBSchema.VmTable.TABLE_NAME + " SET "
+				+ DBSchema.VmTable.TYPE + "=\"%s\", "
+				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
+				+ "WHERE "
+				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
+				type, full_access, vmid);
+		updates.add(updatevmsql);
+		executeTransaction(updates);
+	}
+
 	public void close() {
 		DBConnections.getInstance().close();
 	}

@@ -83,7 +83,31 @@ public class UpdateVm {
 						.entity(new ErrorBean(400, "Only a " + VMType.RESEARCH.getName() +
 								" capsule can be converted to a " + VMType.RESEARCH_FULL.getName() + " capsule!"))
 						.build();
-			} else if(vmInfo.isFull_access()!= null && vmInfo.isFull_access() == false) {
+			}
+
+			if(type.equals(VMType.RESEARCH_FULL.getName())) {
+				if(vmInfo.isFull_access() == null) {
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "User has not requested full access for " +
+									"this capsule!")).build();
+				} else if(vmInfo.isFull_access() == true) {
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "This capsule is already a " +
+									VMType.RESEARCH_FULL.getName() + " capsule!")).build();
+				}
+
+				DBOperations.getInstance().updateVmType(vmId, type, full_access);
+				logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
+						+ type + ") in database successfully!");
+				return Response.status(200).build();
+			}
+
+			if(!type.equals(VMType.RESEARCH.getName())) {
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "Invalid capsule conversion type : " + type))
+						.build();
+			}
+			if(vmInfo.isFull_access()!= null && vmInfo.isFull_access() == false) {
 				return Response.status(Response.Status.BAD_REQUEST)
 						.entity(new ErrorBean(400, "You have already requested to convert this " +
 								"capsule to a " + VMType.RESEARCH_FULL.getName() + " capsule!"))
