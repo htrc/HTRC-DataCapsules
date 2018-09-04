@@ -158,7 +158,7 @@ if [ $SECURE_MODE = 0 ]; then
   scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
 
    #Add or remove releaseresult command from the capsule
-   $SCRIPT_DIR/managereleaseresults.sh --wdir $VM_DIR --vmtype $DC_TYPE
+   $SCRIPT_DIR/manageguest.sh --wdir $VM_DIR --vmtype $DC_TYPE
 
   # Wait for secure volume to finish being created (in case it hasn't yet by createvm)
   for time in $(seq 1 30); do
@@ -198,11 +198,12 @@ if [ $SECURE_MODE = 0 ]; then
   # Apply Firewall Policy
   if [[ "$DC_TYPE" = "$DEMO_TYPE" || "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
       sudo $SCRIPT_DIR/fw.sh $VM_DIR $DEMO_SECURE_POLICY
-  elif [[ "$DC_TYPE" = "$RESEARCH_IC_TYPE" ]]; then
-      sudo $SCRIPT_DIR/fw.sh $VM_DIR $RESEARCH_SECURE_POLICY
+  elif [[ "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
+      sudo $SCRIPT_DIR/fw.sh $VM_DIR $RESEARCH_SECURE_FULL_POLICY
   else
       logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
-      echo "Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_IC_TYPE."
+      echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."
+      exit 8
   fi
   FW_RES=$?
 

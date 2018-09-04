@@ -358,15 +358,9 @@ if [ -n "$SSH_KEY" ]; then
      $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
 fi
 
-logger "$VM_DIR restart nginx" # this is to makesure nginx is running properly in the capsule.
-ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
-
 logger "$VM_DIR Add .htrc file. this is for HTRC WorksetToolkit"
 scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
 ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
-
-#Add or remove releaseresult command from the capsule
-$SCRIPT_DIR/managereleaseresults.sh --wdir $VM_DIR --vmtype $DC_TYPE
 
 # Return successfully (only reaches here if no errors occur)
 exit 0
