@@ -96,7 +96,12 @@ public class UpdateVm {
 									VMType.RESEARCH_FULL.getName() + " capsule!")).build();
 				}
 
-				DBOperations.getInstance().updateVmType(vmId, type, full_access);
+				if(full_access == true) {
+					DBOperations.getInstance().updateVmType(vmId, type, full_access);
+				} else {
+					DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null);
+				}
+
 				logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 						+ type + ") in database successfully!");
 				return Response.status(200).build();
