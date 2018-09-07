@@ -52,6 +52,7 @@
 		<url-pattern>/updateuserkey</url-pattern>
 		<url-pattern>/updateusertou</url-pattern>
 		<url-pattern>/updatevm</url-pattern>
+		<url-pattern>/updateuseremail</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>
