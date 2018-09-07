@@ -6,11 +6,12 @@ import urllib2
 import argparse
 import string
 import httplib
-
+import time
 
 # DC
-DC_API = 'localhost'
-PORT = '80'
+DC_API = 'htc2.carbonate.uits.iu.edu'
+PORT = '8087'
+
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -42,11 +43,11 @@ def query_yes_no(question, default="yes"):
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
 
-def delete_vm(vmid, username, useremail):
 
+def delete_vm(vmid, username, useremail):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
-    'htrc-remote-user': username,
-    'htrc-remote-user-email': useremail }
+               'htrc-remote-user': username,
+               'htrc-remote-user-email': useremail}
 
     params = urllib.urlencode({'vmid': vmid})
 
@@ -59,11 +60,11 @@ def delete_vm(vmid, username, useremail):
 
     print data
 
-def stop_vm(vmid, username, useremail):
 
+def stop_vm(vmid, username, useremail):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
-    'htrc-remote-user': username,
-    'htrc-remote-user-email': useremail }
+               'htrc-remote-user': username,
+               'htrc-remote-user-email': useremail}
 
     params = urllib.urlencode({'vmid': vmid})
 
@@ -76,11 +77,11 @@ def stop_vm(vmid, username, useremail):
 
     print data
 
-def start_vm(vmid, username, useremail):
 
+def start_vm(vmid, username, useremail):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
-    'htrc-remote-user': username,
-    'htrc-remote-user-email': useremail }
+               'htrc-remote-user': username,
+               'htrc-remote-user-email': useremail}
 
     params = urllib.urlencode({'vmid': vmid})
 
@@ -93,11 +94,11 @@ def start_vm(vmid, username, useremail):
 
     print data
 
-def switch_vm(vmid, username, useremail, mode):
 
+def switch_vm(vmid, username, useremail, mode):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
-    'htrc-remote-user': username,
-    'htrc-remote-user-email': useremail }
+               'htrc-remote-user': username,
+               'htrc-remote-user-email': useremail}
 
     params = urllib.urlencode({'vmid': vmid, 'mode': mode})
 
@@ -110,13 +111,15 @@ def switch_vm(vmid, username, useremail, mode):
 
     print data
 
+
 def create_vm(username, useremail, imagename, loginusername, loginpassword, memory, vcpu):
-
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
-    'htrc-remote-user': username,
-    'htrc-remote-user-email': useremail }
+               'htrc-remote-user': username,
+               'htrc-remote-user-email': useremail}
 
-    params = urllib.urlencode({'imagename': imagename, 'loginusername': loginusername, 'loginpassword': loginpassword, 'memory': memory, 'vcpu': vcpu})
+    params = urllib.urlencode(
+        {'imagename': imagename, 'loginusername': loginusername, 'loginpassword': loginpassword, 'memory': memory,
+         'vcpu': vcpu})
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
@@ -127,8 +130,8 @@ def create_vm(username, useremail, imagename, loginusername, loginpassword, memo
 
     print data
 
-def show_release():
 
+def show_release():
     headers = {'Content-Type': 'application/json'}
 
     # GET the request
@@ -140,8 +143,8 @@ def show_release():
     parsed = json.loads(data)
     print json.dumps(parsed, indent=4, sort_keys=True)
 
-def show_unrelease():
 
+def show_unrelease():
     headers = {'Content-Type': 'application/json'}
 
     # GET the request
@@ -155,39 +158,38 @@ def show_unrelease():
 
 
 def retrieve_file(result_id, out_file):
-
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/retrieveresultfile?randomid=' + result_id)
     response = conn.getresponse()
 
-    if(response.status != 200):
+    if (response.status != 200):
         print response.read()
     else:
         data = response.read()
-        f = open(out_file,'w')
+        f = open(out_file, 'w')
         f.write(data)
         f.close()
-        print 'Result written to '+ out_file +' file...'
+        print 'Result written to ' + out_file + ' file...'
+
 
 def download_file(result_id, out_file):
-
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/download?randomid=' + result_id)
     response = conn.getresponse()
 
-    if(response.status != 200):
+    if (response.status != 200):
         print response.read()
     else:
         data = response.read()
-        f = open(out_file,'w')
+        f = open(out_file, 'w')
         f.write(data)
         f.close()
-        print 'Result downloaded to '+ out_file +' file...'
+        print 'Result downloaded to ' + out_file + ' file...'
+
 
 def update_result(result_id, status):
-
     params = urllib.urlencode({'resultid': result_id, 'status': status})
 
     # POST the request
@@ -196,6 +198,72 @@ def update_result(result_id, status):
     response = conn.getresponse()
 
     print response.read()
+
+
+def stop_running_vms():
+    headers = {'Content-Type': 'application/json',
+               'Accept': 'application/json'}
+
+    # Get request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/listvms')
+    response = conn.getresponse()
+
+    if response.status == 200:
+        vms = json.loads(response.read())['vmsInfo']
+
+        for vm in vms:
+            if vm["vmState"] == "RUNNING":
+                print 'Stopping VM: {}'.format(vm["vmid"])
+                stop_vm(vm["vmid"], vm["username"], vm["userEmail"])
+                time.sleep(5)
+
+
+def update_vmtype(vmid, username, status):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': username}
+
+    params = urllib.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status})
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/updatevm', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+
+    print data
+
+
+def show_capsules(username):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': username}
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/show', "", headers)
+    response = conn.getresponse()
+
+    data = response.read()
+    parsed = json.loads(data)
+    print json.dumps(parsed, indent=4, sort_keys=True)
+
+
+def show_pending_fullaccess(username):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': username}
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/show', "", headers)
+    response = conn.getresponse()
+
+    if response.status == 200:
+        vms = json.loads(response.read())['status']
+
+        for vm in vms:
+            if vm["full_access"] is not None and vm["full_access"] is False:
+                print 'VM ID : {} has pending request for full data access.'.format(vm["vmid"])
 
 
 if __name__ == '__main__':
@@ -245,14 +313,31 @@ if __name__ == '__main__':
 
     releaseresult = subparsers.add_parser('releaseresult', description='Release the result')
     releaseresult.add_argument('rid')
-    
+
     rejectresult = subparsers.add_parser('rejectresult', description='Reject the result')
-    rejectresult.add_argument('rid') 
+    rejectresult.add_argument('rid')
+
+    subparsers.add_parser("stoprunning", description="Stop all running capsules")
+
+    approvefullaccess = subparsers.add_parser('approvefullaccess', description='Approve Full Access for Data')
+    approvefullaccess.add_argument('vm')
+    approvefullaccess.add_argument('vmuser')
+
+    rejectfullaccess = subparsers.add_parser('rejectfullaccess', description='Reject Full Access for Data')
+    rejectfullaccess.add_argument('vm')
+    rejectfullaccess.add_argument('vmuser')
+
+    showcapsules = subparsers.add_parser('showcapsules', description='Show all capsules for the given user')
+    showcapsules.add_argument('vmuser')
+
+    showpendingfullaccess = subparsers.add_parser('showpendingfullaccess', description='Show VM IDs which have pending requests for full data access.')
+    showpendingfullaccess.add_argument('vmuser')
 
     parsed = parser.parse_args()
 
     if parsed.sub_commands == 'delete':
-        confirmation = query_yes_no('Are you sure you want to delete the VM ' + parsed.vm + '? This operation is not recoverable.')
+        confirmation = query_yes_no(
+            'Are you sure you want to delete the VM ' + parsed.vm + '? This operation is not recoverable.')
         if confirmation:
             print 'Deleting  VM ' + parsed.vm + '....'
             delete_vm(parsed.vm, parsed.vmuser, parsed.vmuseremail)
@@ -270,16 +355,19 @@ if __name__ == '__main__':
             start_vm(parsed.vm, parsed.vmuser, parsed.vmuseremail)
 
     if parsed.sub_commands == 'switch':
-        confirmation = query_yes_no('Are you sure you want to switch the VM ' + parsed.vm + ' to ' + parsed.mode + ' mode?')
+        confirmation = query_yes_no(
+            'Are you sure you want to switch the VM ' + parsed.vm + ' to ' + parsed.mode + ' mode?')
         if confirmation:
             print 'Switching  VM ' + parsed.vm + ' to ' + parsed.mode + '....'
             switch_vm(parsed.vm, parsed.vmuser, parsed.vmuseremail, parsed.mode)
 
     if parsed.sub_commands == 'create':
-        confirmation = query_yes_no('Are you sure you want to create a VM with ' + parsed.imagename + ',' + parsed.memory + ',' + parsed.vcpu + ' ?')
+        confirmation = query_yes_no(
+            'Are you sure you want to create a VM with ' + parsed.imagename + ',' + parsed.memory + ',' + parsed.vcpu + ' ?')
         if confirmation:
-            print 'Creating  VM with image:' + parsed.imagename + ', VNC User name:' + parsed.vncusername + ', VNC Password:' + parsed.vncpassword + ', memory: '+ parsed.memory + ', vcpu: ' + parsed.vcpu + '...'
-            create_vm(parsed.vmuser, parsed.vmuseremail, parsed.imagename, parsed.vncusername, parsed.vncpassword, parsed.memory, parsed.vcpu)
+            print 'Creating  VM with image:' + parsed.imagename + ', VNC User name:' + parsed.vncusername + ', VNC Password:' + parsed.vncpassword + ', memory: ' + parsed.memory + ', vcpu: ' + parsed.vcpu + '...'
+            create_vm(parsed.vmuser, parsed.vmuseremail, parsed.imagename, parsed.vncusername, parsed.vncpassword,
+                      parsed.memory, parsed.vcpu)
 
     if parsed.sub_commands == 'showrelease':
         print 'Released Results:'
@@ -289,30 +377,55 @@ if __name__ == '__main__':
         print 'Un-Released Results:'
         show_unrelease()
 
-    if parsed.sub_commands == 'retrievefile':    
-        confirmation = query_yes_no('Are you sure you want to retrieve file with id ' + parsed.rid )
+    if parsed.sub_commands == 'retrievefile':
+        confirmation = query_yes_no('Are you sure you want to retrieve file with id ' + parsed.rid)
         if confirmation:
             print 'Retrieving file for result ' + parsed.rid + '....'
             retrieve_file(parsed.rid, parsed.filename)
 
     if parsed.sub_commands == 'downloadfile':
-    
-        confirmation = query_yes_no('Are you sure you want to download file with id ' + parsed.rid )
+
+        confirmation = query_yes_no('Are you sure you want to download file with id ' + parsed.rid)
         if confirmation:
             print 'Download file for result ' + parsed.rid + '....'
             download_file(parsed.rid, parsed.filename)
 
     if parsed.sub_commands == 'releaseresult':
-    
-        confirmation = query_yes_no('Are you sure you want to release the result with id ' + parsed.rid )
+
+        confirmation = query_yes_no('Are you sure you want to release the result with id ' + parsed.rid)
         if confirmation:
             print 'Release result ' + parsed.rid + '....'
             update_result(parsed.rid, 'Released')
 
     if parsed.sub_commands == 'rejectresult':
-    
-        confirmation = query_yes_no('Are you sure you want to reject the result with id ' + parsed.rid )
+
+        confirmation = query_yes_no('Are you sure you want to reject the result with id ' + parsed.rid)
         if confirmation:
             print 'Reject result ' + parsed.rid + '....'
             update_result(parsed.rid, 'Rejected')
 
+    if parsed.sub_commands == 'stoprunning':
+        confirmation = query_yes_no('Are you sure you want to stop all the running capsules?')
+        if confirmation:
+            print 'Stopping all the running VMs'
+            stop_running_vms()
+
+    if parsed.sub_commands == 'approvefullaccess':
+        confirmation = query_yes_no('Are you sure you want to give approval for full access to VM ' + parsed.vm + '?')
+        if confirmation:
+            print 'Giving full access for  VM ' + parsed.vm + '....'
+            update_vmtype(parsed.vm, parsed.vmuser, 'true')
+
+    if parsed.sub_commands == 'rejectfullaccess':
+        confirmation = query_yes_no('Are you sure you want to reject full access to VM ' + parsed.vm + '?')
+        if confirmation:
+            print 'Rejecting full access for  VM ' + parsed.vm + '....'
+            update_vmtype(parsed.vm, parsed.vmuser, 'false')
+
+    if parsed.sub_commands == 'showcapsules':
+        print 'Showing capsules information for user ' + parsed.vmuser + '....'
+        show_capsules(parsed.vmuser)
+
+    if parsed.sub_commands == 'showpendingfullaccess':
+        print 'Showing capsules list which has pending requests for full data access. Username: ' + parsed.vmuser + '....'
+        show_pending_fullaccess(parsed.vmuser)

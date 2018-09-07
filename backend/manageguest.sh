@@ -112,21 +112,38 @@ if [ `cat $VM_DIR/mode` =  "Secure" ]; then
     exit 4
 fi
 
-# Remove release_results script if capsule type is DEMO and not disabled yet
+# deactivate/activate release_results script - if capsule type is DEMO and not disabled yet
 if [[ "$DC_TYPE" = "$DEMO_TYPE" ]]; then
     if [[ ! -e $VM_DIR/release_results || `cat $VM_DIR/release_results` == "Enabled" ]]; then
         ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 744 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
         echo "Disabled" > $VM_DIR/release_results
     fi
 # Add release_results script if capsule type is RESEARCH and disabled
-elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_IC_TYPE" ]]; then
+elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
     if [[ `cat $VM_DIR/release_results` == "Disabled" ]]; then
       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
       echo "Enabled" > $VM_DIR/release_results
     fi
 else
      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
-     echo "Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_IC_TYPE."
+     echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."
+     exit 5
 fi
+
+# # copy nginx configurations and restart nginx.
+if [[ "$DC_TYPE" = "$DEMO_TYPE" || "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
+    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_PD_CONF root@$VM_IP_ADDR:/etc/nginx/conf.d/ > $VM_DIR/copy_conf_nginx_out 2>&1
+    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_PD_TLS root@$VM_IP_ADDR:/etc/nginx/ssl/ > $VM_DIR/copy_tls_nginx_out 2>&1
+    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
+elif [[ "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
+    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_IC_CONF root@$VM_IP_ADDR:/etc/nginx/conf.d/ > $VM_DIR/copy_conf_nginx_out 2>&1
+    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_IC_TLS root@$VM_IP_ADDR:/etc/nginx/ssl/ > $VM_DIR/copy_tls_nginx_out 2>&1
+    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
+else
+     logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
+     echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."
+     exit 5
+fi
+
 
 exit 0
