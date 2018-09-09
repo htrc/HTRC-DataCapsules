@@ -130,15 +130,15 @@ else
      exit 5
 fi
 
-# # copy nginx configurations and restart nginx.
+# # copy .htrc file.
 if [[ "$DC_TYPE" = "$DEMO_TYPE" || "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
-    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_PD_CONF root@$VM_IP_ADDR:/etc/nginx/conf.d/ > $VM_DIR/copy_conf_nginx_out 2>&1
-    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_PD_TLS root@$VM_IP_ADDR:/etc/nginx/ssl/ > $VM_DIR/copy_tls_nginx_out 2>&1
-    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
+    logger "$VM_DIR - Add $HTRC_CONFIG_PD file. this is for HTRC WorksetToolkit"
+    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG_PD root@$VM_IP_ADDR:/home/dcuser/.htrc
+    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
 elif [[ "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
-    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_IC_CONF root@$VM_IP_ADDR:/etc/nginx/conf.d/ > $VM_DIR/copy_conf_nginx_out 2>&1
-    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $NGINX_IC_TLS root@$VM_IP_ADDR:/etc/nginx/ssl/ > $VM_DIR/copy_tls_nginx_out 2>&1
-    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
+    logger "$VM_DIR - Add $HTRC_CONFIG_FULL file. this is for HTRC WorksetToolkit"
+    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG_FULL root@$VM_IP_ADDR:/home/dcuser/.htrc
+    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
 else
      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
      echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."

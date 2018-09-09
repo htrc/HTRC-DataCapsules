@@ -321,16 +321,12 @@ if [[ -z "$NO_PASSWORD" ]]; then
        logger "$VM_DIR Provisioning the capsule."
        sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/existing_capsule_provisioning.sh " > $VM_DIR/provisioning_out 2>&1
 
-       logger "$VM_DIR Install nginx"
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/install_nginx.sh " > $VM_DIR/install_nginx_out 2>&1
-
        logger "$VM_DIR Update Voyant version to 2.4_M7"
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/update_voyant.sh dcuser " > $VM_DIR/update_voyant_out 2>&1
 
        logger "$VM_DIR enable logging of root user activity."
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "cat  /tmp/guest_uploads/enableSyslogging >> /root/.bashrc"
 
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "update-rc.d nginx enable"
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/remove_password.sh dcuser " > $VM_DIR/remove_password_out 2>&1
        
        logger "$VM_DIR Waiting for the capsule to come up after reboot"
@@ -358,9 +354,11 @@ if [ -n "$SSH_KEY" ]; then
      $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
 fi
 
-logger "$VM_DIR Add .htrc file. this is for HTRC WorksetToolkit"
-scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
-ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
+# update htrc package
+GMC_PRIVATE_KEY
+logger "$VM_DIR Update htrc package"
+ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip uninstall -y htrc" > $VM_DIR/uninstall_htrc_out 2>&1
+ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip install htrc --no-cache" > $VM_DIR/install_htrc_out 2>&1
 
 # Return successfully (only reaches here if no errors occur)
 exit 0
