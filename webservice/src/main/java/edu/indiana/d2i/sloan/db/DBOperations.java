@@ -1551,6 +1551,16 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	public void updateUserEmail(String userName, String email) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updateusersql = String.format("UPDATE "
+				+ DBSchema.UserTable.TABLE_NAME + " SET "
+				+ DBSchema.UserTable.USER_EMAIL + "=\"%s\" WHERE "
+				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", email, userName);
+		updates.add(updateusersql);
+		executeTransaction(updates);
+	}
+
 	public void updateVm(String vmid, String type, String title, Boolean consent,
 						 String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
 						 String rr_data_files, String rr_result_usage, Boolean full_access) throws SQLException, UnsupportedEncodingException {
