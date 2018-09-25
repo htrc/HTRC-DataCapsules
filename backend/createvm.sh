@@ -311,10 +311,15 @@ cat <<EOF >> $VM_DIR/config
      NEGOTIATOR_ENABLED=1
 EOF
 
-#This is to identify new capsules created after adding passwordless image. In dev-stack, any capsule creates after April 6th 2018 are password less capsules and need to upload user's ssh pub key to access capsules via ssh
+#This is to identify new capsules created after adding passwordless image. Any capsule created after August 10th 2018 are password less capsules and need to upload user's ssh pub key to access capsules via ssh
 
 cat <<EOF >> $VM_DIR/config
      NO_PASSWORD=1
+EOF
+
+# This is to identify new capsules created after disabling new release notifications. Any capsule created after September 13th 2018 have this configuration
+cat <<EOF >> $VM_DIR/config
+     DISABLE_NEW_RELEASE=1
 EOF
 
 # Create the VM's secure volume

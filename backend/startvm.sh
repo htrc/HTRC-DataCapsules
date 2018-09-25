@@ -328,7 +328,9 @@ if [[ -z "$NO_PASSWORD" ]]; then
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "cat  /tmp/guest_uploads/enableSyslogging >> /root/.bashrc"
 
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/remove_password.sh dcuser " > $VM_DIR/remove_password_out 2>&1
-       
+
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "cp /tmp/guest_uploads/release-upgrades /etc/update-manager/release-upgrades " > $VM_DIR/disable_release_out 2>&1
+
        logger "$VM_DIR Waiting for the capsule to come up after reboot"
 
        sleep 5 # wait till vm is shutdown
@@ -344,6 +346,27 @@ if [[ -z "$NO_PASSWORD" ]]; then
         done
 
        echo "NO_PASSWORD=1" >> $VM_DIR/config
+       echo "DISABLE_NEW_RELEASE=1" >> $VM_DIR/config
+fi
+
+if [[ -z "$DISABLE_NEW_RELEASE" ]]; then
+      scp -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY $GUEST_UPLOADS/release-upgrades root@$VM_IP_ADDR:/etc/update-manager/release-upgrades > $VM_DIR/disable_release_out 2>&1
+      logger "$VM_DIR Waiting for the capsule to come up after reboot"
+
+       sleep 5 # wait till vm is shutdown
+       start=$SECONDS
+       while ! nc -z $VM_IP_ADDR 22; do
+           sleep 0.5 # wait for 1/10 of the second before check again
+           end=$SECONDS
+           elapsed=$(( end - start ))
+           if (( elpased > 180 )); then
+              logger "$VM_DIR Capsule startup timed out."
+              exit 6
+            fi
+        done
+
+       echo "DISABLE_NEW_RELEASE=1" >> $VM_DIR/config
+
 fi
 
 #add/update Guacamole client's public key

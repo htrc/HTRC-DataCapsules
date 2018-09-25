@@ -124,6 +124,13 @@ elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; 
       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
       echo "Enabled" > $VM_DIR/release_results
     fi
+
+    # Start release daemon if not already running
+    if [[ ! -e $VM_DIR/release_pid ]]; then
+        nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log >>$VM_DIR/release_log &
+        echo "$!" > $VM_DIR/release_pid
+    fi
+
 else
      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
      echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."
