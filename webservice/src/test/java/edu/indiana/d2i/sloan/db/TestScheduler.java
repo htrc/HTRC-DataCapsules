@@ -147,7 +147,8 @@ public class TestScheduler {
 			for (int i = 0; i < scheduled; i++) {
 				CreateVmRequestBean request = new CreateVmRequestBean("user-"
 						+ i, "imagename-"+i, "vmid-" + i, "vncusername-" + i,
-						"vncpassword-" + i, 1024, 2, 10, "/path/to/work/dir");
+						"vncpassword-" + i, 1024, 2, 10, "/path/to/work/dir",
+						"DEMO", null, null, null, null, null, null, null, null, null);
 				SchedulerFactory.getInstance().schedule(request);
 			}
 		} catch (NoResourceAvailableException e) {
@@ -156,7 +157,8 @@ public class TestScheduler {
 
 		CreateVmRequestBean request2 = new CreateVmRequestBean("user-2",
 				"imagename", "vmid-" + scheduled, "vmusername-2",
-				"vmpassword-2", 1024, 2, 10, "/path/to/work/dir");
+				"vmpassword-2", 1024, 2, 10, "/path/to/work/dir",
+				"DEMO", null, null, null, null, null, null, null, null,null);
 		SchedulerFactory.getInstance().schedule(request2); // exception
 	}
 
@@ -173,14 +175,16 @@ public class TestScheduler {
 		for (int i = 0; i < scheduled; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-" + i,
 					"imagename-"+i, "vmid-" + i, "vmusername-" + i, "vmpassword-"
-							+ i, 1024, 2, 10, "/path/to/work/dir");
+							+ i, 1024, 2, 10, "/path/to/work/dir",
+					"DEMO", null, null, null, null, null, null, null, null, null );
 			SchedulerFactory.getInstance().schedule(request);
 		}
 
 		// release one
 		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null,
 				null, null, null, 0, 0, 2, 1024, 10, null, null, null, null,
-				null, null, null, null, null);
+				null, null, null, null, null
+				, "DEMO", null, null, null, null, null, null, null, null, null);
 
 		DBOperations.getInstance().deleteVMs("user-" + (scheduled - 1), vmInfo);
 
@@ -188,7 +192,8 @@ public class TestScheduler {
 		for (int i = scheduled; i < records; i++) {
 			CreateVmRequestBean request = new CreateVmRequestBean("user-" + i,
 					"imagename-"+i, "vmid-" + i, "vmusername-" + i, "vmpassword-"
-							+ i, 1024, 2, 10, "/path/to/work/dir");
+							+ i, 1024, 2, 10, "/path/to/work/dir",
+					"DEMO", null, null, null, null, null, null, null, null, null );
 			SchedulerFactory.getInstance().schedule(request);
 		}
 

@@ -77,19 +77,20 @@ public class QueryVM {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
+			boolean tou = DBOperations.getInstance().getUserTOU(userName);
 
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
 			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
 			if (vmid == null) {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
-					status.add(new VmStatusBean(vminfo, pub_key_exists));
+					status.add(new VmStatusBean(vminfo, pub_key_exists, tou));
 				}
 			} else {
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
 						userName, vmid);
 				vmInfoList.add(vminfo);
-				status.add(new VmStatusBean(vminfo, pub_key_exists));
+				status.add(new VmStatusBean(vminfo, pub_key_exists, tou));
 			}
 
 			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());

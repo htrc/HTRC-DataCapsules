@@ -23,16 +23,13 @@ TIMEOUT=30
 
 
 usage () {
-  echo "Usage: $0 --wdir <Directory for VM> --mode <Security Mode> --policy [Policy File] --pubkey <User's ssh key>"
+  echo "Usage: $0 --wdir <Directory for VM> --vmtype <Capsule Type> --pubkey <User's ssh key>"
   echo ""
   echo "Launches a VM instance for the VM in the given directory."
   echo ""
   echo "--wdir  Directory: The directory where this VM's data will be held"
   echo ""
-  echo "--mode    Boot to Secure Mode: One of 's(ecure)' or 'm(aintenance)', denotes whether the"
-  echo "          guest being started should be booted into maintenance or secure mode"
-  echo ""
-  echo "--policy  Policy File: The file that contains the policy for restricting this VM."
+  echo "--vmtype  Capsule Type - DEMO or RESEARCH"
   echo ""
   echo "--pubkey  User's ssh public key."
   echo ""
@@ -43,8 +40,7 @@ usage () {
 # Initialize all the option variables.
 # This ensures we are not contaminated by variables from the environment.
 VM_DIR=
-RAW_BOOT_MODE=
-POLICY=
+DC_TYPE=
 SSH_KEY=
 
 while :; do
@@ -67,33 +63,19 @@ while :; do
         --wdir=)         # Handle the case of an empty --wdir=
             die 'ERROR: "--wdir" requires a non-empty option argument.'
             ;;
-        --mode)       # Takes an option argument; ensure it has been specified.
+        --vmtype)       # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
-                RAW_BOOT_MODE=$2
+                DC_TYPE=$2
                 shift
             else
-                die 'ERROR: "--mode" requires a non-empty option argument.'
+                die 'ERROR: "--vmtype" requires a non-empty option argument.'
             fi
             ;;
-        --mode=?*)
-            RAW_BOOT_MODE=${1#*=} # Delete everything up to "=" and assign the remainder.
+        --vmtype=?*)
+            DC_TYPE=${1#*=} # Delete everything up to "=" and assign the remainder.
             ;;
-        --mode=)         # Handle the case of an empty --mode=
-            die 'ERROR: "--mode" requires a non-empty option argument.'
-            ;;
-        --policy)       # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                POLICY=$2
-                shift
-            else
-                die 'ERROR: "--policy" requires a non-empty option argument.'
-            fi
-            ;;
-        --policy=?*)
-            POLICY=${1#*=} # Delete everything up to "=" and assign the remainder.
-            ;;
-        --policy=)         # Handle the case of an empty --policy=
-            die 'ERROR: "--policy" requires a non-empty option argument.'
+        --vmtype=)         # Handle the case of an empty --vmtype=
+            die 'ERROR: "--vmtype" requires a non-empty option argument.'
             ;;
         --pubkey)       # Takes an option argument; ensure it has been specified.
             if [ "$2" ]; then
@@ -120,24 +102,11 @@ while :; do
     shift
 done
 
-if [ -z "$VM_DIR" ]; then
-  printf 'WARN: Missing required argument working dir (--wdir)'  >&2
+if [[ -z "$VM_DIR" || -z "$DC_TYPE"  ]]; then
+  printf 'WARN: Missing required argument'  >&2
   usage
   exit 1
 fi
-
-if [ -z "$RAW_BOOT_MODE" ]; then
-  printf 'WARN: Missing required argument mode (--mode)'  >&2
-  usage
-  exit 1
-fi
-
-if [ -z "$POLICY" ]; then
-  printf 'WARN: Missing required argument policy (--policy)'  >&2
-  usage
-  exit 1
-fi
-
 
 if [ ! -d $VM_DIR ] ; then
   echo "Error: Invalid VM directory specified!"
@@ -152,6 +121,8 @@ fi
 
 # Load config file
 . $VM_DIR/config
+
+
 
 # Check if full disk image is done copying
 if [[ "$IMAGE" = *.diff  && -e $VM_DIR/${IMAGE%.diff} && -s $VM_DIR/${IMAGE%.diff}.newsum ]]; then
@@ -202,7 +173,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Initialize maintenance mode firewall
-sudo $SCRIPT_DIR/fw.sh $VM_DIR $POLICY
+sudo $SCRIPT_DIR/fw.sh $VM_DIR $MAINTENANCE_POLICY
 POLICY_RES=$?
 
 if [ $POLICY_RES -ne 0 ]; then
@@ -342,24 +313,7 @@ done
 logger "$VM_DIR Remove VM IP $VM_IP_ADDR  from known_hosts file."
 ex -s +"g/$VM_IP_ADDR/d" -cwq /home/htrcvirt/.ssh/known_hosts
 
-if [ $NO_PASSWORD ]; then
-      #Add .htrc file. this is for HTRC WorksetToolkit
-      scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
-      ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
-
-      #add/update Guacamole client's public key
-      $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
-
-      #add/update user's public key
-      if [ -n "$SSH_KEY" ]; then
-            $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
-      fi
-
-
-       #logger "$VM_DIR restart nginx" # this necessary since nginx is not starting at vm boot
-       #ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out
-
-else
+if [[ -z "$NO_PASSWORD" ]]; then
       logger "$VM_DIR Add guest scripts and uploads directories into /tmp in DC"
        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_UPLOADS dcuser@$VM_IP_ADDR:/tmp/
        sshpass -p 'dcuser' scp -o StrictHostKeyChecking=no -r $GUEST_SCRIPTS dcuser@$VM_IP_ADDR:/tmp/
@@ -367,31 +321,16 @@ else
        logger "$VM_DIR Provisioning the capsule."
        sshpass -p 'dcuser' ssh -o StrictHostKeyChecking=no dcuser@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/existing_capsule_provisioning.sh " > $VM_DIR/provisioning_out 2>&1
 
-       logger "$VM_DIR Install nginx"
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/install_nginx.sh " > $VM_DIR/install_nginx_out 2>&1
-
        logger "$VM_DIR Update Voyant version to 2.4_M7"
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/update_voyant.sh dcuser " > $VM_DIR/update_voyant_out 2>&1
-
-       logger "$VM_DIR Add .htrc file. this is for HTRC WorksetToolkit"
-       scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG root@$VM_IP_ADDR:/home/dcuser/.htrc
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
 
        logger "$VM_DIR enable logging of root user activity."
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "cat  /tmp/guest_uploads/enableSyslogging >> /root/.bashrc"
 
-       #add/update Guacamole client's public key
-      $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
-
-      #add/update user's public key
-       if [ -n "$SSH_KEY" ]; then
-            $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
-       fi
-
-       
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "update-rc.d nginx enable"
        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/bin/sh /tmp/guest_scripts/remove_password.sh dcuser " > $VM_DIR/remove_password_out 2>&1
-       
+
+       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "cp /tmp/guest_uploads/release-upgrades /etc/update-manager/release-upgrades " > $VM_DIR/disable_release_out 2>&1
+
        logger "$VM_DIR Waiting for the capsule to come up after reboot"
 
        sleep 5 # wait till vm is shutdown
@@ -406,26 +345,43 @@ else
             fi
         done
 
-       logger "$VM_DIR restart nginx" # this necessary since nginx is not starting at vm boot
-       ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "systemctl restart nginx" > $VM_DIR/restart_nginx_out 2>&1
-
        echo "NO_PASSWORD=1" >> $VM_DIR/config
+       echo "DISABLE_NEW_RELEASE=1" >> $VM_DIR/config
 fi
 
+if [[ -z "$DISABLE_NEW_RELEASE" ]]; then
+      scp -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY $GUEST_UPLOADS/release-upgrades root@$VM_IP_ADDR:/etc/update-manager/release-upgrades > $VM_DIR/disable_release_out 2>&1
+      logger "$VM_DIR Waiting for the capsule to come up after reboot"
 
+       sleep 5 # wait till vm is shutdown
+       start=$SECONDS
+       while ! nc -z $VM_IP_ADDR 22; do
+           sleep 0.5 # wait for 1/10 of the second before check again
+           end=$SECONDS
+           elapsed=$(( end - start ))
+           if (( elpased > 180 )); then
+              logger "$VM_DIR Capsule startup timed out."
+              exit 6
+            fi
+        done
 
-
-# Switch machine into secure mode or apply firewall policy as needed
-if [[ $BOOT_SECURE = 0 ]]; then
-  $SCRIPT_DIR/switch.sh $VM_DIR --mode s --policy $POLICY
-  SWITCH_RES=$?
-
-  if [ $SWITCH_RES -ne 0 ]; then
-    echo "Error: Failed to switch VM to security mode on startup; error code ($SWITCH_RES)"
-    exit 7
-  fi
+       echo "DISABLE_NEW_RELEASE=1" >> $VM_DIR/config
 
 fi
+
+#add/update Guacamole client's public key
+$SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
+
+#add/update user's public key
+if [ -n "$SSH_KEY" ]; then
+     $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
+fi
+
+# update htrc package
+GMC_PRIVATE_KEY
+logger "$VM_DIR Update htrc package"
+ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip uninstall -y htrc" > $VM_DIR/uninstall_htrc_out 2>&1
+ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip install htrc --no-cache" > $VM_DIR/install_htrc_out 2>&1
 
 # Return successfully (only reaches here if no errors occur)
 exit 0

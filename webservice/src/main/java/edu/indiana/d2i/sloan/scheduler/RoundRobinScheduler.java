@@ -50,7 +50,10 @@ public class RoundRobinScheduler extends Scheduler {
 						request.getVmId(), request.getImageName(),
 						request.getVncLoginID(), request.getVncLoginPasswd(),
 						vmhost, workDir, request.getVcpu(), 
-						request.getMemory(), request.getVolumeSizeInGB());
+						request.getMemory(), request.getVolumeSizeInGB(),
+						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
+						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
+						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
 			
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
 						null, // image path
@@ -62,7 +65,10 @@ public class RoundRobinScheduler extends Scheduler {
 						request.getImageName(), 
 						null, null, /* login username && login password */
 						null /* policy name */, 
-						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */);
+						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */,
+						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
+						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
+						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
 			}
 		} while (scheduleIndex != start);
 

@@ -9,9 +9,8 @@ import httplib
 import time
 
 # DC
-DC_API = 'htc2.carbonate.uits.iu.edu'
-PORT = '8087'
-
+DC_API = 'localhost'
+PORT = '80'
 
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
@@ -53,7 +52,7 @@ def delete_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/deletevm', params, headers)
+    conn.request("POST", '/deletevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -70,7 +69,7 @@ def stop_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/stopvm', params, headers)
+    conn.request("POST", '/stopvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -87,7 +86,7 @@ def start_vm(vmid, username, useremail):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/launchvm', params, headers)
+    conn.request("POST", '/launchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -104,7 +103,7 @@ def switch_vm(vmid, username, useremail, mode):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/switchvm', params, headers)
+    conn.request("POST", '/switchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -123,7 +122,7 @@ def create_vm(username, useremail, imagename, loginusername, loginpassword, memo
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/createvm', params, headers)
+    conn.request("POST", '/createvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -136,7 +135,7 @@ def show_release():
 
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("GET", '/sloan-ws/showreleased')
+    conn.request("GET", '/showreleased')
     response = conn.getresponse()
 
     data = response.read()
@@ -149,7 +148,7 @@ def show_unrelease():
 
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("GET", '/sloan-ws/showunreleased')
+    conn.request("GET", '/showunreleased')
     response = conn.getresponse()
 
     data = response.read()
@@ -160,7 +159,7 @@ def show_unrelease():
 def retrieve_file(result_id, out_file):
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("GET", '/sloan-ws/retrieveresultfile?randomid=' + result_id)
+    conn.request("GET", '/retrieveresultfile?randomid=' + result_id)
     response = conn.getresponse()
 
     if (response.status != 200):
@@ -176,7 +175,7 @@ def retrieve_file(result_id, out_file):
 def download_file(result_id, out_file):
     # GET the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("GET", '/sloan-ws/download?randomid=' + result_id)
+    conn.request("GET", '/download?randomid=' + result_id)
     response = conn.getresponse()
 
     if (response.status != 200):
@@ -194,7 +193,7 @@ def update_result(result_id, status):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/updateresult', params)
+    conn.request("POST", '/updateresult', params)
     response = conn.getresponse()
 
     print response.read()
@@ -206,7 +205,7 @@ def stop_running_vms():
 
     # Get request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("GET", '/sloan-ws/listvms')
+    conn.request("GET", '/listvms')
     response = conn.getresponse()
 
     if response.status == 200:
@@ -227,7 +226,7 @@ def update_vmtype(vmid, username, status):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/updatevm', params, headers)
+    conn.request("POST", '/updatevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -241,7 +240,7 @@ def show_capsules(username):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/show', "", headers)
+    conn.request("POST", '/show', "", headers)
     response = conn.getresponse()
 
     data = response.read()
@@ -255,7 +254,7 @@ def show_pending_fullaccess(username):
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/show', "", headers)
+    conn.request("POST", '/show', "", headers)
     response = conn.getresponse()
 
     if response.status == 200:

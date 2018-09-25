@@ -137,7 +137,8 @@ public class TestCapsuleHypervisor {
 				"/path/to/work/dir-"+i, 
 				"/path/to/image", "/path/to/policy", 2000 + i*2, 2000 + i*2 +1, 2, 2048, 
 				10, VMMode.NOT_DEFINED, VMState.LAUNCH_PENDING, "ubuntu", 
-				"password", "test-image", "ubuntu", "password", "test-policy", VMMode.MAINTENANCE);
+				"password", "test-image", "ubuntu", "password", "test-policy", VMMode.MAINTENANCE
+					, "DEMO", null, null, null, null, null, null, null, null, null);
 			
 			HypervisorResponse response = hypervisor.createVM(vminfo);
 			Assert.assertEquals(0, response.getResponseCode());

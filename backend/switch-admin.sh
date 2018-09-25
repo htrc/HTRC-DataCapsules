@@ -193,15 +193,7 @@ if [ $SECURE_MODE = 0 ]; then
 
 
   # Apply Firewall Policy
-  if [[ "$DC_TYPE" = "$DEMO_TYPE" || "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
-      sudo $SCRIPT_DIR/fw.sh $VM_DIR $DEMO_SECURE_POLICY
-  elif [[ "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
-      sudo $SCRIPT_DIR/fw.sh $VM_DIR $RESEARCH_SECURE_FULL_POLICY
-  else
-      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
-      echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."
-      exit 8
-  fi
+  sudo $SCRIPT_DIR/fw.sh $VM_DIR $ADMIN_SECURE_POLICY
   FW_RES=$?
 
   if [ $FW_RES -ne 0 ]; then
@@ -209,6 +201,12 @@ if [ $SECURE_MODE = 0 ]; then
     exit 6
   fi
 
+
+  # Start release daemon if not already running
+  if [[ ! -e $VM_DIR/release_pid && "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
+    nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log >>$VM_DIR/release_log &
+    echo "$!" > $VM_DIR/release_pid
+  fi
 
   # Update Mode File
   echo "Secure" > $VM_DIR/mode

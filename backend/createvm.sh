@@ -20,8 +20,8 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --image <Image Name> --ncpu <Number of CPUs> --mem <Guest Memory Size>"
-  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size>"
+  echo "Usage: $0 <Directory for VM> --image <Image Name> --vcpu <Number of CPUs> --mem <Guest Memory Size>"
+  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size> "
   echo ""
   echo "Creates a new VM by allocating a directory for it and instantiating configuration files."
   echo ""
@@ -29,7 +29,7 @@ usage () {
   echo ""
   echo "--image    Image Name: Image should be a bootable disk image compatible with qemu"
   echo ""
-  echo "--ncpu     Number of CPUs: The number of virtual CPUs that will be allocated to this VM"
+  echo "--vcpu     Number of CPUs: The number of virtual CPUs that will be allocated to this VM"
   echo ""
   echo "--mem      Guest Memory Size: May be specified with a qualifier (e.g. G, M), otherwise assumed to be in megabytes"
   echo ""
@@ -42,8 +42,192 @@ usage () {
   echo "--loginid  Login ID: (optional) User ID to be used to log in to VNC sessions"
   echo ""
   echo "--loginpwd Login Password: (optional) Password to be used to log in to VNC sessions"
+  echo ""
+  echo "-h|--help Show help."
 
 }
+
+# Initialize all the option variables.
+# This ensures we are not contaminated by variables from the environment.
+VM_DIR=
+IMAGE=
+NUM_VCPU=
+MEM_SIZE=
+VNC_PORT=
+SSH_PORT=
+SECURE_VOL_SIZE=
+LOGIN_ID=
+LOGIN_PWD=
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            usage    # Display a usage synopsis.
+            exit
+            ;;
+        --wdir)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                VM_DIR=$2
+                shift
+            else
+                die 'ERROR: "--wdir" requires a non-empty option argument.'
+            fi
+            ;;
+        --wdir=?*)
+            VM_DIR=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --wdir=)         # Handle the case of an empty --wdir=
+            die 'ERROR: "--wdir" requires a non-empty option argument.'
+            ;;
+        --image)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                IMAGE=$2
+                shift
+            else
+                die 'ERROR: "--image" requires a non-empty option argument.'
+            fi
+            ;;
+        --image=?*)
+            IMAGE=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --image=)         # Handle the case of an empty --image=
+            die 'ERROR: "--wdir" requires a non-empty option argument.'
+            ;;
+        --vcpu)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                NUM_VCPU=$2
+                shift
+            else
+                die 'ERROR: "--vcpu" requires a non-empty option argument.'
+            fi
+            ;;
+        --vcpu=?*)
+            NUM_VCPU=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --vcpu=)         # Handle the case of an empty --vcpu=
+            die 'ERROR: "--vcpu" requires a non-empty option argument.'
+            ;;
+        --mem)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                MEM_SIZE=$2
+                shift
+            else
+                die 'ERROR: "--mem" requires a non-empty option argument.'
+            fi
+            ;;
+        --mem=?*)
+            MEM_SIZE=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --mem=)         # Handle the case of an empty --mem=
+            die 'ERROR: "--mem" requires a non-empty option argument.'
+            ;;
+        --vnc)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                VNC_PORT=$2
+                shift
+            else
+                die 'ERROR: "--vnc" requires a non-empty option argument.'
+            fi
+            ;;
+        --vnc=?*)
+            VNC_PORT=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --vnc=)         # Handle the case of an empty --vnc=
+            die 'ERROR: "--vnc" requires a non-empty option argument.'
+            ;;
+        --ssh)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                SSH_PORT=$2
+                shift
+            else
+                die 'ERROR: "--ssh" requires a non-empty option argument.'
+            fi
+            ;;
+        --ssh=?*)
+            SSH_PORT=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --ssh=)         # Handle the case of an empty --ssh=
+            die 'ERROR: "--ssh" requires a non-empty option argument.'
+            ;;
+        --volsize)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                SECURE_VOL_SIZE=$2
+                shift
+            else
+                die 'ERROR: "--volsize" requires a non-empty option argument.'
+            fi
+            ;;
+        --volsize=?*)
+            SECURE_VOL_SIZE=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --volsize=)         # Handle the case of an empty --volsize=
+            die 'ERROR: "--volsize" requires a non-empty option argument.'
+            ;;
+        --loginid)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                LOGIN_ID=$2
+                shift
+            else
+                die 'ERROR: "--loginid" requires a non-empty option argument.'
+            fi
+            ;;
+        --loginid=?*)
+            LOGIN_ID=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --loginid=)         # Handle the case of an empty --loginid=
+            die 'ERROR: "--loginid" requires a non-empty option argument.'
+            ;;
+        --loginpwd)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                LOGIN_PWD=$2
+                shift
+            else
+                die 'ERROR: "--loginpwd" requires a non-empty option argument.'
+            fi
+            ;;
+        --loginpwd=?*)
+            LOGIN_PWD=${1#*=} # Delete everything up to "=" and assign the remainder.
+            ;;
+        --loginpwd=)         # Handle the case of an empty --loginpwd=
+            die 'ERROR: "--loginpwd" requires a non-empty option argument.'
+            ;;
+        --)              # End of all options.
+            shift
+            break
+            ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            usage
+            exit 1
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+
+    shift
+done
+
+if [[ -z "$VM_DIR" || -z "$IMAGE" || -z "$NUM_VCPU" || -z "$MEM_SIZE" || -z "$VNC_PORT" || -z "$SSH_PORT" || -z "$SECURE_VOL_SIZE" || -z "$LOGIN_ID" || -z "$LOGIN_PWD" ]]; then
+  printf 'WARN: Missing required argument'  >&2
+  usage
+  exit 1
+fi
+
+if ! [[ "$VNC_PORT" =~ ^[0-9]+$ && "$VNC_PORT" -ge 5900 && "$VNC_PORT" -le 65535 ]]; then
+     echo "error: provided vnc port ($VNC_PORT) is invalid;"
+     echo "note: the port value must be at least 5900"
+     exit 1
+fi
+
+if ! [[ "$SSH_PORT" =~ ^[0-9]+$ && "$SSH_PORT" -le 65535 ]]; then
+     echo "error: provided ssh port ($SSH_PORT) is invalid;"
+     exit 1
+fi
+
+if [[ ${#LOGIN_PWD} -gt 8 ]] ; then
+     echo "error: login passwords longer than 8 characters are not currently supported"
+     exit 1
+fi
 
 fail () {
 
@@ -51,106 +235,6 @@ fail () {
   exit $1
 
 }
-
-# Name of the secure volume is fixed for now;
-SECURE_VOL_NAME=secure_volume
-
-REQUIRED_OPTS="IMAGE NUM_VCPU MEM_SIZE VM_DIR VNC_PORT SSH_PORT SECURE_VOL_SIZE"
-ALL_OPTS="$REQUIRED_OPTS LOGIN_ID LOGIN_PWD"
-UNDEFINED=12345capsulesxXxXxundefined54321
-
-for var in $ALL_OPTS; do
-  eval $var=$UNDEFINED
-done
-
-if [[ $1 && $1 != -* ]]; then
-  VM_DIR=$1
-  shift
-fi
-
-declare -A longoptspec
-longoptspec=( [wdir]=1 [image]=1 [img]=1 [num-cpu]=1 [ncpu]=1 [vcpu]=1 [mem]=1 [memory]=1 [vnc]=1 [ssh]=1 [volsize]=1 [loginid]=1 [loginpwd]=1 )
-optspec=":h-:d:i:c:m:v:s:"
-while getopts "$optspec" OPT; do
-
-  if [[ "x${OPT}x" = "x-x" ]]; then
-    if [[ "${OPTARG}" =~ .*=.* ]]; then
-      OPT=${OPTARG/=*/}
-      OPTARG=${OPTARG#*=}
-      ((OPTIND--))
-    else #with this --key value1 value2 format multiple arguments are possible
-      OPT="$OPTARG"
-      OPTARG=(${@:OPTIND:$((longoptspec[$OPT]))})
-    fi
-    ((OPTIND+=longoptspec[$OPT]))
-  fi
-
-  case "${OPT}" in
-    d|wdir)
-      VM_DIR=$OPTARG
-      ;;
-    i|img|image)
-      IMAGE=$OPTARG
-      ;;
-    c|num-cpu|ncpu|vcpu)
-      NUM_VCPU=$OPTARG
-      ;;
-    m|mem|memory)
-      MEM_SIZE=$OPTARG
-      ;;
-    v|vnc)
-      if ! [[ $OPTARG =~ ^[0-9]+$ && $OPTARG -ge 5900 && $OPTARG -le 65535 ]]; then
-        echo "error: provided vnc port ($OPTARG) is invalid;"
-        echo "note: the port value must be at least 5900"
-        exit 1
-      fi
-      VNC_PORT=$OPTARG
-      ;;
-    s|ssh)
-      if ! [[ $OPTARG =~ ^[0-9]+$ && $OPTARG -le 65535 ]]; then
-        echo "error: provided ssh port ($OPTARG) is invalid"
-        exit 1
-      fi
-      SSH_PORT=$OPTARG
-      ;;
-    volsize)
-      SECURE_VOL_SIZE=$OPTARG
-      ;;
-    loginid)
-      LOGIN_ID=$OPTARG
-      REQUIRED_OPTS="$REQUIRED_OPTS LOGIN_PWD"
-      ;;
-    loginpwd)
-      if [[ ${#OPTARG} -gt 8 ]] ; then
-        echo "error: login passwords longer than 8 characters are not currently supported"
-        exit 1
-      fi
-      LOGIN_PWD=$OPTARG
-      ;;
-    h|help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "error: Invalid argument '--${OPT}'"
-      usage
-      exit 1
-      ;;
-  esac
-done
-
-MISSING_ARGS=0
-for var in $REQUIRED_OPTS; do
-  if [[ ${!var} = $UNDEFINED ]]; then
-    echo "error: $var not given"
-    MISSING_ARGS=1
-  fi
-done
-
-if [[ $MISSING_ARGS -eq 1 ]]; then
-  usage
-  exit 1
-fi
 
 if [ -e $VM_DIR ]; then
   echo "Error: VM directory already exists"
@@ -227,10 +311,15 @@ cat <<EOF >> $VM_DIR/config
      NEGOTIATOR_ENABLED=1
 EOF
 
-#This is to identify new capsules created after adding passwordless image. In dev-stack, any capsule creates after April 6th 2018 are password less capsules and need to upload user's ssh pub key to access capsules via ssh
+#This is to identify new capsules created after adding passwordless image. Any capsule created after August 10th 2018 are password less capsules and need to upload user's ssh pub key to access capsules via ssh
 
 cat <<EOF >> $VM_DIR/config
      NO_PASSWORD=1
+EOF
+
+# This is to identify new capsules created after disabling new release notifications. Any capsule created after September 13th 2018 have this configuration
+cat <<EOF >> $VM_DIR/config
+     DISABLE_NEW_RELEASE=1
 EOF
 
 # Create the VM's secure volume
@@ -267,8 +356,6 @@ fi
 (nohup qemu-img convert -f raw -O qcow2 $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}.done 2>$VM_DIR/kvm_console >/dev/null \
     && rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>$VM_DIR/kvm_console >/dev/null \
     && mv $VM_DIR/${SECURE_VOL_NAME}.done $VM_DIR/$SECURE_VOL_NAME 2>$VM_DIR/kvm_console >/dev/null ) </dev/null >/dev/null 2>/dev/null &
-
-#mv $VM_DIR/${SECURE_VOL_NAME}.tmp $VM_DIR/${SECURE_VOL_NAME}
 
 # Return results (only reaches here if no errors occur)
 exit 0

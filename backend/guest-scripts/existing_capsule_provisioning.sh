@@ -37,6 +37,9 @@ echo "$SSH_USERNAME" | sudo -S chown -R root /root/.ssh
 echo "$SSH_USERNAME" | sudo -S chmod 700 /root/.ssh
 echo "$SSH_USERNAME" | sudo -S chmod 600 /root/.ssh/authorized_keys
 
+# Create /home/dcuser/.ssh if not exists
+mkdir -p $HOME/.ssh
+
 
 # Removing the UI password prompt
 echo "$SSH_USERNAME" | sudo -S cp /tmp/guest_uploads/99-nouipassword.pkla /etc/polkit-1/localauthority/50-local.d/99-nouipassword.pkla

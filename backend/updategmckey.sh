@@ -20,7 +20,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 --wdir <Directory for VM> --pubkey <SSH_KEY_TO_ADD>"
+  echo "Usage: $0 --wdir <Directory for VM>"
   echo ""
   echo "Add user's public ssh key to data capsule"
   echo ""
