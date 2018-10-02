@@ -280,6 +280,33 @@ public class DBOperations {
 		return satisfiable;
 	}
 
+	public boolean userExists(String username) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst1 = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String queryUser = "SELECT * FROM " + DBSchema.UserTable.TABLE_NAME
+					+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";
+			pst1 = connection.prepareStatement(queryUser);
+			pst1.setString(1, username);
+			rs = pst1.executeQuery();
+			if (!rs.next()) {
+				return false;
+			} else {
+				return true;
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst1 != null)
+				pst1.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	public void insertUserIfNotExists(String userName, String userEmail) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst1 = null;

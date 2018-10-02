@@ -49,13 +49,13 @@ public class UpdateUserKey {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		if (userEmail == null) userEmail = "";
+		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		//if (userEmail == null) userEmail = "";
 
-		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		//if (operator == null) operator = userName;
+		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -66,26 +66,33 @@ public class UpdateUserKey {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			logger.info("User " + userName + " tries to update the public key");
+			if(DBOperations.getInstance().userExists(userName)) {
+				DBOperations.getInstance().updateUserPubKey(userName, pubkey);
+				logger.info("Public key of user '" + userName + "' was updated in database successfully!");
 
-			DBOperations.getInstance().updateUserPubKey(userName, pubkey);
-			logger.info("Public key of user '" + userName + "' was updated in database successfully!");
+				List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
+				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
-			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
-			vmInfoList = DBOperations.getInstance().getVmInfo(userName);
-
-			for (VmInfoBean vminfo : vmInfoList) {
-				// update the public key of VMs that are in Running state and maintenance mode
-				if (vminfo.getVmstate() == VMState.RUNNING && vminfo.getVmmode() == VMMode.MAINTENANCE) {
-					HypervisorProxy.getInstance().addCommand(
-							new UpdatePublicKeyCommand(vminfo, userName, operator, pubkey));
+				for (VmInfoBean vminfo : vmInfoList) {
+					// update the public key of VMs that are in Running state and maintenance mode
+					if (vminfo.getVmstate() == VMState.RUNNING && vminfo.getVmmode() == VMMode.MAINTENANCE) {
+						HypervisorProxy.getInstance().addCommand(
+								new UpdatePublicKeyCommand(vminfo, userName, userName, pubkey));
+					}
 				}
+				return Response.status(200).build();
+			} else {
+				logger.info("User '" + userName + "' is not in database, hence not updating public key!");
+				return Response
+						.status(400)
+						.entity(new ErrorBean(400,
+								"Username '" + userName + "' does not have any capsules created. Public key " +
+										"can be added/updated only if the user has created capsules previously.")).build();
 			}
-
-			return Response.status(200).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
