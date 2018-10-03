@@ -15,6 +15,8 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,8 +78,14 @@ public class QueryVM {
 		try {
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
-			boolean tou = DBOperations.getInstance().getUserTOU(userName);
+			boolean pub_key_exists = false;
+			boolean tou = false;
+			try {
+				pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
+				tou = DBOperations.getInstance().getUserTOU(userName);
+			} catch (NoItemIsFoundInDBException e) {
+				logger.debug("Cannot retrieve public key or TOU of user since '" + userName + "' is not in the database");
+			}
 
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
 			List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();

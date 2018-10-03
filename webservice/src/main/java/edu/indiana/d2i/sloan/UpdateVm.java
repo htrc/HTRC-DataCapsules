@@ -18,6 +18,7 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -141,6 +142,13 @@ public class UpdateVm {
 					+ type + ") in database successfully!");
 
 			return Response.status(200).build();
+		} catch (NoItemIsFoundInDBException e) {
+			logger.error(e.getMessage(), e);
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400, "VM " + vmId
+							+ " is not associated with user " + userName))
+					.build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
