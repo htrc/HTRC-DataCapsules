@@ -50,13 +50,13 @@ public class LaunchVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
 
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
 		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		if (operatorEmail == null) operatorEmail = "";*/
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -79,8 +79,8 @@ public class LaunchVM {
 		
 		// launch can only start from shutdown
 		try {		
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			String pubkey = "";
 			if(DBOperations.getInstance().getUserPubKey(userName) != null ) {
@@ -90,7 +90,7 @@ public class LaunchVM {
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
 				!VMStateManager.getInstance().transitTo(vmid, 
-				vmInfo.getVmstate(), VMState.LAUNCH_PENDING, operator)) {
+				vmInfo.getVmstate(), VMState.LAUNCH_PENDING, userName)) {
 				return Response
 					.status(400)
 					.entity(new ErrorBean(400,
@@ -106,7 +106,7 @@ public class LaunchVM {
 			vmInfo.setPolicypath(Configuration.getInstance().getString(
 				Configuration.PropertyName.MAINTENANCE_FIREWALL_POLICY));
 			
-			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo, operator, pubkey));
+			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo, userName, pubkey));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

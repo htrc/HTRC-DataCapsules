@@ -50,12 +50,12 @@ public class DeleteVM {
 
 		// check whether the user has been authorized
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
 		if (operator == null) operator = userName;
 		if (userEmail == null) userEmail = "";
-		if (operatorEmail == null) operatorEmail = "";
+		if (operatorEmail == null) operatorEmail = "";*/
 
 		// check input
 		if (userName == null) {
@@ -73,14 +73,14 @@ public class DeleteVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) || 
 				!VMStateManager.getInstance().transitTo(vmid,
-					vmInfo.getVmstate(), VMState.DELETE_PENDING, operator)) {
+					vmInfo.getVmstate(), VMState.DELETE_PENDING, userName)) {
 				return Response
 						.status(400)
 						.entity(new ErrorBean(400, "Cannot delete VM " + vmid
@@ -92,7 +92,7 @@ public class DeleteVM {
 
 			vmInfo.setVmState(VMState.DELETE_PENDING);
 			HypervisorProxy.getInstance().addCommand(
-					new DeleteVMCommand(userName, operator, vmInfo));
+					new DeleteVMCommand(userName, userName, vmInfo));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

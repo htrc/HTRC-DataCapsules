@@ -52,13 +52,13 @@ public class GroupOperation {
         }
 
         // insert operator if it's new
-        try {
+        /*try {
             DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
             return Response.status(500)
                     .entity(new ErrorBean(500, e.getMessage())).build();
-        }
+        }*/
 
         //check operation
         Map<String, String> operationURL = new HashMap<String, String>();

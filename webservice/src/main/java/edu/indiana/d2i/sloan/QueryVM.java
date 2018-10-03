@@ -52,13 +52,13 @@ public class QueryVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
 
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
 		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		if (operatorEmail == null) operatorEmail = "";*/
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -74,8 +74,8 @@ public class QueryVM {
 		// ws periodically updates VM status??
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
 			boolean tou = DBOperations.getInstance().getUserTOU(userName);
 
@@ -99,7 +99,7 @@ public class QueryVM {
 				// query the back-end script only when vm state is not in pending
 				if (!VMStateManager.isPendingState(vminfo.getVmstate())) {
 					HypervisorProxy.getInstance().addCommand(
-							new QueryVMCommand(vminfo, operator));
+							new QueryVMCommand(vminfo, userName));
 				}
 			}
 

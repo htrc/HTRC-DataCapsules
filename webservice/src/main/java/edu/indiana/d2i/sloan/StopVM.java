@@ -48,13 +48,13 @@ public class StopVM {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
 
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
 		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		if (operatorEmail == null) operatorEmail = "";*/
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -71,14 +71,14 @@ public class StopVM {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
 				!VMStateManager.getInstance().transitTo(vmid,
-					vmInfo.getVmstate(), VMState.SHUTDOWN_PENDING, operator)) {
+					vmInfo.getVmstate(), VMState.SHUTDOWN_PENDING, userName)) {
 				return Response
 						.status(400)
 						.entity(new ErrorBean(400, "Cannot stop VM " + vmid
@@ -89,7 +89,7 @@ public class StopVM {
 			logger.info(userName + " requests to stop VM " + vmInfo.getVmid());
 
 			vmInfo.setVmState(VMState.SHUTDOWN_PENDING);
-			HypervisorProxy.getInstance().addCommand(new StopVMCommand(vmInfo, operator));
+			HypervisorProxy.getInstance().addCommand(new StopVMCommand(vmInfo, userName));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

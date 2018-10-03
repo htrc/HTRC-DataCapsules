@@ -55,13 +55,13 @@ public class UpdateVm {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
 
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
 		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		if (operatorEmail == null) operatorEmail = "";*/
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -72,8 +72,8 @@ public class UpdateVm {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			logger.info("User " + userName + " tries to update the VM");
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
