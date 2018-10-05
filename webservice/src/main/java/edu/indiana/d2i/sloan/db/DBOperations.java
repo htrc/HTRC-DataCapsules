@@ -21,6 +21,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -555,13 +556,15 @@ public class DBOperations {
 						host.sshport, host.vncport, workDir, imageName,
 						vncLoginId, vncLoginPwd, numCPUs, memorySize,
 						diskSpace, userName, type,
-						title != null ? "\"" + title + "\"" : title, consent,
-						desc_nature != null ? "\"" + desc_nature + "\"" : desc_nature,
-						desc_requirement != null ? "\"" + desc_requirement + "\"" : desc_requirement,
-						desc_links != null ? "\"" + desc_links + "\"" : desc_links,
-						desc_outside_data != null ? "\"" + desc_outside_data + "\"" : desc_outside_data,
-						rr_data_files != null ? "\"" + rr_data_files + "\"" : rr_data_files,
-						rr_result_usage != null ? "\"" + rr_result_usage + "\"" : rr_result_usage, full_access);
+						title != null ? "\"" + StringEscapeUtils.escapeJava(title) + "\"" : title,
+						consent,
+						desc_nature != null ? "\"" + StringEscapeUtils.escapeJava(desc_nature) + "\"" : desc_nature,
+						desc_requirement != null ? "\"" + StringEscapeUtils.escapeJava(desc_requirement) + "\"" : desc_requirement,
+						desc_links != null ? "\"" + StringEscapeUtils.escapeJava(desc_links) + "\"" : desc_links,
+						desc_outside_data != null ? "\"" + StringEscapeUtils.escapeJava(desc_outside_data) + "\"" : desc_outside_data,
+						rr_data_files != null ? "\"" + StringEscapeUtils.escapeJava(rr_data_files) + "\"" : rr_data_files,
+						rr_result_usage != null ? "\"" + StringEscapeUtils.escapeJava(rr_result_usage) + "\"" : rr_result_usage,
+						full_access);
 
 		logger.debug(insertvmsql);
 
@@ -1606,8 +1609,16 @@ public class DBOperations {
 				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
-				type, title, consent, desc_nature, desc_requirement, desc_links, desc_outside_data,
-				rr_data_files, rr_result_usage, full_access,
+				type
+				, StringEscapeUtils.escapeJava(title)
+				, consent
+				, StringEscapeUtils.escapeJava(desc_nature)
+				, StringEscapeUtils.escapeJava(desc_requirement)
+				, StringEscapeUtils.escapeJava(desc_links)
+				, StringEscapeUtils.escapeJava(desc_outside_data)
+				, StringEscapeUtils.escapeJava(rr_data_files)
+				, StringEscapeUtils.escapeJava(rr_result_usage)
+				, full_access,
 				vmid);
 		updates.add(updatevmsql);
 		executeTransaction(updates);
