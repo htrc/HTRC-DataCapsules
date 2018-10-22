@@ -48,7 +48,7 @@ public final class Configuration {
 		loadConfigurations("default.xml");
 		String sitesXmlPath = properties.get("sites.xml.path");
 		loadConfigurations(sitesXmlPath);
-		logger.info(properties.toString());
+		logger.debug(properties.toString());
 	}
 
 	private Map<String, String> properties = null;
