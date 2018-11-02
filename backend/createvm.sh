@@ -338,7 +338,7 @@ if [ $? -ne 0 ]; then
 fi
 
 #Create  mounts for the secure volume and the spool volume 
-MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -F -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
+MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -i 8192 -F -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
 
 if [ $? -ne 0 ]; then
 	echo "Error formatting secure volume for VM: $MKFS_RES"
