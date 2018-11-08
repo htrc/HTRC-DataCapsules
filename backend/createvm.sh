@@ -337,7 +337,7 @@ if [ $? -ne 0 ]; then
   fail 8
 fi
 
-#Create  mounts for the secure volume and the spool volume 
+#Create  mounts for the secure volume and the spool volume . Inode ratio is modified as per SUPPORT-866.
 MKFS_RES=$(echo "y" | /sbin/mkfs.ext4 -i 8192 -F -L "secure_volume" $VM_DIR/${SECURE_VOL_NAME}.tmp 2>&1)
 
 if [ $? -ne 0 ]; then
