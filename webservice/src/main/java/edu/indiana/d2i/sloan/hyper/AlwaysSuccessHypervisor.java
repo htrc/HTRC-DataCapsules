@@ -73,4 +73,9 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
+	@Override
+	public HypervisorResponse migrateVM(VmInfoBean vminfo, String host, int vncport, int sshport) throws Exception {
+		return genFakeResponse(VMState.SHUTDOWN);
+	}
+
 }

@@ -123,4 +123,8 @@ public class RandomFailHypervisor implements IHypervisor {
 		return simulateRandProcess();
 	}
 
+	@Override
+	public HypervisorResponse migrateVM(VmInfoBean vminfo, String host, int vncport, int sshport) throws Exception {
+		return simulateRandProcess();
+	}
 }

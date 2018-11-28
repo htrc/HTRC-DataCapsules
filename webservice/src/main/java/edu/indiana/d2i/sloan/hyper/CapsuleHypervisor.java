@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
 
 import com.jcraft.jsch.JSchException;
@@ -377,6 +378,43 @@ class CapsuleHypervisor implements IHypervisor {
 			/* execute task */
 			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					updateKeyCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
+
+	@Override
+	public HypervisorResponse migrateVM(VmInfoBean vminfo, String host, int vncport, int sshport) throws Exception {
+		logger.debug("migrate vm: " + vminfo);
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--host", host).
+					addArgument("--vncport", vncport + "").
+					addArgument("--sshport", sshport + "").build();
+
+			Commands migrateVMCmd = new Commands(
+					Collections
+							.<String> singletonList(CommandUtils
+									.composeFullCommand(HYPERVISOR_CMD.MIGRATE_VM,
+											argList)),
+					false);
+
+			/* execute task */
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
+					migrateVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
 		} finally {

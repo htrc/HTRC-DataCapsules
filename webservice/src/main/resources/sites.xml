@@ -65,6 +65,10 @@
 		<name>cmd.update.key</name>
 		<value>DB_HOST_SCRIPT_DIR/updatekey.sh</value>
 	</property>
+	<property>
+		<name>cmd.migrate.vm</name>
+		<value>DB_HOST_SCRIPT_DIR/migratevm.sh</value>
+	</property>
 
 	<!-- fire wall policy -->
 	<property>

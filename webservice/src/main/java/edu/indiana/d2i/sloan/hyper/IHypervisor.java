@@ -31,4 +31,6 @@ interface IHypervisor {
 	public HypervisorResponse delete(VmInfoBean vminfo) throws Exception;
 
 	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception;
+
+	public HypervisorResponse migrateVM(VmInfoBean vminfo, String host, int vncport, int sshport) throws Exception;
 }

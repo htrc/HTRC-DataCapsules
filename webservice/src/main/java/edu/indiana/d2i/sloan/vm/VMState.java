@@ -26,4 +26,5 @@ public enum VMState {
 	DELETE_PENDING,
 	ERROR,
 	DELETED,
+	MIGRATE_PENDING
 }
