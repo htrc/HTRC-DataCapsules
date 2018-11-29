@@ -1637,6 +1637,20 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	public void updateVmHostAndPorts(String vmid, VMPorts vmports) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updatevmsql = String.format("UPDATE "
+				+ DBSchema.VmTable.TABLE_NAME + " SET "
+				+ DBSchema.VmTable.HOST + "=\"%s\", "
+				+ DBSchema.VmTable.SSH_PORT + "=%d, "
+				+ DBSchema.VmTable.VNC_PORT + "=%d "
+				+ "WHERE "
+				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
+				vmports.publicip, vmports.sshport, vmports.vncport, vmid);
+		updates.add(updatevmsql);
+		executeTransaction(updates);
+	}
+
 	public void close() {
 		DBConnections.getInstance().close();
 	}

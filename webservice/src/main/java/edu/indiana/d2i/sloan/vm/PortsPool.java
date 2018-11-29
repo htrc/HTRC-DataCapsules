@@ -102,6 +102,29 @@ public class PortsPool {
 			return null;
 		}
 	}
+
+	public VMPorts getMigrationPortPair(VMPorts vmPorts) {
+		synchronized (portsUsed) {
+			String host = vmPorts.publicip;
+
+			if (!portsUsed.containsKey(host)) {
+				throw new IllegalArgumentException("Hostname " + host + " is illegal!");
+			}
+
+			VMPorts vmport = new VMPorts(host, -1, -1);
+
+			if (!portsUsed.get(host).contains(vmPorts.sshport)
+					&& !portsUsed.get(host).contains(vmPorts.vncport)) {
+				portsUsed.get(host).add(vmPorts.sshport);
+				portsUsed.get(host).add(vmPorts.vncport);
+				vmport.sshport = vmPorts.sshport;
+				vmport.vncport = vmPorts.vncport;
+				return vmport;
+			}
+
+			return nextAvailablePortPairAtHost(host);
+		}
+	}
 	
 //	public synchronized void release(VMPorts ports) {
 //		synchronized (portsUsed) {
