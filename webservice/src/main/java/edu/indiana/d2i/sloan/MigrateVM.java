@@ -21,6 +21,8 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.MigrateVMCommand;
+import edu.indiana.d2i.sloan.vm.PortsPool;
+import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 import org.apache.log4j.Logger;
@@ -81,15 +83,20 @@ public class MigrateVM {
 						.build();
 			}
 
-			//TODO return error if no ports available in new host
-			//TODO check ports and generate new ports
-			int vncport = vmInfo.getVncport();
-			int sshport = vmInfo.getSshport();
+			PortsPool portsPool = new PortsPool();
+			VMPorts vmports = portsPool.getMigrationPortPair(new VMPorts(host, vmInfo.getSshport(), vmInfo.getVncport()));
+			if(vmports == null) {
+				return Response
+						.status(400)
+						.entity(new ErrorBean(400, "Cannot migrate VM " + vmid
+								+ " to " + host + " - No port resource available"))
+						.build();
+			}
 
 			logger.info(userName + " requests to migrate VM " + vmInfo.getVmid());
 
 			vmInfo.setVmState(VMState.MIGRATE_PENDING);
-			HypervisorProxy.getInstance().addCommand(new MigrateVMCommand(vmInfo, userName, host, vncport, sshport));
+			HypervisorProxy.getInstance().addCommand(new MigrateVMCommand(vmInfo, userName, vmports));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

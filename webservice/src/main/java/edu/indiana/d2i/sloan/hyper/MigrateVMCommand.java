@@ -20,6 +20,7 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 import org.apache.log4j.Logger;
@@ -30,20 +31,18 @@ import java.util.concurrent.Callable;
 
 public class MigrateVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(MigrateVMCommand.class);
-	private String operator, host;
-	private int sshport, vncport;
+	private String operator;
+	private VMPorts vmports;
 
-	public MigrateVMCommand(VmInfoBean vminfo, String operator, String host, int vncport, int sshport) throws Exception {
+	public MigrateVMCommand(VmInfoBean vminfo, String operator, VMPorts vmports) throws Exception {
 		super(vminfo);
 		this.operator = operator;
-		this.host = host;
-		this.vncport = vncport;
-		this.sshport = sshport;
+		this.vmports = vmports;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.migrateVM(vminfo, host, vncport, sshport);
+		HypervisorResponse resp = hypervisor.migrateVM(vminfo, vmports);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
@@ -58,19 +57,13 @@ public class MigrateVMCommand extends HypervisorCommand {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.SHUTDOWN, operator);
 
-						// TODO update mode ??
-						assert vminfo.getVmmode().equals(VMMode.MAINTENANCE)
-								|| vminfo.getVmmode().equals(VMMode.SECURE);
-
-						//TODO update new host and 2 ports
-						/*if (logger.isDebugEnabled()) {
+						if (logger.isDebugEnabled()) {
 							logger.debug(String.format(
-									"Going to update VM (vmid = %s) mode in DB from %s to %s",
-									vminfo.getVmid(), vminfo.getVmmode(), VMMode.NOT_DEFINED));
+									"Going to update VM's (vmid = %s) host, VNC port and SSH port to %s, %d and %d",
+									vminfo.getVmid(), vmports.publicip, vmports.vncport, vmports.sshport));
 						}
 
-						DBOperations.getInstance().updateVMMode(vminfo.getVmid(),
-								VMMode.NOT_DEFINED, operator);*/
+						DBOperations.getInstance().updateVmHostAndPorts(vminfo.getVmid(), vmports);
 					return null;
 				}
 			},  1000, 3, 

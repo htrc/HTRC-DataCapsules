@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
 
@@ -388,7 +389,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse migrateVM(VmInfoBean vminfo, String host, int vncport, int sshport) throws Exception {
+	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
 		logger.debug("migrate vm: " + vminfo);
 
 		SSHProxy sshProxy = null;
@@ -401,9 +402,9 @@ class CapsuleHypervisor implements IHypervisor {
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().
 					addArgument("--wdir", vminfo.getWorkDir()).
-					addArgument("--host", host).
-					addArgument("--vncport", vncport + "").
-					addArgument("--sshport", sshport + "").build();
+					addArgument("--deshost", vmports.publicip).
+					addArgument("--vnc", vmports.vncport + "").
+					addArgument("--ssh", vmports.sshport + "").build();
 
 			Commands migrateVMCmd = new Commands(
 					Collections
