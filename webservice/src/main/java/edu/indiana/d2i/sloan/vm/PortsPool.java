@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -35,8 +36,9 @@ public class PortsPool {
 	private Map<String, Set<Integer>> portsUsed;
 	private final int PORT_RANGE_MIN, PORT_RANGE_MAX;
 	
-//	private static PortsPool instance = null;
-	public PortsPool() {
+	private static PortsPool instance = null;
+
+	private PortsPool() {
 		// load hosts
 		portsUsed = new HashMap<String, Set<Integer>>();
 		String[] hosts = Configuration.getInstance().getString(
@@ -68,13 +70,20 @@ public class PortsPool {
 			.getString(Configuration.PropertyName.PORT_RANGE_MAX));
 	}
 	
-//	static {
-//		instance = new PortsPool();
-//	}
-//	
-//	public static PortsPool getInstance() {
-//		return instance;
-//	}
+/*	static {
+		instance = new PortsPool();
+	}*/
+
+	public static PortsPool getInstance() {
+		if (instance == null) {
+			synchronized (PortsPool.class) {
+				if(instance==null) {
+					instance = new PortsPool();
+				}
+			}
+		}
+		return instance;
+	}
 	
 	/**
 	 * @param host
@@ -103,12 +112,12 @@ public class PortsPool {
 		}
 	}
 
-	public VMPorts getMigrationPortPair(VMPorts vmPorts) {
+	public VMPorts getMigrationPortPair(VMPorts vmPorts) throws InvalidHostNameException{
 		synchronized (portsUsed) {
 			String host = vmPorts.publicip;
 
 			if (!portsUsed.containsKey(host)) {
-				throw new IllegalArgumentException("Hostname " + host + " is illegal!");
+				throw new InvalidHostNameException("Hostname " + host + " is invalid!");
 			}
 
 			VMPorts vmport = new VMPorts(host, -1, -1);
@@ -126,14 +135,14 @@ public class PortsPool {
 		}
 	}
 	
-//	public synchronized void release(VMPorts ports) {
-//		synchronized (portsUsed) {
-//			if (!portsUsed.containsKey(ports.host)) {
-//				throw new IllegalArgumentException("Hostname " + ports.host + " is illegal!");
-//			}
-//			
-//			portsUsed.get(ports.host).remove(ports.sshport);
-//			portsUsed.get(ports.host).remove(ports.vncport);
-//		}
-//	}
+	public synchronized void release(VMPorts ports) {
+		synchronized (portsUsed) {
+			if (!portsUsed.containsKey(ports.publicip)) {
+				throw new IllegalArgumentException("Hostname " + ports.publicip + " is illegal!");
+			}
+
+			portsUsed.get(ports.publicip).remove(ports.sshport);
+			portsUsed.get(ports.publicip).remove(ports.vncport);
+		}
+	}
 }

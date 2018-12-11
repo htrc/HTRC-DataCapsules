@@ -19,10 +19,7 @@ import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
-import edu.indiana.d2i.sloan.vm.VMMode;
-import edu.indiana.d2i.sloan.vm.VMPorts;
-import edu.indiana.d2i.sloan.vm.VMState;
-import edu.indiana.d2i.sloan.vm.VMStateManager;
+import edu.indiana.d2i.sloan.vm.*;
 import org.apache.log4j.Logger;
 
 import java.util.Arrays;
@@ -79,6 +76,9 @@ public class MigrateVMCommand extends HypervisorCommand {
 				public Void call() throws Exception {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
+
+					// release the allocated ports upon failed migration
+					PortsPool.getInstance().release(vmports);
 					return null;
 				}
 			},  1000, 3, 

@@ -1637,7 +1637,7 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
-	public void updateVmHostAndPorts(String vmid, VMPorts vmports) throws SQLException, UnsupportedEncodingException {
+	public void updateVmHostAndPorts(String vmid, VMPorts vmports) throws SQLException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "

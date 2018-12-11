@@ -18,7 +18,9 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.MigrateVMCommand;
 import edu.indiana.d2i.sloan.vm.PortsPool;
@@ -83,9 +85,11 @@ public class MigrateVM {
 						.build();
 			}
 
-			PortsPool portsPool = new PortsPool();
-			VMPorts vmports = portsPool.getMigrationPortPair(new VMPorts(host, vmInfo.getSshport(), vmInfo.getVncport()));
+			VMPorts vmports = PortsPool.getInstance()
+					.getMigrationPortPair(new VMPorts(host, vmInfo.getSshport(), vmInfo.getVncport()));
 			if(vmports == null) {
+				logger.warn("Cannot migrate VM " + vmid + " to " + host + " - No port resource available");
+				VMStateManager.getInstance().transitTo(vmid, VMState.MIGRATE_PENDING, VMState.SHUTDOWN, userName);
 				return Response
 						.status(400)
 						.entity(new ErrorBean(400, "Cannot migrate VM " + vmid
@@ -94,11 +98,20 @@ public class MigrateVM {
 			}
 
 			logger.info(userName + " requests to migrate VM " + vmInfo.getVmid());
-
 			vmInfo.setVmState(VMState.MIGRATE_PENDING);
 			HypervisorProxy.getInstance().addCommand(new MigrateVMCommand(vmInfo, userName, vmports));
-
 			return Response.status(200).build();
+
+		} catch (InvalidHostNameException e) {
+			logger.error(e.getMessage(), e);
+			try {
+				VMStateManager.getInstance().transitTo(vmid, VMState.MIGRATE_PENDING, VMState.SHUTDOWN, userName);
+			} catch (Exception e1){
+				logger.error(e1.getMessage(), e1);
+			}
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400, e.getMessage())).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response

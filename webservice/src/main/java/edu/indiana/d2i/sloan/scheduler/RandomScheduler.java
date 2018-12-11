@@ -39,7 +39,7 @@ public class RandomScheduler extends Scheduler {
 	@Override
 	protected VmInfoBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
-		PortsPool portsPool = new PortsPool();
+		//PortsPool portsPool = new PortsPool();
 		boolean success = false;
 
 		String workDir = request.getWorkDir();
@@ -58,8 +58,7 @@ public class RandomScheduler extends Scheduler {
 			numAttempts++;
 			scheduleIndex = rand.nextInt(hosts.length);
 
-			VMPorts vmhost = portsPool
-					.nextAvailablePortPairAtHost(hosts[scheduleIndex]);
+			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(hosts[scheduleIndex]);
 
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),
