@@ -119,6 +119,7 @@ public class MigrateVM {
 					.entity(new ErrorBean(400, "Cannot find VM " + vmid
 							+ " associated with username " + userName)).build();
 		} catch (Exception e) {
+			//TODO check if this is called when exception in hypervisor, then de-allocate ports
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
 					.entity(new ErrorBean(500, e.getMessage())).build();

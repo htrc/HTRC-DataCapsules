@@ -105,11 +105,17 @@ public class VMStateManager {
 					canTrasist = true;
 				}
 				break;
+
 			case MIGRATE_PENDING :
 				if(target == VMState.SHUTDOWN) {
 					canTrasist = true;
 				}
+				break;
+
 			case DELETE_PENDING :
+				if(target == VMState.DELETE_ERROR) {
+					canTrasist = true;
+				}
 				break;
 
 			default :

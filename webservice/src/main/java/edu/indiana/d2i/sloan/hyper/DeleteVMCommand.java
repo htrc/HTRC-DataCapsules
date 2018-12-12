@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 
+import edu.indiana.d2i.sloan.vm.VMState;
+import edu.indiana.d2i.sloan.vm.VMStateManager;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
@@ -39,10 +41,18 @@ public class DeleteVMCommand extends HypervisorCommand {
 
 	@Override
 	public void execute() throws Exception {
-		// Update DB first, then call hypervisor. Such order guarantee that user will always
-		// see VM is removed although it might not be the case in the backend.
-		// No need to update VM' state and mode since it is going to be deleted.
-		/* Also restore user quota after deleting the VM */
+		/*
+		First call hypervisor and update DB table's(vms and vmactivity) state to DELETED upon successful hypervisor
+		execution. Also restore user quota when the hypervisor call is successful.
+		Does not update VmMode in the vms table
+		 */
+		HypervisorResponse resp = hypervisor.delete(vminfo);
+		logger.info(resp);
+		if (resp.getResponseCode() != 0) {
+			throw new ScriptCmdErrorException(String.format(
+					"Failed to excute command:\n%s ", resp));
+		}
+
 		RetriableTask<Void> r = new RetriableTask<Void>(
 			new Callable<Void>() {
 				@Override
@@ -54,28 +64,27 @@ public class DeleteVMCommand extends HypervisorCommand {
 			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
 		r.call();
 		
-		HypervisorResponse resp = hypervisor.delete(vminfo);
-		logger.info(resp);
-		if (resp.getResponseCode() != 0) {
-			throw new ScriptCmdErrorException(String.format(
-					"Failed to excute command:\n%s ", resp));
-		}
+
 	}
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		// don't mark error here because we don't want to indicate user there is an error
-//		RetriableTask<Void> r = new RetriableTask<Void>(
-//			new Callable<Void>() {
-//				@Override
-//				public Void call() throws Exception {
-//					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-//							vminfo.getVmstate(), VMState.ERROR);
-//					return null;
-//				}
-//			},  1000, 3, 
-//			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
-//		r.call();
+		//TODO deallocate ports on success and failure??
+
+		/* Update DB table's(vms and vmactivity) state to DELETE_ERROR upon failed hypervisor execution.
+		   Failed VMs will not be listed/shown to users and all API calls will return 'NoItemsFound' error for those VMs
+		*/
+		RetriableTask<Void> r = new RetriableTask<Void>(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+							vminfo.getVmstate(), VMState.DELETE_ERROR, operator);
+					return null;
+				}
+			},  1000, 3,
+			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+		r.call();
 	}
 
 	@Override

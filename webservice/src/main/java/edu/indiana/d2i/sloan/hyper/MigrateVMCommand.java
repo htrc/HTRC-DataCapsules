@@ -77,7 +77,7 @@ public class MigrateVMCommand extends HypervisorCommand {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 
-					// release the allocated ports upon failed migration
+					// TODO check this release the allocated ports upon failed migration
 					PortsPool.getInstance().release(vmports);
 					return null;
 				}
