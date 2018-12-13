@@ -85,12 +85,11 @@ public class DeleteVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+							vminfo.getVmstate(), VMState.DELETE_ERROR, operator);
 
 					DBOperations.getInstance().restoreQuota(username,
 							vminfo.getNumCPUs(), vminfo.getMemorySizeInMB(), vminfo.getVolumeSizeInGB());
-
-					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-							vminfo.getVmstate(), VMState.DELETE_ERROR, operator);
 
 					return null;
 				}

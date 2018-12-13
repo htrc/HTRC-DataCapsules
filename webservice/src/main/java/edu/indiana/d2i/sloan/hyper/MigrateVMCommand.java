@@ -46,11 +46,18 @@ public class MigrateVMCommand extends HypervisorCommand {
 			throw new ScriptCmdErrorException(String.format(
 					"Failed to excute command:\n%s ", resp));
 		}
-		
+
+		/*
+			If migration is successful, updates vms table with new ports and host values, updates VM state to shutdown,
+			and release previous ports.
+		 */
 		RetriableTask<Void> r = new RetriableTask<Void>(
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+
+					DBOperations.getInstance().updateVmHostAndPorts(vminfo.getVmid(), vmports);
+
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.SHUTDOWN, operator);
 
@@ -60,8 +67,10 @@ public class MigrateVMCommand extends HypervisorCommand {
 									vminfo.getVmid(), vmports.publicip, vmports.vncport, vmports.sshport));
 						}
 
-						DBOperations.getInstance().updateVmHostAndPorts(vminfo.getVmid(), vmports);
-					return null;
+						PortsPool.getInstance().release(
+								new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
+
+						return null;
 				}
 			},  1000, 3, 
 			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
@@ -70,6 +79,9 @@ public class MigrateVMCommand extends HypervisorCommand {
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
+		/*
+			If migration fails, update VM's state to Error, and release the newly allocated ports of the target host
+		 */
 		RetriableTask<Void> r = new RetriableTask<Void>(
 			new Callable<Void>() {
 				@Override
@@ -77,8 +89,8 @@ public class MigrateVMCommand extends HypervisorCommand {
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 
-					// TODO check this release the allocated ports upon failed migration
 					PortsPool.getInstance().release(vmports);
+
 					return null;
 				}
 			},  1000, 3, 
