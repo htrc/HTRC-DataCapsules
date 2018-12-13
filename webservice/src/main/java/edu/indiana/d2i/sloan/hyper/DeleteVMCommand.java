@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 
+import edu.indiana.d2i.sloan.vm.PortsPool;
+import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 import org.apache.log4j.Logger;
@@ -43,7 +45,7 @@ public class DeleteVMCommand extends HypervisorCommand {
 	public void execute() throws Exception {
 		/*
 		First call hypervisor and update DB table's(vms and vmactivity) state to DELETED upon successful hypervisor
-		execution. Also restore user quota when the hypervisor call is successful.
+		execution. Also restore user quota and release ports when the hypervisor call is successful.
 		Does not update VmMode in the vms table
 		 */
 		HypervisorResponse resp = hypervisor.delete(vminfo);
@@ -58,6 +60,11 @@ public class DeleteVMCommand extends HypervisorCommand {
 				@Override
 				public Void call() throws Exception {
 					DBOperations.getInstance().deleteVMs(username, operator, vminfo);
+
+					//remove ports allocated in PortsPool upon successful deletion
+					PortsPool.getInstance().release(
+							new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
+
 					return null;
 				}
 			},  1000, 3, 
@@ -69,17 +76,22 @@ public class DeleteVMCommand extends HypervisorCommand {
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
-		//TODO deallocate ports on success and failure??
-
-		/* Update DB table's(vms and vmactivity) state to DELETE_ERROR upon failed hypervisor execution.
+		/*
+		   Update DB table's(vms and vmactivity) state to DELETE_ERROR upon failed hypervisor execution.
+		   Also restore user quota when the hypervisor call is failed. Not releasing ports if there is an error.
 		   Failed VMs will not be listed/shown to users and all API calls will return 'NoItemsFound' error for those VMs
 		*/
 		RetriableTask<Void> r = new RetriableTask<Void>(
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+
+					DBOperations.getInstance().restoreQuota(username,
+							vminfo.getNumCPUs(), vminfo.getMemorySizeInMB(), vminfo.getVolumeSizeInGB());
+
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.DELETE_ERROR, operator);
+
 					return null;
 				}
 			},  1000, 3,
