@@ -103,7 +103,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME + " AND "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.HOST + "="
 				+ DBSchema.HostTable.TABLE_NAME + "." + DBSchema.HostTable.HOST_NAME + " AND "
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + " NOT LIKE \"%" + DELETE + "%\"";
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"";
 		logger.debug(sql);
 		List<VmKeyInfoBean> res = new ArrayList<VmKeyInfoBean>();
 		Connection connection = null;
@@ -405,7 +405,7 @@ public class DBOperations {
 				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
 				+ " WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + " NOT LIKE \"%" + DELETE + "%\"";
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"";
 		return getVmInfoInternal(sql);
 	}
 
@@ -436,7 +436,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
 				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%" + DELETE + "%\"", userName);
+				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName);
 		return getVmInfoInternal(sql);
 	}
 
@@ -469,7 +469,7 @@ public class DBOperations {
 				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
 				+ DBSchema.VmTable.VM_ID + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%" + DELETE + "%\"", userName, vmid);
+				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName, vmid);
 
 		logger.debug(sql);
 
@@ -508,7 +508,7 @@ public class DBOperations {
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
 				+ DBSchema.VmTable.VM_ID + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%" + DELETE + "%\"", vmid);
+				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", vmid);
 
 		logger.debug(sql);
 

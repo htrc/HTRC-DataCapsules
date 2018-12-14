@@ -104,6 +104,7 @@ public class PortsPool {
 					} else {
 						vmport.vncport = port;
 						portsUsed.get(host).add(port);
+						logger.debug("port allocated : " + vmport.toString());
 						return vmport;
 					}
 				}
@@ -128,6 +129,7 @@ public class PortsPool {
 				portsUsed.get(host).add(vmPorts.vncport);
 				vmport.sshport = vmPorts.sshport;
 				vmport.vncport = vmPorts.vncport;
+				logger.debug("port allocated : " + vmport.toString());
 				return vmport;
 			}
 
@@ -143,6 +145,7 @@ public class PortsPool {
 
 			portsUsed.get(ports.publicip).remove(ports.sshport);
 			portsUsed.get(ports.publicip).remove(ports.vncport);
+			logger.debug("port released : " + ports.toString());
 		}
 	}
 
@@ -158,6 +161,7 @@ public class PortsPool {
 			if(portSet.contains(ports.vncport)) {
 				portSet.remove(ports.vncport);
 			}
+			logger.debug("port released if existed: " + ports.toString());
 		}
 	}
 }

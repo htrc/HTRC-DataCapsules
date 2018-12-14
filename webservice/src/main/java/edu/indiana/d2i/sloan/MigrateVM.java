@@ -75,6 +75,14 @@ public class MigrateVM {
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName,
 					vmid);
+
+			if(vmInfo.getPublicip().equals(host)) {
+				return Response
+						.status(400)
+						.entity(new ErrorBean(400, "Cannot migrate a VM to the same host!"))
+						.build();
+			}
+
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
 				!VMStateManager.getInstance().transitTo(vmid,
 					vmInfo.getVmstate(), VMState.MIGRATE_PENDING, userName)) {

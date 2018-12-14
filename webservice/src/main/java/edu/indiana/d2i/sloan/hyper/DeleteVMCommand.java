@@ -85,6 +85,8 @@ public class DeleteVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					logger.error("Error occurred while deleting VM " + vminfo.getVmid());
+
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.DELETE_ERROR, operator);
 
