@@ -50,7 +50,7 @@ public class UpdateAsNotified {
 
                 //construct email content
                 String content = String.format("Please download result from the following URL: \n", download_addr);
-                send_email.sendEMail("li530@indiana.edu", "HTRC Data Capsule Result Download URL", content);
+                send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", content);
 
                 return Response.status(200).build();
             } catch (SQLException e) {
