@@ -22,6 +22,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.bean.UserBean;
 import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
 import edu.indiana.d2i.sloan.vm.*;
 import org.apache.log4j.Logger;
@@ -36,6 +37,7 @@ import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 @Path("/deletevm")
 public class DeleteVM {
 	private static Logger logger = Logger.getLogger(DeleteVM.class);
+	private static final String ADMIN = "ADMIN";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -115,7 +117,8 @@ public class DeleteVM {
 								   @Context HttpServletRequest httpServletRequest) {
 
 		// check whether the user has been authorized
-		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		//String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		String userName = ADMIN;
 		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
@@ -124,13 +127,13 @@ public class DeleteVM {
 		if (operatorEmail == null) operatorEmail = "";*/
 
 		// check input
-		if (userName == null) {
+		/*if (userName == null) {
 			logger.error("Username is not present in http header.");
 			return Response
 					.status(500)
 					.entity(new ErrorBean(500,
 							"Username is not present in http header.")).build();
-		}
+		}*/
 
 		if (vmid == null) {
 			return Response.status(400)
@@ -142,23 +145,20 @@ public class DeleteVM {
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
-			VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName,
-					vmid);
+			VMPorts ports = DBOperations.getInstance().getPortsWithVMId(vmid);
 
 			logger.info("User " + userName + " tries to set the state of vm " + vmid + " as DELETED and remove ports.");
 
 			//Update the database(state:DELETED, mode:NOT_DEFINED) and release ports of the vm from Ports pool if exists
 			DBOperations.getInstance().updateVMState(vmid, VMState.DELETED, userName);
 			DBOperations.getInstance().updateVMMode(vmid, VMMode.NOT_DEFINED, userName);
-			PortsPool.getInstance().releaseIfExists(
-					new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
+			PortsPool.getInstance().releaseIfExists(ports);
 
 			//If additional Ports are provided, remove those ports from the PortsPool if they are in the allocated list
 			if(host != null && sshport != null && vncport != null) {
 				VMPorts vmPorts = new VMPorts(host, Integer.parseInt(sshport), Integer.parseInt(vncport));
 				logger.info("User " + userName + " tries to remove ports from PortsPool : " + vmPorts.toString());
-				PortsPool.getInstance().releaseIfExists(
-						new VMPorts(host, Integer.parseInt(sshport), Integer.parseInt(vncport)));
+				PortsPool.getInstance().releaseIfExists(vmPorts);
 			}
 
 			return Response.status(200).build();
@@ -171,8 +171,7 @@ public class DeleteVM {
 			logger.error(e.getMessage(), e);
 			return Response
 					.status(400)
-					.entity(new ErrorBean(400, "Cannot find VM " + vmid
-							+ " with username " + userName)).build();
+					.entity(new ErrorBean(400, "Cannot find VM " + vmid)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

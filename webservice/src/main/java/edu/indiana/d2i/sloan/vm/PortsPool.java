@@ -49,7 +49,7 @@ public class PortsPool {
 		
 		// load from db
 		try {
-			List<VmInfoBean> vmStatus = DBOperations.getInstance().getExistingVmInfo();
+			List<VmInfoBean> vmStatus = DBOperations.getInstance().getAllVmInfo();
 			for (VmInfoBean status : vmStatus) {
 				if (!portsUsed.containsKey(status.getPublicip())) {
 					portsUsed.put(status.getPublicip(), new HashSet<Integer>());
