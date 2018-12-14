@@ -145,4 +145,19 @@ public class PortsPool {
 			portsUsed.get(ports.publicip).remove(ports.vncport);
 		}
 	}
+
+	public synchronized void releaseIfExists(VMPorts ports) throws InvalidHostNameException {
+		synchronized (portsUsed) {
+			if (!portsUsed.containsKey(ports.publicip)) {
+				throw new InvalidHostNameException("Hostname " + ports.publicip + " is invalid!");
+			}
+			Set<Integer> portSet = portsUsed.get(ports.publicip);
+			if(portSet.contains(ports.sshport)) {
+				portSet.remove(ports.sshport);
+			}
+			if(portSet.contains(ports.vncport)) {
+				portSet.remove(ports.vncport);
+			}
+		}
+	}
 }

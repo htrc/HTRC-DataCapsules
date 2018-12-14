@@ -80,16 +80,22 @@ public class MigrateVMCommand extends HypervisorCommand {
 	@Override
 	public void cleanupOnFailed() throws Exception {
 		/*
-			If migration fails, update VM's state to Error, and release the newly allocated ports of the target host
+			If migration fails, update VM's state to Erro
+			Do not release the newly allocated ports of the target host, both old and new ports will be not available
+			until its deleted manually and DELETE /deletevm API is called
 		 */
 		RetriableTask<Void> r = new RetriableTask<Void>(
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					VMPorts current_port = new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport());
+					logger.error("Error occurred while migrating VM " + vminfo.getVmid() + " from VMPort("
+							+ current_port.toString() + ") to VMPort(" + vmports.toString() + ")");
+
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 
-					PortsPool.getInstance().release(vmports);
+					//PortsPool.getInstance().release(vmports);
 
 					return null;
 				}
