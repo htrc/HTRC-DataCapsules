@@ -42,7 +42,7 @@ public class RoundRobinScheduler extends Scheduler {
 		String workDir = request.getWorkDir();
 
 		do {
-			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(hosts[scheduleIndex]);
+			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(request.getVmId(), hosts[scheduleIndex]);
 			scheduleIndex = (scheduleIndex + 1) % hosts.length;
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),

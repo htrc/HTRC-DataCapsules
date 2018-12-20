@@ -1712,4 +1712,145 @@ public class DBOperations {
 	public void close() {
 		DBConnections.getInstance().close();
 	}
+
+	public void addPorts(String vmid, VMPorts vmPorts) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		try {
+			String insertResult = String.format(
+					"INSERT INTO " + DBSchema.PortTable.TABLE_NAME + " (%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)",
+					DBSchema.PortTable.VM_ID, DBSchema.PortTable.HOST,
+					DBSchema.PortTable.SSH_PORT, DBSchema.PortTable.VNC_PORT);
+
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(insertResult);
+			pst.setString(1, vmid);
+			pst.setString(2, vmPorts.publicip);
+			pst.setInt(3, vmPorts.sshport);
+			pst.setInt(4, vmPorts.vncport);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public void deletePort(String vmid, VMPorts vmPorts) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"DELETE * FROM %s WHERE %s=\"%s\" AND %s=\"%s\" AND %s=%d AND %s=%d" ,
+					DBSchema.PortTable.TABLE_NAME,
+					DBSchema.PortTable.VM_ID, vmid,
+					DBSchema.PortTable.HOST, vmPorts.publicip,
+					DBSchema.PortTable.SSH_PORT, vmPorts.sshport,
+					DBSchema.PortTable.VNC_PORT, vmPorts.vncport
+			);
+			pst = connection.prepareStatement(query);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public boolean portsExists(String vmid, VMPorts vmPorts) throws SQLException {
+		boolean exists = false;
+
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"SELECT * FROM %s WHERE %s=\"%s\" AND %s=\"%s\" AND %s=%d AND %s=%d" ,
+					DBSchema.PortTable.TABLE_NAME,
+					DBSchema.PortTable.VM_ID, vmid,
+					DBSchema.PortTable.HOST, vmPorts.publicip,
+					DBSchema.PortTable.SSH_PORT, vmPorts.sshport,
+					DBSchema.PortTable.VNC_PORT, vmPorts.vncport
+			);
+			pst = connection.prepareStatement(query);
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				exists = true;
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+		return exists;
+	}
+
+	public List<PortBean> getPorts() throws SQLException {
+		List<PortBean> res = new ArrayList<PortBean>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format("SELECT * FROM %s", DBSchema.PortTable.TABLE_NAME);
+			logger.debug(query);
+
+			pst = connection.prepareStatement(query);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				PortBean bean = new PortBean(
+						rs.getString(DBSchema.PortTable.VM_ID),
+						rs.getString(DBSchema.PortTable.HOST),
+						rs.getInt(DBSchema.PortTable.SSH_PORT),
+						rs.getInt(DBSchema.PortTable.VNC_PORT));
+				res.add(bean);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
+
+	public List<Integer> getPortsOfHost(String host) throws SQLException {
+		List<Integer> res = new ArrayList<Integer>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format("SELECT * FROM %s WHERE %s=\"%s\"",
+					DBSchema.PortTable.TABLE_NAME,
+					DBSchema.PortTable.HOST, host);
+			logger.debug(query);
+
+			pst = connection.prepareStatement(query);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				res.add(rs.getInt(DBSchema.PortTable.SSH_PORT));
+				res.add(rs.getInt(DBSchema.PortTable.VNC_PORT));
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
 }

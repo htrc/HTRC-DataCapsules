@@ -152,13 +152,13 @@ public class DeleteVM {
 			//Update the database(state:DELETED, mode:NOT_DEFINED) and release ports of the vm from Ports pool if exists
 			DBOperations.getInstance().updateVMState(vmid, VMState.DELETED, userName);
 			DBOperations.getInstance().updateVMMode(vmid, VMMode.NOT_DEFINED, userName);
-			PortsPool.getInstance().releaseIfExists(ports);
+			PortsPool.getInstance().release(vmid, ports);
 
 			//If additional Ports are provided, remove those ports from the PortsPool if they are in the allocated list
 			if(host != null && sshport != null && vncport != null) {
 				VMPorts vmPorts = new VMPorts(host, Integer.parseInt(sshport), Integer.parseInt(vncport));
 				logger.info("User " + userName + " tries to remove ports from PortsPool : " + vmPorts.toString());
-				PortsPool.getInstance().releaseIfExists(vmPorts);
+				PortsPool.getInstance().release(vmid, vmPorts);
 			}
 
 			return Response.status(200).build();

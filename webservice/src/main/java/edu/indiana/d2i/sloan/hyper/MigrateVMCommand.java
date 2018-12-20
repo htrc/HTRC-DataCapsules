@@ -67,7 +67,7 @@ public class MigrateVMCommand extends HypervisorCommand {
 									vminfo.getVmid(), vmports.publicip, vmports.vncport, vmports.sshport));
 						}
 
-						PortsPool.getInstance().release(
+						PortsPool.getInstance().release(vminfo.getVmid(),
 								new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
 
 						return null;

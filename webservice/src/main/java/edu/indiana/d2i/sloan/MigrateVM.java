@@ -94,7 +94,7 @@ public class MigrateVM {
 			}
 
 			VMPorts vmports = PortsPool.getInstance()
-					.getMigrationPortPair(new VMPorts(host, vmInfo.getSshport(), vmInfo.getVncport()));
+					.getMigrationPortPair(vmid, new VMPorts(host, vmInfo.getSshport(), vmInfo.getVncport()));
 			if(vmports == null) {
 				logger.warn("Cannot migrate VM " + vmid + " to " + host + " - No port resource available");
 				VMStateManager.getInstance().transitTo(vmid, VMState.MIGRATE_PENDING, VMState.SHUTDOWN, userName);

@@ -62,7 +62,7 @@ public class DeleteVMCommand extends HypervisorCommand {
 					DBOperations.getInstance().deleteVMs(username, operator, vminfo);
 
 					//remove ports allocated in PortsPool upon successful deletion
-					PortsPool.getInstance().release(
+					PortsPool.getInstance().release(vminfo.getVmid(),
 							new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
 
 					return null;

@@ -58,7 +58,7 @@ public class RandomScheduler extends Scheduler {
 			numAttempts++;
 			scheduleIndex = rand.nextInt(hosts.length);
 
-			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(hosts[scheduleIndex]);
+			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(request.getVmId(), hosts[scheduleIndex]);
 
 			if (vmhost != null) {
 				DBOperations.getInstance().addVM(request.getUserName(),
