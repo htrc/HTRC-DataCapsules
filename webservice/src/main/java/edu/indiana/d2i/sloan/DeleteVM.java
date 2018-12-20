@@ -39,7 +39,7 @@ import java.util.List;
 @Path("/deletevm")
 public class DeleteVM {
 	private static Logger logger = Logger.getLogger(DeleteVM.class);
-	private static final String ADMIN = "ADMIN";
+	private static final String ADMIN = "admin";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

@@ -37,7 +37,7 @@ import java.util.List;
 @Path("/migratevm")
 public class MigrateVM {
 	private static Logger logger = Logger.getLogger(MigrateVM.class);
-	private static final String ADMIN = "ADMIN";
+	private static final String ADMIN = "admin";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

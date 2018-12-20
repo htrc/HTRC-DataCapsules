@@ -36,6 +36,7 @@ public class PortsPool {
 
 	private PortsPool() {
 		// load hosts
+		vmHosts = new ArrayList<String>();
 		String[] hosts = Configuration.getInstance().getString(
 				Configuration.PropertyName.HOSTS).split(";");
 		for (String host : hosts) {
