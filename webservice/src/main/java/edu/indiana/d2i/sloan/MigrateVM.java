@@ -23,10 +23,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.MigrateVMCommand;
-import edu.indiana.d2i.sloan.vm.PortsPool;
-import edu.indiana.d2i.sloan.vm.VMPorts;
-import edu.indiana.d2i.sloan.vm.VMState;
-import edu.indiana.d2i.sloan.vm.VMStateManager;
+import edu.indiana.d2i.sloan.vm.*;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,10 +32,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Path("/migratevm")
 public class MigrateVM {
 	private static Logger logger = Logger.getLogger(MigrateVM.class);
+	private static final String ADMIN = "ADMIN";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -131,5 +130,51 @@ public class MigrateVM {
 			return Response.status(500)
 					.entity(new ErrorBean(500, e.getMessage())).build();
 		}
+	}
+
+	@PUT
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response migrateVM(@FormParam("vmid") String vmid, @FormParam("host") String host,
+							  @FormParam("sshport") int sshport, @FormParam("vncport") int vncport,
+							  @Context HttpHeaders httpHeaders,
+							  @Context HttpServletRequest httpServletRequest) {
+
+		String userName = ADMIN;
+		if (vmid == null) {
+			return Response.status(400)
+					.entity(new ErrorBean(400, "VM id cannot be empty!"))
+					.build();
+		}
+
+		try {
+			VMPorts vmport = new VMPorts(host, sshport, vncport);
+			logger.info("User " + userName + " tries to update info of vm " + vmid + " in DB as migrated to " + vmport.toString());
+
+			//Update the database(state:SHUTDOWN) and update vms table with new ports and host values
+			DBOperations.getInstance().updateVMState(vmid, VMState.SHUTDOWN, userName);
+			DBOperations.getInstance().updateVmHostAndPorts(vmid, vmport);
+
+			//Release old ports of the vm from 'ports' table
+			List<VMPorts> vmPorts = DBOperations.getInstance().getPortsOfVm(vmid);
+			for(VMPorts vmPort : vmPorts) {
+				if(vmPort.publicip.equals(host) && (vmPort.sshport == sshport || vmPort.vncport == vncport)) {
+					logger.info("User " + userName + " tries to remove ports from PortsPool : " + vmPort.toString());
+					PortsPool.getInstance().release(vmid, vmPort);
+				}
+			}
+
+			return Response.status(200).build();
+		} catch (InvalidHostNameException e) {
+			logger.error(e.getMessage(), e);
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400, e.getMessage())).build();
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return Response.status(500)
+					.entity(new ErrorBean(500, e.getMessage())).build();
+		}
+
 	}
 }

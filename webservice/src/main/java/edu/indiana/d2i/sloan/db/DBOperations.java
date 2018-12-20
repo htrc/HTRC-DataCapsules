@@ -1853,4 +1853,35 @@ public class DBOperations {
 		}
 		return res;
 	}
+
+	public List<VMPorts> getPortsOfVm(String vmid) throws SQLException {
+		List<VMPorts> res = new ArrayList<VMPorts>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format("SELECT * FROM %s WHERE %s=\"%s\"",
+					DBSchema.PortTable.TABLE_NAME,
+					DBSchema.PortTable.VM_ID, vmid);
+			logger.debug(query);
+
+			pst = connection.prepareStatement(query);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				VMPorts vmPort = new VMPorts(rs.getString(DBSchema.PortTable.HOST),
+						rs.getInt(DBSchema.PortTable.SSH_PORT), rs.getInt(DBSchema.PortTable.VNC_PORT));
+				res.add(vmPort);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
 }

@@ -34,6 +34,8 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.DeleteVMCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 
+import java.util.List;
+
 @Path("/deletevm")
 public class DeleteVM {
 	private static Logger logger = Logger.getLogger(DeleteVM.class);
@@ -110,9 +112,6 @@ public class DeleteVM {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response deleteVMFromDB(@FormParam("vmid") String vmid,
-								   @FormParam("host") String host,
-								   @FormParam("sshport") String sshport,
-								   @FormParam("vncport") String vncport,
 								   @Context HttpHeaders httpHeaders,
 								   @Context HttpServletRequest httpServletRequest) {
 
@@ -144,21 +143,17 @@ public class DeleteVM {
 		try {
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-
-			VMPorts ports = DBOperations.getInstance().getPortsWithVMId(vmid);
-
 			logger.info("User " + userName + " tries to set the state of vm " + vmid + " as DELETED and remove ports.");
 
-			//Update the database(state:DELETED, mode:NOT_DEFINED) and release ports of the vm from Ports pool if exists
+			//Update the database(state:DELETED, mode:NOT_DEFINED)
 			DBOperations.getInstance().updateVMState(vmid, VMState.DELETED, userName);
 			DBOperations.getInstance().updateVMMode(vmid, VMMode.NOT_DEFINED, userName);
-			PortsPool.getInstance().release(vmid, ports);
 
-			//If additional Ports are provided, remove those ports from the PortsPool if they are in the allocated list
-			if(host != null && sshport != null && vncport != null) {
-				VMPorts vmPorts = new VMPorts(host, Integer.parseInt(sshport), Integer.parseInt(vncport));
-				logger.info("User " + userName + " tries to remove ports from PortsPool : " + vmPorts.toString());
-				PortsPool.getInstance().release(vmid, vmPorts);
+			//Release ports of the vm from 'ports' table
+			List<VMPorts>  vmPorts = DBOperations.getInstance().getPortsOfVm(vmid);
+			for(VMPorts vmPort : vmPorts) {
+				logger.info("User " + userName + " tries to remove ports from PortsPool : " + vmPort.toString());
+				PortsPool.getInstance().release(vmid, vmPort);
 			}
 
 			return Response.status(200).build();
@@ -167,11 +162,6 @@ public class DeleteVM {
 			return Response
 					.status(400)
 					.entity(new ErrorBean(400, e.getMessage())).build();
-		} catch (NoItemIsFoundInDBException e) {
-			logger.error(e.getMessage(), e);
-			return Response
-					.status(400)
-					.entity(new ErrorBean(400, "Cannot find VM " + vmid)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
