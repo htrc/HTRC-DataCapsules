@@ -180,7 +180,7 @@ NEW_VM_IP_ADDR=$(ssh $DES_HOST ". $CAPSULE_CONFIG_FILE; /bin/head -n1 $FREE_HOST
 
 if [[ -z $NEW_VM_IP_ADDR ]]; then
   echo "Error: Unable to allocate IP address; IP pool is exhausted"
-  fail 5
+  exit 5
 fi
 
 if [[ $VM_IP_ADDR != $NEW_VM_IP_ADDR ]]; then
