@@ -161,6 +161,30 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vmactivity` (
 ENGINE = InnoDB;
 
 
+
+-- -----------------------------------------------------
+-- Table `htrcvirtdb`.`ports`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `htrcvirtdb`.`ports` ;
+
+CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`ports` (
+  `vmid` VARCHAR(128) NOT NULL,
+  `host` VARCHAR(128) NOT NULL,
+  `sshport` INT NOT NULL,
+  `vncport` INT NOT NULL,
+  PRIMARY KEY (`vmid`,`host`,`sshport`,`vncport`),
+  CONSTRAINT `fk_p_vmid`
+    FOREIGN KEY (`vmid`)
+    REFERENCES `htrcvirtdb`.`vms` (`vmid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_hosts`
+    FOREIGN KEY (`host`)
+    REFERENCES `htrcvirtdb`.`vmhosts` (`hostname`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

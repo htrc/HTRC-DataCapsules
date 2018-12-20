@@ -154,4 +154,12 @@ public class DBSchema {
 		public static String CURR_STATE = "curr_state";
 		public static String USERNAME = "username";
 	}
+
+	public static class PortTable {
+		public static String TABLE_NAME = "ports";
+		public static String VM_ID = "vmid";
+		public static String HOST = "host";
+		public static String SSH_PORT = "sshport";
+		public static String VNC_PORT = "vncport";
+	}
 }
