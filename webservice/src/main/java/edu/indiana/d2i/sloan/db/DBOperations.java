@@ -352,8 +352,8 @@ public class DBOperations {
 		}
 	}
 
-	public List<VmInfoBean> getAllVmInfo() throws SQLException {
-		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + ","
+	public VmInfoBean getAllVmInfoByID(String vmid) throws SQLException, NoItemIsFoundInDBException {
+		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
 				+ "," + DBSchema.VmTable.HOST + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
@@ -376,9 +376,16 @@ public class DBOperations {
 				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
 				+ " WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
-				+ VMState.DELETED.toString() + "\"";
-		return getVmInfoInternal(sql);
+				+ VMState.DELETED.toString() + "\"", vmid);
+
+		List<VmInfoBean> res = getVmInfoInternal(sql);
+		if (res.size() == 0)
+			throw new NoItemIsFoundInDBException(String.format(
+					"VM %s is not found in DB.", vmid));
+		return res.get(0);
+
 	}
 
 	public List<VmInfoBean> getExistingVmInfo() throws SQLException {
@@ -801,7 +808,7 @@ public class DBOperations {
 
 		VmInfoBean vmInfo = null;
 		try {
-			vmInfo = getVmInfoByID(vmid);
+			vmInfo = getAllVmInfoByID(vmid);
 		} catch (NoItemIsFoundInDBException e) {
 			logger.debug("Cannot find VM with id: " + vmid + "to update state");
 		}
@@ -1744,7 +1751,7 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String query = String.format(
-					"DELETE * FROM %s WHERE %s=\"%s\" AND %s=\"%s\" AND %s=%d AND %s=%d" ,
+					"DELETE FROM %s WHERE %s=\"%s\" AND %s=\"%s\" AND %s=%d AND %s=%d" ,
 					DBSchema.PortTable.TABLE_NAME,
 					DBSchema.PortTable.VM_ID, vmid,
 					DBSchema.PortTable.HOST, vmPorts.publicip,
