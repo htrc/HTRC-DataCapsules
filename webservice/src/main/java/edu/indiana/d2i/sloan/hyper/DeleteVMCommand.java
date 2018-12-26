@@ -17,6 +17,7 @@ package edu.indiana.d2i.sloan.hyper;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.Callable;
 
 import edu.indiana.d2i.sloan.vm.PortsPool;
@@ -61,9 +62,14 @@ public class DeleteVMCommand extends HypervisorCommand {
 				public Void call() throws Exception {
 					DBOperations.getInstance().deleteVMs(username, operator, vminfo);
 
-					//remove ports allocated in PortsPool upon successful deletion
-					PortsPool.getInstance().release(vminfo.getVmid(),
-							new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
+					//remove all ports in ports table for this capsule upon successful deletion
+					//PortsPool.getInstance().release(vminfo.getVmid(),
+					//		new VMPorts(vminfo.getPublicip(), vminfo.getSshport(), vminfo.getVncport()));
+					List<VMPorts> vmPorts = DBOperations.getInstance().getPortsOfVm(vminfo.getVmid());
+					for(VMPorts vmPort : vmPorts) {
+						logger.info("User " + username + " tries to remove ports from PortsPool : " + vmPort.toString());
+						PortsPool.getInstance().release(vminfo.getVmid(), vmPort);
+					}
 
 					return null;
 				}

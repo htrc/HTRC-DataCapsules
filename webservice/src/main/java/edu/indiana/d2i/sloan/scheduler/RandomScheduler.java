@@ -69,7 +69,9 @@ public class RandomScheduler extends Scheduler {
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
 						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
-				
+
+				DBOperations.getInstance().addPorts(request.getVmId(), vmhost);
+
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
 						null, // image path
 						null, // policy path

@@ -77,7 +77,7 @@ public class PortsPool {
 					vmport.sshport = port;
 				} else {
 					vmport.vncport = port;
-					DBOperations.getInstance().addPorts(vmid, vmport);
+					//DBOperations.getInstance().addPorts(vmid, vmport);
 					logger.debug("port allocated : " + vmport.toString());
 					return vmport;
 				}
@@ -105,7 +105,12 @@ public class PortsPool {
 			return vmport;
 		}
 
-		return nextAvailablePortPairAtHost(vmid, host);
+		vmport = nextAvailablePortPairAtHost(vmid, host);
+		if(vmport == null)
+			return null;
+
+		DBOperations.getInstance().addPorts(vmid, vmport);
+		return vmport;
 	}
 	
 	public synchronized void release(String vmid, VMPorts ports) throws SQLException, InvalidHostNameException {
