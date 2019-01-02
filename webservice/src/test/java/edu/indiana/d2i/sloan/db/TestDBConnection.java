@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import junit.framework.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,7 +34,7 @@ public class TestDBConnection {
 		Configuration.getInstance().setProperty(
 			Configuration.PropertyName.DB_DRIVER_CLASS, "com.mysql.jdbc.Driver");
 		Configuration.getInstance().setProperty(
-			Configuration.PropertyName.JDBC_URL, "jdbc:mysql://localhost:3306/vmdb");
+			Configuration.PropertyName.JDBC_URL, "jdbc:mysql://localhost:3306/htrcvirtdb");
 		Configuration.getInstance().setProperty(
 				Configuration.PropertyName.DB_USER, "root");
 		Configuration.getInstance().setProperty(
@@ -52,9 +53,12 @@ public class TestDBConnection {
 			ResultSet result = pst.executeQuery();
 			if (result.next()) {
 				System.out.println(result.getString(1));
+			} else {
+				Assert.fail();
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+			Assert.fail();
 		} finally {
 			DBConnections.getInstance().close();
 		}

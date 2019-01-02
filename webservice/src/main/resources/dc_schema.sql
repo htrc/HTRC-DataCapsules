@@ -41,12 +41,12 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`users` ;
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`users` (
   `username` VARCHAR(128) NOT NULL,
   `useremail` VARCHAR(128) NULL,
-  `cpuleftquota` INT NULL,
-  `memoryleftquota` INT NULL,
-  `diskleftquota` INT NULL,
+  `cpuleftquota` int(11) NULL,
+  `memoryleftquota` INT(11) NULL,
+  `diskleftquota` INT(11) NULL,
   `usertype` VARCHAR(64) NULL DEFAULT 'regular',
-  `pub_key` varchar(1024) CHARACTER SET utf8 DEFAULT NULL,
-  `tou` boolean DEFAULT false,
+  `pub_key` VARCHAR(1024) CHARACTER SET utf8 DEFAULT NULL,
+  `tou` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`username`))
 ENGINE = InnoDB;
 
@@ -58,8 +58,8 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`vmhosts` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vmhosts` (
   `hostname` VARCHAR(128) NOT NULL,
-  `cpu_cores` INT NULL,
-  `mem_gb` INT NULL,
+  `cpu_cores` INT(11) DEFAULT NULL,
+  `mem_gb` INT(11) DEFAULT NULL,
   PRIMARY KEY (`hostname`))
 ENGINE = InnoDB;
 
@@ -73,18 +73,28 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vms` (
   `vmid` VARCHAR(128) NOT NULL,
   `vmmode` ENUM('MAINTENANCE', 'SECURE', 'NOT_DEFINED') NULL,
   `vmstate` ENUM('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR', 'DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') NULL,
-  `sshport` INT NULL,
-  `vncport` INT NULL,
-  `workingdir` VARCHAR(512) NULL,
-  `imagename` VARCHAR(128) NULL,
-  `vncusername` VARCHAR(128) NULL,
-  `vncpassword` VARCHAR(128) NULL,
-  `numcpus` INT NULL,
-  `memorysize` INT NULL,
-  `diskspace` INT NULL,
+  `sshport` INT(11) DEFAULT NULL,
+  `vncport` INT(11) DEFAULT NULL,
+  `workingdir` VARCHAR(512) DEFAULT NULL,
+  `imagename` VARCHAR(128) DEFAULT NULL,
+  `vncusername` VARCHAR(128) DEFAULT NULL,
+  `vncpassword` VARCHAR(128) DEFAULT NULL,
+  `numcpus` INT(11) DEFAULT NULL,
+  `memorysize` INT(11) DEFAULT NULL,
+  `diskspace` INT(11) DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `username` VARCHAR(128) NOT NULL,
-  `host` VARCHAR(128) NULL,
+  `host` VARCHAR(128) DEFAULT NULL,
+  `type` enum('DEMO','RESEARCH','RESEARCH-FULL') DEFAULT 'RESEARCH',
+  `title` varchar(256) DEFAULT NULL,
+  `desc_nature` varchar(2048) DEFAULT NULL,
+  `desc_requirement` varchar(2048) DEFAULT NULL,
+  `desc_outside_data` varchar(2048) DEFAULT NULL,
+  `desc_links` varchar(2048) DEFAULT NULL,
+  `rr_data_files` varchar(2048) DEFAULT NULL,
+  `rr_result_usage` varchar(2048) DEFAULT NULL,
+  `consent` tinyint(1) DEFAULT NULL,
+  `full_access` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`vmid`),
   INDEX `fk_images_idx` (`imagename` ASC),
   INDEX `fk_users_idx` (`username` ASC),
@@ -119,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`results` (
   `createtime` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `notified` ENUM('YES', 'NO') NOT NULL DEFAULT 'NO',
   `notifiedtime` TIMESTAMP NULL,
-  `reviewer` VARCHAR(128),
+  `reviewer` VARCHAR(128) DEFAULT NULL,
   `status` ENUM('Released', 'Rejected', 'Pending') DEFAULT 'Pending',
   `comment` MEDIUMTEXT NULL,
   PRIMARY KEY (`vmid`, `resultid`),
@@ -170,8 +180,8 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`ports` ;
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`ports` (
   `vmid` VARCHAR(128) NOT NULL,
   `host` VARCHAR(128) NOT NULL,
-  `sshport` INT NOT NULL,
-  `vncport` INT NOT NULL,
+  `sshport` INT(11) NOT NULL,
+  `vncport` INT(11) NOT NULL,
   PRIMARY KEY (`vmid`,`host`,`sshport`,`vncport`),
   CONSTRAINT `fk_p_vmid`
     FOREIGN KEY (`vmid`)

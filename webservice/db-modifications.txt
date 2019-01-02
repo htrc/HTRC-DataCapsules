@@ -1,0 +1,77 @@
+===================================================================================
+
+Adding public key to users table
+--------------------------------
+
+ALTER TABLE users ADD pub_key VARCHAR(1024) CHARACTER SET utf8 DEFAULT NULL;
+
+
+===================================================================================
+
+
+Add additional parameters to VM
+-------------------------------
+
+modify user table and vms table
+
+ALTER TABLE users ADD tou boolean default false;
+ALTER TABLE vms ADD type ENUM('DEMO', 'RESEARCH', 'RESEARCH-FULL') DEFAULT 'RESEARCH';
+ALTER TABLE vms ADD title VARCHAR(256) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD desc_nature VARCHAR(2048) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD desc_requirement VARCHAR(2048) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD desc_outside_data VARCHAR(2048) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD desc_links VARCHAR(2048) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD rr_data_files VARCHAR(2048) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD rr_result_usage VARCHAR(2048) CHARACTER SET utf8 DEFAULT NULL;
+ALTER TABLE vms ADD consent boolean default NULL;
+ALTER TABLE vms ADD full_access boolean default NULL;
+
+
+===================================================================================
+
+Cleanup users table
+-------------------
+
+remove users who don't have capsules
+
+DELETE from users where username not in (select distinct username from vmactivity) and username not in(select distinct username from vms);
+
+
+===================================================================================
+
+DC migration
+------------
+
+add DELETE_ERROR and MIGRATE_PENDING states to vms and vmactivity tables
+
+ALTER TABLE vms CHANGE vmstate vmstate enum('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR','DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') DEFAULT NULL;
+ALTER TABLE vmactivity CHANGE prev_state prev_state enum('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR','DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') NOT NULL;
+ALTER TABLE vmactivity CHANGE curr_state curr_state enum('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR','DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') NOT NULL;
+
+
+create 'ports' table and populate table with reserved ports
+
+DROP TABLE IF EXISTS `htrcvirtdb`.`ports` ;
+
+CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`ports` (
+  `vmid` VARCHAR(128) NOT NULL,
+  `host` VARCHAR(128) NOT NULL,
+  `sshport` INT NOT NULL,
+  `vncport` INT NOT NULL,
+  PRIMARY KEY (`vmid`,`host`,`sshport`,`vncport`),
+  CONSTRAINT `fk_p_vmid`
+    FOREIGN KEY (`vmid`)
+    REFERENCES `htrcvirtdb`.`vms` (`vmid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_hosts`
+    FOREIGN KEY (`host`)
+    REFERENCES `htrcvirtdb`.`vmhosts` (`hostname`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+INSERT INTO ports (vmid, host, sshport, vncport) SELECT vmid, host, sshport, vncport FROM vms where vmstate!='DELETED';
+
+
+===================================================================================
