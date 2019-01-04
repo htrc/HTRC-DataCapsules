@@ -126,7 +126,10 @@ class CapsuleHypervisor implements IHypervisor {
 		try {
 			executor = Executors.newSingleThreadExecutor();
 			Future<T> future = executor.submit(task);
-			return future.get(timeoutInMillis, TimeUnit.MILLISECONDS);
+			//return future.get(timeoutInMillis, TimeUnit.MILLISECONDS);
+			//Capsule tasks can take a long time to execute and shouldn't be stopped in the middle of execution
+			//hence removing the Future timeout
+			return future.get();
 		} finally {
 			if (executor != null)
 				executor.shutdownNow();
