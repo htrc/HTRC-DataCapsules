@@ -140,13 +140,17 @@ public class TestDBOperations {
 	@BeforeClass
 	public static void beforeClass() {
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.DB_DRIVER_CLASS, "com.mysql.jdbc.Driver");
+				Configuration.PropertyName.DB_DRIVER_CLASS, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_DRIVER_CLASS));
 			Configuration.getInstance().setProperty(
-				Configuration.PropertyName.JDBC_URL, "jdbc:mysql://localhost:3306/" + DBSchema.DB_NAME);
+				Configuration.PropertyName.JDBC_URL, Configuration.getInstance().getString(
+							Configuration.PropertyName.JDBC_URL));
 			Configuration.getInstance().setProperty(
-					Configuration.PropertyName.DB_USER, "root");
+					Configuration.PropertyName.DB_USER, Configuration.getInstance().getString(
+							Configuration.PropertyName.DB_USER));
 			Configuration.getInstance().setProperty(
-					Configuration.PropertyName.DB_PWD, "root");
+					Configuration.PropertyName.DB_PWD, Configuration.getInstance().getString(
+							Configuration.PropertyName.DB_PWD));
 	}
 	
 	@AfterClass
@@ -156,10 +160,14 @@ public class TestDBOperations {
 	
 	@Before
 	public void before() throws Exception {
-		Class.forName("com.mysql.jdbc.Driver");
-		Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306", "root", "root");
+		Class.forName(Configuration.getInstance().getString(Configuration.PropertyName.DB_DRIVER_CLASS));
+		Connection connection = DriverManager.getConnection(Configuration.getInstance().getString(
+				Configuration.PropertyName.JDBC_URL), Configuration.getInstance().getString(
+				Configuration.PropertyName.DB_USER),  Configuration.getInstance().getString(
+				Configuration.PropertyName.DB_PWD));
 		ScriptRunner script = new ScriptRunner(connection, false, false);
-		script.runScript(new java.io.FileReader("src/main/resources/createtables.sql"));
+		script.runScript(new java.io.FileReader("src/main/resources/dc_schema.sql"));
+		script.runScript(new java.io.FileReader("src/main/resources/loaddata.sql"));
 		connection.close();
 	}
 	
@@ -282,7 +290,7 @@ public class TestDBOperations {
 		}
 	}
 	
-	@Test 
+	@Test
 	public void testQuotaExceedsLimit() throws SQLException, NoItemIsFoundInDBException {
 		int count = 3;
 		loadDataToUserTable(count);
@@ -332,7 +340,7 @@ public class TestDBOperations {
 		Assert.assertTrue(vm1 && vm2);
 	}
 	
-	@Test 
+	@Test
 	public void testPutAndGetResult() throws Exception {
 		loadDataToImageTable(3);
 		loadDataToUserTable(3);		

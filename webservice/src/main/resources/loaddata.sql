@@ -1,4 +1,4 @@
 USE htrcvirtdb;
 
-INSERT INTO images VALUES ("ubuntu-image", "ACTIVE", "/u/hathitrust/htrc-sloan/script-simulator/vm-image/ubuntu-image", "This is an Ubuntu image.", "ubuntu", "password");
-INSERT INTO vmhosts VALUES ('oilpalm2.pti.indiana.edu',24,240),('peachpalm.pti.indiana.edu',12,120),('queenpalm.pti.indiana.edu',12,120),('royalpalm.pti.indiana.edu',12,120),('silverpalm.pti.indiana.edu',24,120),('thatchpalm.pti.indiana.edu',24,120);
+INSERT INTO images VALUES ("test-image", "ACTIVE", "This is Ubuntu 16.04 image with no password", "/home/htrcvirt-shared/development/images/ubuntu-16-04.img", "dcuser", "NULL"), ("test-image-dep", "DEPRICATED", "This is Ubuntu 16.04 image with no password", "/home/htrcvirt-shared/development/images/ubuntu-16-04-dep.img", "dcuser", "NULL");
+INSERT INTO vmhosts VALUES ('oilpalm2.pti.indiana.edu',24,240),('datepalm.pti.indiana.edu',12,120), ('peachpalm.pti.indiana.edu',12,120),('queenpalm.pti.indiana.edu',12,120),('royalpalm.pti.indiana.edu',12,120),('silverpalm.pti.indiana.edu',24,120),('thatchpalm.pti.indiana.edu',24,120);

@@ -32,13 +32,17 @@ public class TestDBConnection {
 	@BeforeClass
 	public static void beforeClass() {
 		Configuration.getInstance().setProperty(
-			Configuration.PropertyName.DB_DRIVER_CLASS, "com.mysql.jdbc.Driver");
+				Configuration.PropertyName.DB_DRIVER_CLASS, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_DRIVER_CLASS));
 		Configuration.getInstance().setProperty(
-			Configuration.PropertyName.JDBC_URL, "jdbc:mysql://localhost:3306/htrcvirtdb");
+				Configuration.PropertyName.JDBC_URL, Configuration.getInstance().getString(
+						Configuration.PropertyName.JDBC_URL));
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.DB_USER, "root");
+				Configuration.PropertyName.DB_USER, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_USER));
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.DB_PWD, "root");
+				Configuration.PropertyName.DB_PWD, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_PWD));
 	}
 	
 	@Test
