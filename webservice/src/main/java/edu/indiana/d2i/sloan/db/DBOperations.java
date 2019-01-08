@@ -352,7 +352,7 @@ public class DBOperations {
 		}
 	}
 
-	public VmInfoBean getAllVmInfoByID(String vmid) throws SQLException, NoItemIsFoundInDBException {
+	public List<VmInfoBean> getAllVmInfo() throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
 				+ "," + DBSchema.VmTable.HOST + ","
@@ -375,6 +375,41 @@ public class DBOperations {
 				// + image path & policy path
 				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
 				+ " WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "=" 
+				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
+				+ VMState.DELETED.toString() + "\"");
+
+		List<VmInfoBean> res = getVmInfoInternal(sql);
+		if (res.size() == 0)
+			throw new NoItemIsFoundInDBException(String.format(
+					"No VMs found in DB."));
+		return res;
+
+	}
+
+	public VmInfoBean getAllVmInfoByID(String vmid) throws SQLException, NoItemIsFoundInDBException {
+		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
+				+ "," + DBSchema.VmTable.HOST + ","
+				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
+				+ "," + DBSchema.VmTable.VNC_PORT + ","
+				+ DBSchema.VmTable.WORKING_DIR + ","
+				+ DBSchema.VmTable.VNC_PASSWORD + ","
+				+ DBSchema.VmTable.VNC_USERNAME + ","
+				+ DBSchema.VmTable.NUM_CPUS + ","
+				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.DISK_SPACE + ","
+				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + ","
+				+ DBSchema.VmTable.TYPE + "," + DBSchema.VmTable.TITLE + ","
+				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
+				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
+				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
+				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
+				// + image path & policy path
+				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ " WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + "!= \""
@@ -1295,19 +1330,19 @@ public class DBOperations {
 
 		try {
 			connection = DBConnections.getInstance().getConnection();
-			String query = String.format("SELECT %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
+			String query = String.format("SELECT %s, %s, %s FROM %s, %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
 				// selected fields
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME, 
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL,
 				DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID,
 				// selected tables
-				DBSchema.UserTable.TABLE_NAME,  DBSchema.ResultTable.TABLE_NAME,
+				DBSchema.UserTable.TABLE_NAME,  DBSchema.ResultTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
 				// where clause
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME,
 					DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME,
 				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 					DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.VM_ID,
-				DBSchema.ResultTable.NOTIFIED, "0");
+				DBSchema.ResultTable.NOTIFIED, "\"NO\"");
 			logger.debug(query);
 			
 			pst = connection.prepareStatement(query);

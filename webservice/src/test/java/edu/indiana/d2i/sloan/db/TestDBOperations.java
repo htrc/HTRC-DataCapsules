@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.log4j.Logger;
 import org.junit.*;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -41,6 +42,8 @@ import edu.indiana.d2i.sloan.vm.VMState;
 
 @Ignore
 public class TestDBOperations {
+	private static Logger logger = Logger.getLogger(TestDBOperations.class);
+
 	private int[] portsUsed = null;
 	private void loadDataToImageTable(int records) throws SQLException {
 		Connection connection = null;
@@ -48,8 +51,8 @@ public class TestDBOperations {
 		
 		try {
 			String insertTableSQL = "INSERT INTO images"
-				+ "(imagename, imagepath, imagedescription, loginusername, loginpassword) " +
-				"VALUES (?, ?, ?, ?, ?)";
+				+ "(imagename, status, imagepath, imagedescription, loginusername, loginpassword) " +
+				"VALUES (?, ?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
 			int count = records;
@@ -57,10 +60,11 @@ public class TestDBOperations {
 			for (int i = 0; i < count; i++) {
 				pst = connection.prepareStatement(insertTableSQL);
 				pst.setString(1, "imagename-" + i);
-				pst.setString(2, "/var/instance/imagename-" + i);
-				pst.setString(3, "This is " + i + " image");
-				pst.setString(4, "user" + i);
-				pst.setString(5, "pwd" + i);
+				pst.setString(2, "ACTIVE");
+				pst.setString(3, "/var/instance/imagename-" + i);
+				pst.setString(4, "This is " + i + " image");
+				pst.setString(5, "user" + i);
+				pst.setString(6, "pwd" + i);
 				pst.executeUpdate();
 				pst.close();
 			}
@@ -71,15 +75,16 @@ public class TestDBOperations {
 	}
 	
 	private void loadDataToVmTable(int records) throws SQLException {
+		loadDataToUserTable(records);
 		loadDataToImageTable(records);
-		
+		loadDataToHostsTable(records);
 		Connection connection = null;
 		PreparedStatement pst = null;
 		
 		try {
 			String insertTableSQL = "INSERT INTO vms"
-				+ "(vmid, vmmode, vmstate, publicip, sshport, vncport, workingdir, imagename, vncusername, vncpassword) VALUES"
-				+ "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "(vmid, vmmode, vmstate, host, sshport, vncport, workingdir, imagename, vncusername, vncpassword, username) VALUES"
+				+ "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 			connection = DBConnections.getInstance().getConnection();
 			
 			int count = records;
@@ -96,6 +101,7 @@ public class TestDBOperations {
 				pst.setString(8, "imagename-" + i);
 				pst.setString(9, "username-" + i);
 				pst.setString(10, "password");
+				pst.setString(11, "username-" + i);
 				pst.executeUpdate();
 				pst.close();
 				
@@ -136,6 +142,31 @@ public class TestDBOperations {
 			if (connection != null) connection.close();
 		}
 	}
+
+	private void loadDataToHostsTable(int records) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			String insertTableSQL = "INSERT INTO vmhosts" +
+				"(hostname, cpu_cores, mem_gb) VALUES" +
+				"(?, ?, ?)";
+			connection = DBConnections.getInstance().getConnection();
+
+			int count = records;
+			for (int i = 0; i < count; i++) {
+				pst = connection.prepareStatement(insertTableSQL);
+				pst.setString(1, "192.168.0." + (i+2));
+				pst.setInt(2, 10);
+				pst.setInt(3, 10);
+				pst.executeUpdate();
+				pst.close();
+			}
+		} finally {
+			if (pst != null) pst.close();
+			if (connection != null) connection.close();
+		}
+	}
 	
 	@BeforeClass
 	public static void beforeClass() {
@@ -167,7 +198,7 @@ public class TestDBOperations {
 				Configuration.PropertyName.DB_PWD));
 		ScriptRunner script = new ScriptRunner(connection, false, false);
 		script.runScript(new java.io.FileReader("src/main/resources/dc_schema.sql"));
-		script.runScript(new java.io.FileReader("src/main/resources/loaddata.sql"));
+		//script.runScript(new java.io.FileReader("src/main/resources/loaddata.sql"));
 		connection.close();
 	}
 	
@@ -179,11 +210,12 @@ public class TestDBOperations {
 		int imageCnt = 2;
 		loadDataToUserTable(count);	
 		loadDataToImageTable(imageCnt);
-		
+		loadDataToHostsTable(count);
+
 		int[] portsExpected = new int[count * 2];
 		List<String> vmids = new ArrayList<String>();
 		List<String> userNames = new ArrayList<String>();
-		
+
 		for (int index = 0; index < count; index++) {
 			userName = "username-" + index;
 			if (index == count-1) {
@@ -202,8 +234,9 @@ public class TestDBOperations {
 				"vncusername", "vncpassword", host, workDir, 2, 1024, 10
 					,"DEMO", null, null, null, null, null, null, null, null, null);
 		}
-		
-		// trigger error
+
+
+/*		// trigger error
 		try {
 			userName = "user-" + 0;
 			vmid = "vmid-" + 0;
@@ -214,9 +247,9 @@ public class TestDBOperations {
 					,"DEMO", null, null, null, null, null, null, null, null, null);
 		} catch (SQLException e) {
 			// nothing
-		}
+		}*/
 		
-		
+
 		// read 1 vm back
 		VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo("username-" + 0, "vmid-" + 0);
 		Assert.assertEquals(VMState.CREATE_PENDING, vmInfo.getVmstate());
@@ -243,24 +276,25 @@ public class TestDBOperations {
 		Arrays.sort(portsExpected);
 		Arrays.sort(ports);
 		Assert.assertArrayEquals(portsExpected, ports);
-		
+
 		// delete vm
 		for (int i = 0; i < vmids.size(); i++) {
 			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null,
-				null, null, 0, 0, 2, 1024, 10, null, null, null, null, 
+				null, null, 0, 0, 2, 1024, 10, VMMode.NOT_DEFINED, VMState.CREATE_PENDING, null, null,
 				null, null, null, null, null
 					, "DEMO", null, null, null, null, null, null, null, null, null);
 			DBOperations.getInstance().deleteVMs(userNames.get(i), vinfo);
 		}		
 		
 		vmStatus = DBOperations.getInstance().getExistingVmInfo();
-		Assert.assertEquals(0, vmStatus.size());		
+		Assert.assertEquals(0, vmStatus.size());
 	}
 	
 	@Test
 	public void testInsertUserIfNotExists() throws SQLException {
 		DBOperations.getInstance().insertUserIfNotExists("myusername-0", "myusername-0@gmail.com");
 		DBOperations.getInstance().insertUserIfNotExists("myusername-0", "myusername-0@gmail.com");
+		Assert.assertTrue(DBOperations.getInstance().userExists("myusername-0"));
 	}
 	
 	@Test
@@ -270,7 +304,7 @@ public class TestDBOperations {
 		
 		for (int i = 0; i < count; i++) {
 			String vmid = "vmid-" + i;
-			DBOperations.getInstance().updateVMState(vmid, VMState.SHUTDOWN);
+			DBOperations.getInstance().updateVMState(vmid, VMState.SHUTDOWN, "username-" + i);
 		}
 		
 		List<VmInfoBean> vmStatus = DBOperations.getInstance().getExistingVmInfo();
@@ -293,7 +327,7 @@ public class TestDBOperations {
 	@Test
 	public void testQuotaExceedsLimit() throws SQLException, NoItemIsFoundInDBException {
 		int count = 3;
-		loadDataToUserTable(count);
+		loadDataToVmTable(count);
 		
 		CreateVmRequestBean request = new CreateVmRequestBean("username-0",
 				null, null, null, null, 
@@ -306,8 +340,8 @@ public class TestDBOperations {
 		Assert.assertFalse(DBOperations.getInstance().quotasNotExceedLimit(request));
 		
 		VmInfoBean vmInfo = new VmInfoBean("vmid-0", null, null, null, null, 
-			2000, 2001, request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(), 
-			null, null, null, null, null, null, null, null, null
+			2000, 2001, request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
+				VMMode.MAINTENANCE, VMState.RUNNING, null, null, null, null, null, null, null
 				, "DEMO", null, null, null, null, null, null, null, null, null);
 		DBOperations.getInstance().deleteVMs("username-0", vmInfo);
 		
@@ -315,17 +349,17 @@ public class TestDBOperations {
 	}
 	
 	@Test
-	public void testUpdateVMModeVMState() throws SQLException {
+	public void testUpdateVMModeVMState() throws SQLException, NoItemIsFoundInDBException {
 		int records = 4;
 		loadDataToVmTable(records);
 		
-		DBOperations.getInstance().updateVMState("vmid-0", VMState.RUNNING);
-		DBOperations.getInstance().updateVMMode("vmid-0", VMMode.MAINTENANCE);
-		DBOperations.getInstance().updateVMState("vmid-2", VMState.DELETE_PENDING);
+		DBOperations.getInstance().updateVMState("vmid-0", VMState.RUNNING, "username-0");
+		DBOperations.getInstance().updateVMMode("vmid-0", VMMode.MAINTENANCE, "username-0");
+		DBOperations.getInstance().updateVMState("vmid-2", VMState.DELETE_PENDING, "username-2");
 		
 		boolean vm1 = false;
 		boolean vm2 = false;
-		List<VmInfoBean> vmInfos = DBOperations.getInstance().getExistingVmInfo();
+		List<VmInfoBean> vmInfos = DBOperations.getInstance().getAllVmInfo();
 		Assert.assertEquals(4, vmInfos.size());
 		for (VmInfoBean vmInfo : vmInfos) {
 			if (vmInfo.getVmid().equals("vmid-0")) {
@@ -342,11 +376,12 @@ public class TestDBOperations {
 	
 	@Test
 	public void testPutAndGetResult() throws Exception {
-		loadDataToImageTable(3);
-		loadDataToUserTable(3);		
+		int count = 3;
+		loadDataToUserTable(count);
+		loadDataToImageTable(count);
+		loadDataToHostsTable(count);
 		
 		// add vm to uservm table
-		int count = 3;
 		String userName = "username-0";
 		for (int index = 0; index < count; index++) {			
 			String vmid = "vmid-" + index;
@@ -378,7 +413,7 @@ public class TestDBOperations {
 		// delete vm
 		for (int i = 0; i < 3; i++) {
 			VmInfoBean vinfo = new VmInfoBean("vmid-"+i, null, null,
-					null, null, 0, 0, 2, 1024, 10, null, null, null, null, 
+					null, null, 0, 0, 2, 1024, 10, VMMode.NOT_DEFINED, VMState.CREATE_PENDING, null, null,
 					null, null, null, null, null
 					, "DEMO", null, null, null, null, null, null, null, null, null);
 			DBOperations.getInstance().deleteVMs(userName, vinfo);
@@ -386,7 +421,7 @@ public class TestDBOperations {
 		
 		// read result from db
 		long currentT = new java.util.Date().getTime();
-		System.out.println(currentT);
+		//System.out.println(currentT);
 		
 		for (String randomid : randomids) {
 			ResultBean result = DBOperations.getInstance().getResult(randomid);
@@ -396,7 +431,7 @@ public class TestDBOperations {
 				Assert.assertArrayEquals(buf, b);
 			}
 			
-			System.out.println(result.getStartdate().getTime());
+			//System.out.println(result.getStartdate());
 			
 			// mark result as notified
 			DBOperations.getInstance().updateResultAsNotified(randomid);
