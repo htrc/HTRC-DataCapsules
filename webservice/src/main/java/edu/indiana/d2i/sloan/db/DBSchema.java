@@ -162,4 +162,12 @@ public class DBSchema {
 		public static String SSH_PORT = "sshport";
 		public static String VNC_PORT = "vncport";
 	}
+
+	public static class UserVmMapTable {
+		public static String TABLE_NAME = "uservmmap";
+		public static String VM_ID = "vmid";
+		public static String USER_NAME = "username";
+		public static String ROLE = "role";
+		public static String TOU = "tou";
+	}
 }

@@ -75,3 +75,32 @@ INSERT INTO ports (vmid, host, sshport, vncport) SELECT vmid, host, sshport, vnc
 
 
 ===================================================================================
+
+DC sharing
+----------
+
+create table 'uservmmap' and populate with current users with vms
+
+DROP TABLE IF EXISTS `htrcvirtdb`.`uservmmap` ;
+
+CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`uservmmap` (
+  `vmid` VARCHAR(128) NOT NULL,
+  `username` VARCHAR(128) NOT NULL,
+  `role` ENUM('OWNER', 'OWNER-CONTROLLER', 'CONTROLLER', 'SHAREE') NULL,
+  `tou` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`vmid`,`username`),
+  INDEX `fk_m_vmid_idx` (`vmid` ASC),
+  INDEX `fk_m_username_idx` (`username` ASC),
+  CONSTRAINT `fk_m_vmid`
+    FOREIGN KEY (`vmid`)
+    REFERENCES `htrcvirtdb`.`vms` (`vmid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_m_username`
+    FOREIGN KEY (`username`)
+    REFERENCES `htrcvirtdb`.`users` (`username`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+INSERT INTO uservmmap (vmid, username, role, tou) SELECT vmid, username, 'OWNER-CONTROLLER', true FROM vms;

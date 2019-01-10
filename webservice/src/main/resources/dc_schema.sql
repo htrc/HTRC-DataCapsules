@@ -195,6 +195,31 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`ports` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `htrcvirtdb`.`uservmmap`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `htrcvirtdb`.`uservmmap` ;
+
+CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`uservmmap` (
+  `vmid` VARCHAR(128) NOT NULL,
+  `username` VARCHAR(128) NOT NULL,
+  `role` ENUM('OWNER', 'OWNER-CONTROLLER', 'CONTROLLER', 'SHAREE') NULL,
+  `tou` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`vmid`,`username`),
+  INDEX `fk_m_vmid_idx` (`vmid` ASC),
+  INDEX `fk_m_username_idx` (`username` ASC),
+  CONSTRAINT `fk_m_vmid`
+    FOREIGN KEY (`vmid`)
+    REFERENCES `htrcvirtdb`.`vms` (`vmid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_m_username`
+    FOREIGN KEY (`username`)
+    REFERENCES `htrcvirtdb`.`users` (`username`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

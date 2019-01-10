@@ -20,6 +20,7 @@ import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -597,7 +598,7 @@ public class DBOperations {
 								+ ","
 								+ DBSchema.VmTable.DISK_SPACE
 								+ ","
-								+ DBSchema.VmTable.USERNAME
+								+ DBSchema.VmTable.USERNAME //TODO-UN
 								+ ","
 								+ DBSchema.VmTable.TYPE
 								+ ","
@@ -638,8 +639,24 @@ public class DBOperations {
 
 		logger.debug(insertvmsql);
 
+		String insertUserVmMapsql = String
+				.format("INSERT INTO "
+								+ DBSchema.UserVmMapTable.TABLE_NAME
+								+ " ("
+								+ DBSchema.UserVmMapTable.VM_ID
+								+ ","
+								+ DBSchema.UserVmMapTable.USER_NAME
+								+ ","
+								+ DBSchema.UserVmMapTable.ROLE
+								+ ","
+								+ DBSchema.UserVmMapTable.TOU
+								+ ") VALUES"
+								+ "(\"%s\", \"%s\", \"%s\", %s)",
+						vmid, userName, VMRole.OWNER_CONTROLLER, true);
+
 		List<String> updates = new ArrayList<String>();
 		updates.add(insertvmsql);
+		updates.add(insertUserVmMapsql);
 
 		String insertActivitySQL = getInsertActivitySQL(vmid, VMMode.NOT_DEFINED.toString(),
 				VMMode.NOT_DEFINED.toString(),VMState.SHUTDOWN.toString(),
