@@ -77,6 +77,7 @@ public class UpdateUserKey {
 				List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
+				// TODO-UN check tou, update key in all vms with tou=true
 				for (VmInfoBean vminfo : vmInfoList) {
 					// update the public key of VMs that are in Running state and maintenance mode
 					if (vminfo.getVmstate() == VMState.RUNNING && vminfo.getVmmode() == VMMode.MAINTENANCE) {

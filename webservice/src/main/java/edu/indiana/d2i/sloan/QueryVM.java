@@ -90,14 +90,14 @@ public class QueryVM {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
 					VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vminfo.getVmid());
-					status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
+					status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole)); //TODO-UN - add tou right
 				}
 			} else {
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
 						userName, vmid);
 				vmInfoList.add(vminfo);
 				VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
-				status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
+				status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole)); //TODO-UN - add tou right
 			}
 
 			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());

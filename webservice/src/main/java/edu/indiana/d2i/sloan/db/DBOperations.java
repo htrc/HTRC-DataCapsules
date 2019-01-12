@@ -503,16 +503,19 @@ public class DBOperations {
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
 				+ " FROM " + DBSchema.ImageTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME 
+				+ DBSchema.VmTable.TABLE_NAME
+				+ "," + DBSchema.UserVmMapTable.TABLE_NAME
 				+ " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
+				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "="
+				+ DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID
 				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName);
 		return getVmInfoInternal(sql);
 	}
 
-	public VmInfoBean getVmInfo(String userName, String vmid)
+	public VmInfoBean getVmInfo(String userName, String vmid) // TODO-UN check permission from callee
 			throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
@@ -535,12 +538,14 @@ public class DBOperations {
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
 				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ "," + DBSchema.UserVmMapTable.TABLE_NAME
 				+ " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
-				+ DBSchema.VmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "="
+				+ DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID
 				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName, vmid);
 
 		logger.debug(sql);
