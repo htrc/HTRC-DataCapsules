@@ -282,7 +282,7 @@ public class TestDBOperations {
 			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null,
 				null, null, 0, 0, 2, 1024, 10, VMMode.NOT_DEFINED, VMState.CREATE_PENDING, null, null,
 				null, null, null, null, null
-					, "DEMO", null, null, null, null, null, null, null, null, null);
+					, "DEMO", null, null, null, null, null, null, null, null, null, null);
 			DBOperations.getInstance().deleteVMs(userNames.get(i), vinfo);
 		}		
 		
@@ -342,7 +342,7 @@ public class TestDBOperations {
 		VmInfoBean vmInfo = new VmInfoBean("vmid-0", null, null, null, null, 
 			2000, 2001, request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
 				VMMode.MAINTENANCE, VMState.RUNNING, null, null, null, null, null, null, null
-				, "DEMO", null, null, null, null, null, null, null, null, null);
+				, "DEMO", null, null, null, null, null, null, null, null, null, null);
 		DBOperations.getInstance().deleteVMs("username-0", vmInfo);
 		
 		Assert.assertTrue(DBOperations.getInstance().quotasNotExceedLimit(request));
@@ -415,7 +415,7 @@ public class TestDBOperations {
 			VmInfoBean vinfo = new VmInfoBean("vmid-"+i, null, null,
 					null, null, 0, 0, 2, 1024, 10, VMMode.NOT_DEFINED, VMState.CREATE_PENDING, null, null,
 					null, null, null, null, null
-					, "DEMO", null, null, null, null, null, null, null, null, null);
+					, "DEMO", null, null, null, null, null, null, null, null, null, null);
 			DBOperations.getInstance().deleteVMs(userName, vinfo);
 		}
 		

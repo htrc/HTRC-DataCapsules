@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 
 public abstract class Scheduler {
@@ -31,10 +32,10 @@ public abstract class Scheduler {
 	}
 
 	public synchronized final VmInfoBean schedule(CreateVmRequestBean request)
-			throws NoResourceAvailableException, SQLException {
+			throws NoResourceAvailableException, SQLException, NoItemIsFoundInDBException {
 		return doSchedule(request);
 	}
 
 	abstract protected VmInfoBean doSchedule(CreateVmRequestBean request)
-			throws NoResourceAvailableException, SQLException;
+			throws NoResourceAvailableException, SQLException, NoItemIsFoundInDBException;
 }

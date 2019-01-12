@@ -141,7 +141,7 @@ public class TestScheduler {
 	}
 
 	@Test(expected = NoResourceAvailableException.class)
-	public void testSequentialScheduling() throws NoResourceAvailableException,
+	public void testSequentialScheduling() throws NoResourceAvailableException, NoItemIsFoundInDBException,
 			SQLException {
 		int scheduled = 4;
 		loadDataToUserTable(scheduled);
@@ -188,7 +188,7 @@ public class TestScheduler {
 		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null,
 				null, null, null, 0, 0, 2, 1024, 10, null, null, null, null,
 				null, null, null, null, null
-				, "DEMO", null, null, null, null, null, null, null, null, null);
+				, "DEMO", null, null, null, null, null, null, null, null, null, null);
 
 		DBOperations.getInstance().deleteVMs("user-" + (scheduled - 1), vmInfo);
 

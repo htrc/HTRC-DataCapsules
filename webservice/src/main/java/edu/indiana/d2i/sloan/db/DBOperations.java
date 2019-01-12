@@ -148,8 +148,10 @@ public class DBOperations {
 
 		List<VmInfoBean> res = new ArrayList<VmInfoBean>();
 		Connection connection = null;
+		PreparedStatement role_pst = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
+		ResultSet role_rs = null;
 
 		try {
 			connection = DBConnections.getInstance()
@@ -157,6 +159,32 @@ public class DBOperations {
 			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
+				List<VmUserRole> roles = new ArrayList<VmUserRole>();
+				String role_sql = "SELECT " +
+						DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
+						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
+						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + " " +
+						"FROM " +
+						DBSchema.VmTable.TABLE_NAME + ", " +
+						DBSchema.UserTable.TABLE_NAME + ", " +
+						DBSchema.UserVmMapTable.TABLE_NAME + " " +
+						"WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=" +
+						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + " " +
+						"AND "  + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + "=" +
+						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + " " +
+						"AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"" + vmid + "\"";
+				role_pst = connection.prepareStatement(role_sql);
+				role_rs = role_pst.executeQuery();
+				while (role_rs.next()) {
+					VmUserRole role = new VmUserRole(
+							role_rs.getString(DBSchema.UserTable.USER_EMAIL),
+							VMRole.fromName(role_rs.getString(DBSchema.UserVmMapTable.ROLE)),
+							role_rs.getBoolean(DBSchema.UserVmMapTable.TOU)
+					);
+					roles.add(role);
+				}
+
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
@@ -187,7 +215,8 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
 						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
-						rs.getObject(DBSchema.VmTable.FULL_ACCESS) == null ? null : rs.getBoolean(DBSchema.VmTable.FULL_ACCESS));
+						rs.getObject(DBSchema.VmTable.FULL_ACCESS) == null ? null : rs.getBoolean(DBSchema.VmTable.FULL_ACCESS),
+						roles);
 				res.add(vminfo);
 			}
 		} finally {
@@ -652,7 +681,7 @@ public class DBOperations {
 								+ DBSchema.UserVmMapTable.TOU
 								+ ") VALUES"
 								+ "(\"%s\", \"%s\", \"%s\", %s)",
-						vmid, userName, VMRole.OWNER_CONTROLLER, true);
+						vmid, userName, VMRole.OWNER_CONTROLLER.getName(), true);
 
 		List<String> updates = new ArrayList<String>();
 		updates.add(insertvmsql);
@@ -1635,6 +1664,34 @@ public class DBOperations {
 				} else {
 					return null;
 				}
+			} else {
+				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public String getUserEmail(String userName) throws SQLException, NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"SELECT %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.UserTable.USER_EMAIL, DBSchema.UserTable.TABLE_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					userName);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return result.getNString(DBSchema.UserTable.USER_EMAIL);
 			} else {
 				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
 			}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2019 The Trustees of Indiana University
+ * Copyright 2014 The Trustees of Indiana University
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,30 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package edu.indiana.d2i.sloan.vm;
+package edu.indiana.d2i.sloan.bean;
 
-import java.util.Arrays;
+import edu.indiana.d2i.sloan.vm.VMRole;
 
-public enum VMRole {
-	OWNER("OWNER"),
-	OWNER_CONTROLLER("OWNER-CONTROLLER"),
-	CONTROLLER("CONTROLLER"),
-	SHAREE("SHAREE");
+public class VmUserRole {
+	private String email;
+	private VMRole role;
+	private boolean tou;
 
-	private final String name;
-
-	VMRole(String name) {
-		this.name = name;
+	public VmUserRole(String email, VMRole role, boolean tou) {
+		this.email = email;
+		this.role = role;
+		this.tou = tou;
 	}
 
-	public String getName() {
-		return this.name;
+	public String getEmail() {
+		return email;
+	}
+	public VMRole getRole() {
+		return role;
+	}
+	public boolean getTou() {
+		return tou;
 	}
 
-	public static VMRole fromName(String name) {
-		return Arrays.stream(values())
-				.filter(role -> role.getName().equalsIgnoreCase(name))
-				.findFirst()
-				.orElse(null);
+	@Override
+	public String toString() {
+		return String.format("[email=%s, role=%s, tou=%b]", email, role.getName(), tou);
 	}
 }
