@@ -1575,6 +1575,41 @@ public class DBOperations {
 		}
 	}
 
+	public VmUserRole getUserRoleWithVmid(String username, String vmid) throws SQLException,
+		NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+				"SELECT %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=\"%s\" AND %s=\"%s\"",
+				DBSchema.UserTable.USER_EMAIL, DBSchema.UserVmMapTable.ROLE,
+				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU,
+				DBSchema.UserVmMapTable.TABLE_NAME, DBSchema.UserTable.TABLE_NAME,
+				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.USER_NAME,
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+				DBSchema.UserVmMapTable.VM_ID, vmid,
+				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.USER_NAME, username);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return new VmUserRole(result.getString(DBSchema.UserTable.USER_EMAIL),
+					VMRole.fromName(result.getString(DBSchema.UserVmMapTable.ROLE)),
+					result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU));
+			} else {
+				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 
 	public VMPorts getPortsWithVMId(String vmid) throws SQLException,
 		NoItemIsFoundInDBException {

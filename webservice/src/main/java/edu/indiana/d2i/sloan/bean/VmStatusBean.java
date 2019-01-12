@@ -15,15 +15,19 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan.bean;
 
+import java.util.List;
+
 public class VmStatusBean {
 	private final VmInfoBean vminfo;
 	private final boolean pub_key_exists;
 	private final boolean tou;
+	private final String role;
 
-	public VmStatusBean(VmInfoBean vminfo, boolean ssh_key_exists, boolean tou) {
+	public VmStatusBean(VmInfoBean vminfo, boolean ssh_key_exists, boolean tou, VmUserRole vmUserRole) {
 		this.vminfo = vminfo;
 		this.pub_key_exists = ssh_key_exists;
 		this.tou = tou;
+		this.role = vmUserRole.getRole().getName();
 	}
 	
 	public String getMode() {
@@ -103,5 +107,11 @@ public class VmStatusBean {
 	}
 	public boolean getTou() {
 		return tou;
+	}
+	public String getRole() {
+		return role;
+	}
+	public List<VmUserRole> getRoles() {
+		return vminfo.getRoles();
 	}
 }

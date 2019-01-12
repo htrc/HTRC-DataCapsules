@@ -31,12 +31,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.bean.*;
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.QueryVmResponseBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.bean.VmStatusBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -92,13 +89,15 @@ public class QueryVM {
 			if (vmid == null) {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
-					status.add(new VmStatusBean(vminfo, pub_key_exists, tou));
+					VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vminfo.getVmid());
+					status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
 				}
 			} else {
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
 						userName, vmid);
 				vmInfoList.add(vminfo);
-				status.add(new VmStatusBean(vminfo, pub_key_exists, tou));
+				VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
+				status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
 			}
 
 			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());
