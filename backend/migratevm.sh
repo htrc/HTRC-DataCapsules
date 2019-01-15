@@ -165,11 +165,14 @@ if [[ $SSH_PORT != $NEW_SSH_PORT ]]; then
     sed -i -e 's/'$SSH_PORT'/'$NEW_SSH_PORT'/g' $VM_DIR/config
 fi
 
+HOSTNAME=$(hostname)
+
 #update/add source host
-if [[ -z "$SRC_HOST" ]]; then
+if [[ -z "$SRC_HOST" ]]
+then
     echo "SRC_HOST=$HOSTNAME" >> $VM_DIR/config
 else
-    sed -i -e 's/'$SRS_HOST'/'$(hostname)'/g' $VM_DIR/config
+    sed -i -e 's/'$SRC_HOST'/'$HOSTNAME'/g' $VM_DIR/config
 fi
 
 
@@ -193,6 +196,9 @@ fi
 scp -r $VM_DIR $DES_HOST:$VM_DIR
 
 logger "$VM_DIR is successfully migrated to $DES_HOST"
+
+# replace config file from config_back before deleting the capsule.
+cp $VM_DIR/config_back $VM_DIR/config
 
 #Delete VM from current host
 $SCRIPT_DIR/deletevm.sh --wdir $VM_DIR
