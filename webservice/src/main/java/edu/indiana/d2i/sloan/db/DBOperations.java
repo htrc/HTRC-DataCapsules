@@ -1089,16 +1089,12 @@ public class DBOperations {
 
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
-				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
-				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID;
 		logger.debug(sql);
 
@@ -1156,16 +1152,12 @@ public class DBOperations {
     {
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
-				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
-				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
 				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"YES\"";
 		logger.debug(sql);
@@ -1224,16 +1216,12 @@ public class DBOperations {
 	{
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
-				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
-				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
 				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"NO\"";
 		logger.debug(sql);
