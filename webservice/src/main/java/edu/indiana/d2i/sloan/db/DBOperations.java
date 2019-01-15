@@ -1731,7 +1731,7 @@ public class DBOperations {
 
 			ResultSet result = pst.executeQuery();
 			if (result.next()) {
-				return result.getNString(DBSchema.UserTable.USER_EMAIL);
+				return result.getString(DBSchema.UserTable.USER_EMAIL);
 			} else {
 				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
 			}

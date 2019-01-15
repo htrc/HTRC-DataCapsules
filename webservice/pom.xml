@@ -157,7 +157,7 @@
 					</dependency>
 				</dependencies>
 				<configuration>
-					<skipTests>true</skipTests>
+					<skipTests>false</skipTests>
 				</configuration>
 			</plugin>
             <plugin>
