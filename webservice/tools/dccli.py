@@ -235,6 +235,45 @@ def update_vmtype(vmid, username, status):
     print data
 
 
+def migrate_vm(username, vm, dst_host):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': username}
+
+    params = urllib.urlencode({'vmid': vm, 'host': dst_host})
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/migratevm', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+
+    print data
+
+
+def migrate_all(src_host, dst_host):
+    vms_to_migrate = []
+    headers = {'Content-Type': 'application/json',
+               'Accept': 'application/json'}
+
+    # Get request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/listvms')
+    response = conn.getresponse()
+
+    if response.status == 200:
+        vms = json.loads(response.read())['vmsInfo']
+
+        for vm in vms:
+            if vm["host"] == src_host:
+                vms_to_migrate.append(vm)
+
+    for vm in vms_to_migrate:
+        print 'Migrating VM: {}'.format(vm["vmid"])
+        migrate_vm(vm["username"], vm["vmid"], dst_host)
+        time.sleep(5)
+
+
 def show_capsules(username):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': username}
@@ -333,6 +372,16 @@ if __name__ == '__main__':
     showpendingfullaccess = subparsers.add_parser('showpendingfullaccess', description='Show VM IDs which have pending requests for full data access.')
     showpendingfullaccess.add_argument('vmuser')
 
+    migrateall = subparsers.add_parser('migrateall', description='Migrate all VMs from one host to another.')
+    migrateall.add_argument('srchost')
+    migrateall.add_argument('desthost')
+
+
+    migrate = subparsers.add_parser('migrate', description='Migrate VM from one host to another.')
+    migrate.add_argument('username')
+    migrate.add_argument('vm')
+    migrate.add_argument('desthost')
+
     parsed = parser.parse_args()
 
     if parsed.sub_commands == 'delete':
@@ -429,3 +478,11 @@ if __name__ == '__main__':
     if parsed.sub_commands == 'showpendingfullaccess':
         print 'Showing capsules list which has pending requests for full data access. Username: ' + parsed.vmuser + '....'
         show_pending_fullaccess(parsed.vmuser)
+
+    if parsed.sub_commands == 'migrateall':
+        print 'Migrating all the capsules in {} to {}'.format(parsed.srchost, parsed.desthost)
+        migrate_all(parsed.srchost, parsed.desthost)
+
+    if parsed.sub_commands == 'migrate':
+        print 'Migrating VM {} to {}'.format(parsed.vm, parsed.desthost)
+        migrate_vm(parsed.username, parsed.vm, parsed.desthost)
