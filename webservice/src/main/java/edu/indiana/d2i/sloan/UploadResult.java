@@ -16,7 +16,9 @@
 package edu.indiana.d2i.sloan;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -27,6 +29,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.log4j.Logger;
 
 import com.sun.jersey.multipart.FormDataParam;
@@ -62,8 +66,17 @@ public class UploadResult {
 			// check upload file type ??			
 			
 			// check if vmid is associated with a user in uservm table
-			UserBean userbean = DBOperations.getInstance().getUserWithVmid(vmid);	
-			logger.info("Prepare to upload result for " + vmid + ", " + userbean);
+			//UserBean userbean = DBOperations.getInstance().getUserWithVmid(vmid); -- now there're multiple users
+
+			//get roles of the vm
+			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
+
+			//get the owner from roles
+			List<VmUserRole> owner = vmUserRoles.stream()
+					.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
+					.collect(Collectors.toList());
+
+			logger.info("Prepare to upload result for " + vmid + ", " + vmUserRoles);
 			
 			// write to DB
 			String randomid = UUID.randomUUID().toString();
@@ -73,7 +86,7 @@ public class UploadResult {
 			if (!Configuration.getInstance().getBoolean(
 				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) {
 				UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
-					userbean.getUserName(), userbean.getUserEmail(), randomid));
+						owner.get(0).getUsername(), owner.get(0).getEmail(), randomid, vmUserRoles));
 			}	else {
 				// send email to the reviewer
 				String emails = Configuration.getInstance().getString(
@@ -90,7 +103,7 @@ public class UploadResult {
 				}
 			}
 			
-			logger.info("Upload result for " + vmid + ", " + userbean + " successfully.");
+			logger.info("Upload result for " + vmid + ", " + vmUserRoles + " successfully.");
 			
 			return Response.status(200).build();
 		} catch (Exception e) {

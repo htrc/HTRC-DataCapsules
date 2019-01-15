@@ -18,6 +18,7 @@ package edu.indiana.d2i.sloan.result;
 import java.util.*;
 import java.util.concurrent.Callable;
 
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -42,30 +43,33 @@ public class UploadPostprocess {
 				Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX) + 
 				item.getResultId();
 
-			// message 
-			final String content = String.format(
-				"Dear %s, \n\nThank you for using HTRC Data Capsule! " +
-				"You can download your result from the link below. \n%s", 
-				item.getUsername(), url);
-			
-			logger.debug(String.format("url: %s, content: %s", url, content));
-			
-			// send email
-			RetriableTask<Void> r = new RetriableTask<Void>(
-				new Callable<Void>() {
-					@Override
-					public Void call() throws Exception {
-						emailUtil.sendEMail(item.getUseremail(), EMAIL_SUBJECT, content);
-						return null;
-					}
-				},  2000, 3);
-			r.call();
-			
+			for (VmUserRole role : item.getRoles()) {
+				// message
+				final String content = String.format(
+					"Dear %s, \n\nThank you for using HTRC Data Capsule! " +
+					"You can download your result from the link below. \n%s",
+						role.getUsername(), url);
+
+				logger.debug(String.format("url: %s, content: %s", url, content));
+
+				// send email
+				RetriableTask<Void> r = new RetriableTask<Void>(
+					new Callable<Void>() {
+						@Override
+						public Void call() throws Exception {
+							emailUtil.sendEMail(role.getEmail(), EMAIL_SUBJECT, content);
+							return null;
+						}
+					},  2000, 3);
+				r.call();
+
+				logger.info(String.format("Email has been sent to %s, " +
+						"with username %s, url %s", role.getEmail(), role.getUsername(), url));
+			}
+
 			// mark result as notified
 			DBOperations.getInstance().updateResultAsNotified(item.getResultId());
-			
-			logger.info(String.format("Email has been sent to %s, " +
-				"with username %s, url %s", item.getUseremail(), item.getUsername(), url));
+
 		}
 		
 		public ResultDeliverThread() {

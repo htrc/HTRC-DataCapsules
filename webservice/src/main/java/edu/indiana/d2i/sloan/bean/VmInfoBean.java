@@ -242,6 +242,7 @@ public class VmInfoBean {
 	public List<VmUserRole> getRoles() {
 		return this.roles;
 	}
+
 	@Override
 	public String toString() {
 		return String.format("[vmid=%s, publicip=%s, workDir=%s, imagename=%s, " +

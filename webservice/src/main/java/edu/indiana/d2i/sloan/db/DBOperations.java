@@ -1114,16 +1114,26 @@ public class DBOperations {
 			rs = pst.executeQuery();
 
 			while (rs.next()) {
+				//get roles of the VM
+				String vmid = rs.getString("vmid");
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
+				//get the owner from roles
+				List<VmUserRole> owner = roles.stream()
+						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
+						.collect(Collectors.toList());
+
 				ReviewInfoBean result = new ReviewInfoBean(
-						rs.getString("vmid"),
+						vmid,
 						rs.getString("resultid"),
 						rs.getString("notified"),
 						rs.getString("status"),
-						rs.getString("username"),
-						rs.getString("useremail"),
+						owner.get(0).getUsername(),
+						owner.get(0).getEmail(),
 						rs.getString("reviewer"),
 						rs.getString("comment"),
-						rs.getString("createtime")
+						rs.getString("createtime"),
+						roles
 				);
 				res.add(result);
 			}
@@ -1171,16 +1181,26 @@ public class DBOperations {
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             while (rs.next()) {
+				//get roles of the VM
+				String vmid = rs.getString("vmid");
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
+				//get the owner from roles
+				List<VmUserRole> owner = roles.stream()
+						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
+						.collect(Collectors.toList());
+
                 ReviewInfoBean result = new ReviewInfoBean(
-                		rs.getString("vmid"),
+						vmid,
                         rs.getString("resultid"),
                         "",
                         "",
-                        rs.getString("username"),
-						rs.getString("useremail"),
+						owner.get(0).getUsername(),
+						owner.get(0).getEmail(),
 						rs.getString("reviewer"),
 						"",
-						rs.getString("createtime")
+						rs.getString("createtime"),
+						roles
                 );
                 res.add(result);
             }
@@ -1229,16 +1249,26 @@ public class DBOperations {
 			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				//get roles of the VM
+				String vmid = rs.getString("vmid");
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
+				//get the owner from roles
+				List<VmUserRole> owner = roles.stream()
+						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
+						.collect(Collectors.toList());
+
 				ReviewInfoBean result = new ReviewInfoBean(
-						rs.getString("vmid"),
+						vmid,
 						rs.getString("resultid"),
 						"",
 						"",
-						rs.getString("username"),
-						rs.getString("useremail"),
+						owner.get(0).getUsername(),
+						owner.get(0).getEmail(),
 						rs.getString("reviewer"),
 						"",
-						rs.getString("createtime")
+						rs.getString("createtime"),
+						roles
 				);
 				res.add(result);
 			}
@@ -1365,6 +1395,7 @@ public class DBOperations {
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME, 
 				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL,
 				DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID,
+				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 				// selected tables
 				DBSchema.UserTable.TABLE_NAME,  DBSchema.ResultTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
 				// where clause
@@ -1378,10 +1409,18 @@ public class DBOperations {
 			pst = connection.prepareStatement(query);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				//get roles of the vm
+				String vmid = rs.getString(DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID);
+				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
+				String resultId = rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID);
+
+				//get the owner from roles
+				List<VmUserRole> owner = vmUserRoles.stream()
+						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
+						.collect(Collectors.toList());
+
 				UserResultBean bean = new UserResultBean(
-					rs.getString(DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME), 
-					rs.getString(DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL), 
-					rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID));
+						owner.get(0).getUsername(), owner.get(0).getEmail(), resultId, vmUserRoles);
 				res.add(bean);
 			}
 		} finally {
