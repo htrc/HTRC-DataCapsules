@@ -2,6 +2,8 @@ package edu.indiana.d2i.sloan.bean;
 
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
+
+import java.util.List;
 //import sun.jvm.hotspot.runtime.VM;
 
 /**
@@ -15,10 +17,11 @@ public class VmKeyInfoBean {
 	private String host;
 	private int numHostCPUCores;
 	private int numHostMemoryGB;
+	private List<VmUserRole> roles;
 
 	public VmKeyInfoBean(String vmid, String username, String userEmail,
 						 int numCPUs, int memorySize, VMMode vmmode, VMState vmState,
-						 String host, int numHostCPUCores, int numHostMemoryGB) {
+						 String host, int numHostCPUCores, int numHostMemoryGB, List<VmUserRole> roles ) {
 		this.vmid = vmid;
 		this.username = username;
 		this.userEmail = userEmail;
@@ -29,6 +32,7 @@ public class VmKeyInfoBean {
 		this.host = host;
 		this.numHostCPUCores = numHostCPUCores;
 		this.numHostMemoryGB = numHostMemoryGB;
+		this.roles = roles;
 	}
 
 	public int getNumHostCPUCores() {
@@ -69,6 +73,10 @@ public class VmKeyInfoBean {
 
 	public VMState getVmState() {
 		return vmState;
+	}
+
+	public List<VmUserRole> getRoles() {
+		return this.roles;
 	}
 }
 

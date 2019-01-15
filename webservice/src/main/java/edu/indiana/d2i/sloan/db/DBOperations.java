@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public class DBOperations {
@@ -94,14 +95,9 @@ public class DBOperations {
 				+ DBSchema.VmTable.NUM_CPUS + ","
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.HostTable.CPU_CORES + ","
-				+ DBSchema.HostTable.MEMORY_GB + ","
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ","
-				+ DBSchema.UserTable.USER_EMAIL + " FROM "
+				+ DBSchema.HostTable.MEMORY_GB + " FROM "
 				+ DBSchema.VmTable.TABLE_NAME + ", "
-				+ DBSchema.HostTable.TABLE_NAME + ", "
-				+ DBSchema.UserTable.TABLE_NAME + " WHERE "
-				+ DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + " = "
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME + " AND "
+				+ DBSchema.HostTable.TABLE_NAME + " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.HOST + "="
 				+ DBSchema.HostTable.TABLE_NAME + "." + DBSchema.HostTable.HOST_NAME + " AND "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"";
@@ -115,10 +111,18 @@ public class DBOperations {
 			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
+				//get the owner from roles
+				List<VmUserRole> owner = roles.stream()
+						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
+						.collect(Collectors.toList());
+
 				VmKeyInfoBean vmKeyInfoBean = new VmKeyInfoBean(
-						rs.getString(DBSchema.VmTable.VM_ID),
-						rs.getString(DBSchema.UserTable.USER_NAME),
-						rs.getString(DBSchema.UserTable.USER_EMAIL),
+						vmid,
+						owner.get(0).getUsername(), // owners usernae
+						owner.get(0).getEmail(), // owners email
 						rs.getInt(DBSchema.VmTable.NUM_CPUS),
 						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
 						VMMode.valueOf(rs
@@ -127,7 +131,8 @@ public class DBOperations {
 								.getString(DBSchema.VmTable.STATE)),
 						rs.getString(DBSchema.VmTable.HOST),
 						rs.getInt(DBSchema.HostTable.CPU_CORES),
-						rs.getInt(DBSchema.HostTable.MEMORY_GB)
+						rs.getInt(DBSchema.HostTable.MEMORY_GB),
+						roles
 				);
                 res.add(vmKeyInfoBean);
 			}
@@ -148,10 +153,8 @@ public class DBOperations {
 
 		List<VmInfoBean> res = new ArrayList<VmInfoBean>();
 		Connection connection = null;
-		PreparedStatement role_pst = null;
 		PreparedStatement pst = null;
 		ResultSet rs = null;
-		ResultSet role_rs = null;
 
 		try {
 			connection = DBConnections.getInstance()
@@ -160,31 +163,7 @@ public class DBOperations {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
-				List<VmUserRole> roles = new ArrayList<VmUserRole>();
-				String role_sql = "SELECT " +
-						DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
-						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
-						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + " " +
-						"FROM " +
-						DBSchema.VmTable.TABLE_NAME + ", " +
-						DBSchema.UserTable.TABLE_NAME + ", " +
-						DBSchema.UserVmMapTable.TABLE_NAME + " " +
-						"WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=" +
-						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + " " +
-						"AND "  + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + "=" +
-						DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + " " +
-						"AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"" + vmid + "\"";
-				role_pst = connection.prepareStatement(role_sql);
-				role_rs = role_pst.executeQuery();
-				while (role_rs.next()) {
-					VmUserRole role = new VmUserRole(
-							role_rs.getString(DBSchema.UserTable.USER_EMAIL),
-							VMRole.fromName(role_rs.getString(DBSchema.UserVmMapTable.ROLE)),
-							role_rs.getBoolean(DBSchema.UserVmMapTable.TOU)
-					);
-					roles.add(role);
-				}
-
+				List<VmUserRole> roles = getRolesWithVmid(vmid, false);
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
@@ -1613,6 +1592,55 @@ public class DBOperations {
 			if (connection != null)
 				connection.close();
 		}
+	}
+
+	public List<VmUserRole> getRolesWithVmid(String vmid, boolean getUsername) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		List<VmUserRole> roles = new ArrayList<VmUserRole>();
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String role_sql = "SELECT " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ", " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + " " +
+					"FROM " +
+					DBSchema.VmTable.TABLE_NAME + ", " +
+					DBSchema.UserTable.TABLE_NAME + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + " " +
+					"WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + " " +
+					"AND "  + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + " " +
+					"AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"" + vmid + "\"";
+			pst = connection.prepareStatement(role_sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				VmUserRole role;
+				if(getUsername) {
+					role = new VmUserRole(
+							rs.getString(DBSchema.UserTable.USER_EMAIL),
+							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
+							rs.getBoolean(DBSchema.UserVmMapTable.TOU),
+							rs.getString(DBSchema.UserTable.USER_NAME));
+				} else {
+					role = new VmUserRole(
+							rs.getString(DBSchema.UserTable.USER_EMAIL),
+							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
+							rs.getBoolean(DBSchema.UserVmMapTable.TOU));
+				}
+				roles.add(role);
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return roles;
 	}
 
 
