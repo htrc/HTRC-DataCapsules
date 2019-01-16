@@ -79,8 +79,8 @@ public class UpdateUserKey {
 
 				// TODO-UN check tou, update key in all vms with tou=true
 				for (VmInfoBean vminfo : vmInfoList) {
-					// update the public key of VMs that are in Running state and maintenance mode
-					if (vminfo.getVmstate() == VMState.RUNNING && vminfo.getVmmode() == VMMode.MAINTENANCE) {
+					// update the public key of VMs that are in RUNNING+SHUTDOWN states
+					if (vminfo.getVmstate() == VMState.RUNNING || vminfo.getVmstate() == VMState.SHUTDOWN) {
 						HypervisorProxy.getInstance().addCommand(
 								new UpdatePublicKeyCommand(vminfo, userName, userName, pubkey));
 					}

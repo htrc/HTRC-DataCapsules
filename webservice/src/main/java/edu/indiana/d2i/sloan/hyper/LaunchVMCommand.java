@@ -32,17 +32,15 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 public class LaunchVMCommand extends HypervisorCommand {
 	private static Logger logger = Logger.getLogger(LaunchVMCommand.class);
 	private String operator;
-	private final String publicKey;
 
-	public LaunchVMCommand(VmInfoBean vminfo, String operator, String publicKey) throws Exception {
+	public LaunchVMCommand(VmInfoBean vminfo, String operator) throws Exception {
 		super(vminfo);
 		this.operator = operator;
-		this.publicKey = publicKey;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.launchVM(vminfo, publicKey);
+		HypervisorResponse resp = hypervisor.launchVM(vminfo);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {

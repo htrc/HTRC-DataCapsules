@@ -82,11 +82,6 @@ public class LaunchVM {
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
-			String pubkey = "";
-			if(DBOperations.getInstance().getUserPubKey(userName) != null ) {
-				pubkey = DBOperations.getInstance().getUserPubKey(userName);
-			}
-
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 			if (VMStateManager.isPendingState(vmInfo.getVmstate()) ||
 				!VMStateManager.getInstance().transitTo(vmid, 
@@ -106,7 +101,7 @@ public class LaunchVM {
 			vmInfo.setPolicypath(Configuration.getInstance().getString(
 				Configuration.PropertyName.MAINTENANCE_FIREWALL_POLICY));
 			
-			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo, userName, pubkey));
+			HypervisorProxy.getInstance().addCommand(new LaunchVMCommand(vmInfo, userName));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

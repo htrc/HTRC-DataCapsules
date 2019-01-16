@@ -95,6 +95,10 @@ public class CreateVM {
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 
+			String pubkey = "";
+			if(DBOperations.getInstance().getUserPubKey(userName) != null ) {
+				pubkey = DBOperations.getInstance().getUserPubKey(userName);
+			}
 			// check if ports are available
 
 			// check if image name is valid
@@ -133,7 +137,7 @@ public class CreateVM {
 
 			// nonblocking call to hypervisor
 			vminfo.setImagePath(imagePath);
-			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo, userName));
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo, userName, pubkey));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid)).build();
 		} catch (Exception e) {
