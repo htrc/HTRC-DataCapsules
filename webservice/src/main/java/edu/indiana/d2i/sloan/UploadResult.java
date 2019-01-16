@@ -70,12 +70,6 @@ public class UploadResult {
 
 			//get roles of the vm
 			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
-
-			//get the owner from roles
-			List<VmUserRole> owner = vmUserRoles.stream()
-					.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-					.collect(Collectors.toList());
-
 			logger.info("Prepare to upload result for " + vmid + ", " + vmUserRoles);
 			
 			// write to DB
@@ -86,7 +80,7 @@ public class UploadResult {
 			if (!Configuration.getInstance().getBoolean(
 				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) {
 				UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
-						owner.get(0).getUsername(), owner.get(0).getEmail(), randomid, vmUserRoles));
+						null, null, randomid, vmUserRoles));
 			}	else {
 				// send email to the reviewer
 				String emails = Configuration.getInstance().getString(

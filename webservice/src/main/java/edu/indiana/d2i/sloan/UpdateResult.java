@@ -81,11 +81,6 @@ public class UpdateResult {
                 //get roles of the vm
                 List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
 
-                //get the owner from roles
-                List<VmUserRole> owner = vmUserRoles.stream()
-                        .filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-                        .collect(Collectors.toList());
-
                 String reviewer_email = Configuration.getInstance().
                         getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
 

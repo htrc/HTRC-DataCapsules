@@ -114,15 +114,10 @@ public class DBOperations {
 				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
 
-				//get the owner from roles
-				List<VmUserRole> owner = roles.stream()
-						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-						.collect(Collectors.toList());
-
 				VmKeyInfoBean vmKeyInfoBean = new VmKeyInfoBean(
 						vmid,
-						owner.get(0).getUsername(), // owners usernae
-						owner.get(0).getEmail(), // owners email
+						null,
+						null,
 						rs.getInt(DBSchema.VmTable.NUM_CPUS),
 						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
 						VMMode.valueOf(rs
@@ -1114,18 +1109,13 @@ public class DBOperations {
 				String vmid = rs.getString("vmid");
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
 
-				//get the owner from roles
-				List<VmUserRole> owner = roles.stream()
-						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-						.collect(Collectors.toList());
-
 				ReviewInfoBean result = new ReviewInfoBean(
 						vmid,
 						rs.getString("resultid"),
 						rs.getString("notified"),
 						rs.getString("status"),
-						owner.get(0).getUsername(),
-						owner.get(0).getEmail(),
+						null,
+						null,
 						rs.getString("reviewer"),
 						rs.getString("comment"),
 						rs.getString("createtime"),
@@ -1177,18 +1167,13 @@ public class DBOperations {
 				String vmid = rs.getString("vmid");
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
 
-				//get the owner from roles
-				List<VmUserRole> owner = roles.stream()
-						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-						.collect(Collectors.toList());
-
                 ReviewInfoBean result = new ReviewInfoBean(
 						vmid,
                         rs.getString("resultid"),
                         "",
                         "",
-						owner.get(0).getUsername(),
-						owner.get(0).getEmail(),
+						null,
+						null,
 						rs.getString("reviewer"),
 						"",
 						rs.getString("createtime"),
@@ -1241,18 +1226,13 @@ public class DBOperations {
 				String vmid = rs.getString("vmid");
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
 
-				//get the owner from roles
-				List<VmUserRole> owner = roles.stream()
-						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-						.collect(Collectors.toList());
-
 				ReviewInfoBean result = new ReviewInfoBean(
 						vmid,
 						rs.getString("resultid"),
 						"",
 						"",
-						owner.get(0).getUsername(),
-						owner.get(0).getEmail(),
+						null,
+						null,
 						rs.getString("reviewer"),
 						"",
 						rs.getString("createtime"),
@@ -1378,17 +1358,13 @@ public class DBOperations {
 
 		try {
 			connection = DBConnections.getInstance().getConnection();
-			String query = String.format("SELECT %s, %s, %s FROM %s, %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
+			String query = String.format("SELECT %s, %s FROM %s, %s WHERE %s=%s AND %s=%s",
 				// selected fields
-				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME, 
-				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL,
 				DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID,
 				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 				// selected tables
-				DBSchema.UserTable.TABLE_NAME,  DBSchema.ResultTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
+				DBSchema.ResultTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
 				// where clause
-				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME,
-					DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME,
 				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 					DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.VM_ID,
 				DBSchema.ResultTable.NOTIFIED, "\"NO\"");
@@ -1402,13 +1378,7 @@ public class DBOperations {
 				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
 				String resultId = rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID);
 
-				//get the owner from roles
-				List<VmUserRole> owner = vmUserRoles.stream()
-						.filter(role -> role.getRole() == VMRole.OWNER_CONTROLLER)
-						.collect(Collectors.toList());
-
-				UserResultBean bean = new UserResultBean(
-						owner.get(0).getUsername(), owner.get(0).getEmail(), resultId, vmUserRoles);
+				UserResultBean bean = new UserResultBean(null, null, resultId, vmUserRoles);
 				res.add(bean);
 			}
 		} finally {
