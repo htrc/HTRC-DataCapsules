@@ -21,7 +21,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 usage () {
 
   echo "Usage: $0 <Directory for VM> --image <Image Name> --vcpu <Number of CPUs> --mem <Guest Memory Size>"
-  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size> "
+  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size>   --pubkey <User's ssh key>"
   echo ""
   echo "Creates a new VM by allocating a directory for it and instantiating configuration files."
   echo ""
@@ -43,6 +43,8 @@ usage () {
   echo ""
   echo "--loginpwd Login Password: (optional) Password to be used to log in to VNC sessions"
   echo ""
+  echo "--pubkey  User's ssh public key."
+  echo ""
   echo "-h|--help Show help."
 
 }
@@ -58,6 +60,7 @@ SSH_PORT=
 SECURE_VOL_SIZE=
 LOGIN_ID=
 LOGIN_PWD=
+SSH_KEY=
 
 while :; do
     case $1 in
@@ -190,6 +193,15 @@ while :; do
             ;;
         --loginpwd=)         # Handle the case of an empty --loginpwd=
             die 'ERROR: "--loginpwd" requires a non-empty option argument.'
+            ;;
+        --pubkey)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                SSH_KEY=$2
+                shift
+            fi
+            ;;
+        --pubkey=?*)
+            SSH_KEY=${1#*=} # Delete everything up to "=" and assign the remainder.
             ;;
         --)              # End of all options.
             shift
@@ -357,5 +369,12 @@ fi
     && rm -rf $VM_DIR/${SECURE_VOL_NAME}.tmp 2>$VM_DIR/kvm_console >/dev/null \
     && mv $VM_DIR/${SECURE_VOL_NAME}.done $VM_DIR/$SECURE_VOL_NAME 2>$VM_DIR/kvm_console >/dev/null ) </dev/null >/dev/null 2>/dev/null &
 
+
+#add/update user's public key
+if [ -n "$SSH_KEY" ]; then
+     $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
+fi
+
 # Return results (only reaches here if no errors occur)
+
 exit 0
