@@ -19,7 +19,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 --wdir <Directory for VM> --mode <Security Mode> --vmtype <Capsule Type> --pubkey <User's ssh key>"
+  echo "Usage: $0 --wdir <Directory for VM> --mode <Security Mode> --vmtype <Capsule Type>"
   echo ""
   echo "--wdir   Directory: The directory where this VM's data will be held"
   echo ""
@@ -27,8 +27,6 @@ usage () {
   echo "          guest being started should be booted into maintenance or secure mode"
   echo ""
   echo "--vmtype  Capsule Type - DEMO or RESEARCH"
-  echo ""
-  echo "--pubkey  User's ssh public key."
   echo ""
   echo "-h|--help Show help."
 
@@ -39,7 +37,6 @@ usage () {
 VM_DIR=
 RAW_MODE=
 DC_TYPE=
-SSH_KEY=
 
 while :; do
     case $1 in
@@ -88,15 +85,6 @@ while :; do
             ;;
         --vmtype=)         # Handle the case of an empty --vmtype=
             die 'ERROR: "--vmtype" requires a non-empty option argument.'
-            ;;
-        --pubkey)       # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                SSH_KEY=$2
-                shift
-            fi
-            ;;
-        --pubkey=?*)
-            SSH_KEY=${1#*=} # Delete everything up to "=" and assign the remainder.
             ;;
         --)              # End of all options.
             shift
@@ -242,10 +230,9 @@ else
   # Update Mode File
   echo "Maintenance" > $VM_DIR/mode
 
-  # Add user's ssh key
-  if [ "$SSH_KEY" ]; then
-     $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
-  fi
+  # copy authorized_keys file from VM_DIR to VM
+  scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/authorized_keys root@$VM_IP_ADDR:$DC_USER_KEY_FILE >> $VM_DIR/copy_authorized_keys_out 2>&1
+
   logger "$VM_DIR Switched to the Maintenance mode"
 
 fi

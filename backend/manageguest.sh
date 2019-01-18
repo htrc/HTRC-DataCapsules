@@ -20,11 +20,13 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 --wdir <Directory for VM> "
+  echo "Usage: $0 --wdir <Directory for VM> --vmtype <Capsule Type>"
   echo ""
   echo "Add user's public ssh key to data capsule"
   echo ""
   echo "--wdir  Directory: The directory where this VM's data will be held"
+  echo ""
+  echo "--vmtype  Capsule Type - DEMO or RESEARCH"
   echo ""
   echo "-h|--help Show help."
 
