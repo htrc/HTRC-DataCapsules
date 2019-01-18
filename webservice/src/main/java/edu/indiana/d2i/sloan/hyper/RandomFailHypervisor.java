@@ -16,6 +16,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -126,6 +127,11 @@ public class RandomFailHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
+		return simulateRandProcess();
+	}
+
+	@Override
+	public HypervisorResponse addVmSharees(VmInfoBean vminfo, List<String> sharees) throws Exception {
 		return simulateRandProcess();
 	}
 }

@@ -69,6 +69,10 @@
 		<name>cmd.migrate.vm</name>
 		<value>DB_HOST_SCRIPT_DIR/migratevm.sh</value>
 	</property>
+	<property>
+		<name>cmd.share.vm</name>
+		<value>DB_HOST_SCRIPT_DIR/sharevm.sh</value>
+	</property>
 
 	<!-- fire wall policy -->
 	<property>

@@ -16,6 +16,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
 import java.util.HashMap;
+import java.util.List;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.vm.VMPorts;
@@ -76,6 +77,11 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 
 	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
+		return genFakeResponse(VMState.SHUTDOWN);
+	}
+
+	@Override
+	public HypervisorResponse addVmSharees(VmInfoBean vminfo, List<String> sharees) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 

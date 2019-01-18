@@ -18,6 +18,8 @@ package edu.indiana.d2i.sloan.hyper;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 
+import java.util.List;
+
 interface IHypervisor {
 	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey) throws Exception;
 
@@ -34,4 +36,6 @@ interface IHypervisor {
 	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception;
 
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception;
+
+	public HypervisorResponse addVmSharees(VmInfoBean vminfo, List<String> sharees) throws Exception;
 }

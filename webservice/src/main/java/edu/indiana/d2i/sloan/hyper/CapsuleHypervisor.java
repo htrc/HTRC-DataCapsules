@@ -16,6 +16,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -418,6 +419,41 @@ class CapsuleHypervisor implements IHypervisor {
 			/* execute task */
 			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					migrateVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
+
+	@Override
+	public HypervisorResponse addVmSharees(VmInfoBean vminfo, List<String> sharees) throws Exception {
+		logger.debug("add sharees to vm: " + vminfo);
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--sharees", sharees.toString()).build();
+
+			Commands shareVMCmd = new Commands(
+					Collections
+							.<String> singletonList(CommandUtils
+									.composeFullCommand(HYPERVISOR_CMD.SHARE_VM,
+											argList)),
+					false);
+
+			/* execute task */
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
+					shareVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
 		} finally {
