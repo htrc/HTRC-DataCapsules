@@ -107,8 +107,8 @@ public class UpdateResult {
                     logger.info("Download result email sent to users " + vmUserRoles + " - download URL : " + download_addr);
 
                     //construct email content for reviewer
-                    String contentReviewer = String.format("Result \"%s\" \nhas been released to users \"%s\"",
-                            resultid, vmUserRoles);
+                    String contentReviewer = String.format("Result \"%s\" \nhas been released to users: %s",
+                            resultid, userListToString(vmUserRoles));
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
 
                 }else{
@@ -120,8 +120,8 @@ public class UpdateResult {
                     //send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
 
                     //construct email content for reviewer
-                    String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom users \"%s\"",
-                            resultid, vmUserRoles);
+                    String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom users: %s",
+                            resultid, userListToString(vmUserRoles));
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
 
@@ -139,6 +139,17 @@ public class UpdateResult {
                         .build();
             }
 
+    }
+
+    private String userListToString(List<VmUserRole> vmUserRoles) {
+        String str = "\n";
+        for(VmUserRole vmUserRole : vmUserRoles) {
+            str += vmUserRole.getUsername() + " (" +
+                    "email : " + vmUserRole.getEmail() + ",\t" +
+                    "role : " + vmUserRole.getRole() + ",\t" +
+                    "TOU accepted : " + vmUserRole.getTou() + ")\n";
+        }
+        return str;
     }
 
 }
