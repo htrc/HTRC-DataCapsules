@@ -19,7 +19,7 @@ fi
 DATE=`date "+%Y-%m-%d"`
 
 # Create a DB backup
-mysqldump -u $1 -p$2 -h $3 --databases $4 > $4-backup-$DATE.sql
+#mysqldump -u $1 -p$2 -h $3 --databases $4 > $4-backup-$DATE.sql
 
 # Create temporary table 'user_guid_map' and populate with CSV data
 mysql --local-infile -u $1 -h $3 -p$2 << EOF
