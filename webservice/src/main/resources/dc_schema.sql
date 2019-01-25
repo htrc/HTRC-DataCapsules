@@ -39,7 +39,7 @@ ENGINE = InnoDB;
 DROP TABLE IF EXISTS `htrcvirtdb`.`users` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`users` (
-  `username` VARCHAR(128) NOT NULL,
+  `guid` varchar(64) NOT NULL,
   `useremail` VARCHAR(128) NULL,
   `cpuleftquota` int(11) NULL,
   `memoryleftquota` INT(11) NULL,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`users` (
   `usertype` VARCHAR(64) NULL DEFAULT 'regular',
   `pub_key` VARCHAR(1024) CHARACTER SET utf8 DEFAULT NULL,
   `tou` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`username`))
+  PRIMARY KEY (`guid`))
 ENGINE = InnoDB;
 
 
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vms` (
   `memorysize` INT(11) DEFAULT NULL,
   `diskspace` INT(11) DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `username` VARCHAR(128) NOT NULL,
+  `guid` varchar(64) NOT NULL,
   `host` VARCHAR(128) DEFAULT NULL,
   `type` enum('DEMO','RESEARCH','RESEARCH-FULL') DEFAULT 'RESEARCH',
   `title` varchar(256) DEFAULT NULL,
@@ -97,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vms` (
   `full_access` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`vmid`),
   INDEX `fk_images_idx` (`imagename` ASC),
-  INDEX `fk_users_idx` (`username` ASC),
+  INDEX `fk_users_idx` (`guid`),
   INDEX `fk_host_idx` (`host` ASC),
   CONSTRAINT `fk_images`
     FOREIGN KEY (`imagename`)
@@ -105,8 +105,8 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vms` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_users`
-    FOREIGN KEY (`username`)
-    REFERENCES `htrcvirtdb`.`users` (`username`)
+    FOREIGN KEY (`guid`)
+    REFERENCES `htrcvirtdb`.`users` (`guid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
   CONSTRAINT `fk_host`
@@ -154,18 +154,18 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vmactivity` (
   `curr_mode` ENUM('MAINTENANCE', 'SECURE', 'NOT_DEFINED') NOT NULL,
   `prev_state` ENUM('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR', 'DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING')  NOT NULL,
   `curr_state` ENUM('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR', 'DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING')  NOT NULL,
-  `username` VARCHAR(128) NOT NULL,
+  `guid` varchar(64) NOT NULL,
   PRIMARY KEY (`id`),
   INDEX `fk_vmid_idx` (`vmid` ASC),
-  INDEX `fk_username_idx` (`username` ASC),
+  INDEX `fk_guid_idx` (`guid` ASC),
   CONSTRAINT `fk_vmid`
     FOREIGN KEY (`vmid`)
     REFERENCES `htrcvirtdb`.`vms` (`vmid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_username`
-    FOREIGN KEY (`username`)
-    REFERENCES `htrcvirtdb`.`users` (`username`)
+  CONSTRAINT `fk_guid`
+    FOREIGN KEY (`guid`)
+    REFERENCES `htrcvirtdb`.`users` (`guid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -202,20 +202,20 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`uservmmap` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`uservmmap` (
   `vmid` VARCHAR(128) NOT NULL,
-  `username` VARCHAR(128) NOT NULL,
+  `guid` varchar(64) NOT NULL,
   `role` ENUM('OWNER', 'OWNER-CONTROLLER', 'CONTROLLER', 'SHAREE') NULL,
   `tou` tinyint(1) DEFAULT '0',
-  PRIMARY KEY (`vmid`,`username`),
+  PRIMARY KEY (`vmid`,`guid`),
   INDEX `fk_m_vmid_idx` (`vmid` ASC),
-  INDEX `fk_m_username_idx` (`username` ASC),
+  INDEX `fk_m_guid_idx` (`guid` ASC),
   CONSTRAINT `fk_m_vmid`
     FOREIGN KEY (`vmid`)
     REFERENCES `htrcvirtdb`.`vms` (`vmid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_m_username`
-    FOREIGN KEY (`username`)
-    REFERENCES `htrcvirtdb`.`users` (`username`)
+  CONSTRAINT `fk_m_guid`
+    FOREIGN KEY (`guid`)
+    REFERENCES `htrcvirtdb`.`users` (`guid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

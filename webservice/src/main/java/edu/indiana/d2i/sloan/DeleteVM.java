@@ -116,7 +116,7 @@ public class DeleteVM {
 								   @Context HttpServletRequest httpServletRequest) {
 
 		// check whether the user has been authorized
-		//String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		//String userName = httpServletRequest.getHeader(Constants.GUID);
 		String userName = ADMIN;
 		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);

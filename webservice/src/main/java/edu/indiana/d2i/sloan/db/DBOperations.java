@@ -34,7 +34,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public class DBOperations {
@@ -220,7 +219,7 @@ public class DBOperations {
 				.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
 				.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
 				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
-				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.GUID)
 				.append("=")
 				.append(String.format("\"%s\"", request.getUserName()));
 
@@ -262,7 +261,7 @@ public class DBOperations {
 									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
 									leftMemoryQuota - requestedMemory))
 							.append(" WHERE ")
-							.append(DBSchema.UserTable.USER_NAME)
+							.append(DBSchema.UserTable.GUID)
 							.append("=")
 							.append(String.format("\"%s\"",
 									request.getUserName()));
@@ -293,7 +292,7 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String queryUser = "SELECT * FROM " + DBSchema.UserTable.TABLE_NAME
-					+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";
+					+ " WHERE " + DBSchema.UserTable.GUID + "=(?)";
 			pst1 = connection.prepareStatement(queryUser);
 			pst1.setString(1, username);
 			rs = pst1.executeQuery();
@@ -321,7 +320,7 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String queryUser = "SELECT * FROM " + DBSchema.UserTable.TABLE_NAME
-					+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";
+					+ " WHERE " + DBSchema.UserTable.GUID + "=(?)";
 			pst1 = connection.prepareStatement(queryUser);
 			pst1.setString(1, userName);
 			rs = pst1.executeQuery();
@@ -330,7 +329,7 @@ public class DBOperations {
 				String insertUser = String.format(
 					"INSERT IGNORE INTO " + DBSchema.UserTable.TABLE_NAME
 							+ "(%s, %s, %s, %s, %s) VALUES" + "(?, ?, ?, ?, ?)",
-					DBSchema.UserTable.USER_NAME, DBSchema.UserTable.USER_EMAIL, 
+					DBSchema.UserTable.GUID, DBSchema.UserTable.USER_EMAIL,
 					DBSchema.UserTable.DISK_LEFT_QUOTA, DBSchema.UserTable.CPU_LEFT_QUOTA, 
 					DBSchema.UserTable.MEMORY_LEFT_QUOTA);
 				pst2 = connection.prepareStatement(insertUser);
@@ -482,7 +481,7 @@ public class DBOperations {
 				+ " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + "=\"%s\""
+				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "="
 				+ DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID
 				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName);
@@ -516,7 +515,7 @@ public class DBOperations {
 				+ " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + "=\"%s\""
+				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"%s\""
 				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "="
 				+ DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID
@@ -606,7 +605,7 @@ public class DBOperations {
 								+ ","
 								+ DBSchema.VmTable.DISK_SPACE
 								+ ","
-								+ DBSchema.VmTable.USERNAME //TODO-UN
+								+ DBSchema.VmTable.GUID //TODO-UN
 								+ ","
 								+ DBSchema.VmTable.TYPE
 								+ ","
@@ -653,7 +652,7 @@ public class DBOperations {
 								+ " ("
 								+ DBSchema.UserVmMapTable.VM_ID
 								+ ","
-								+ DBSchema.UserVmMapTable.USER_NAME
+								+ DBSchema.UserVmMapTable.GUID
 								+ ","
 								+ DBSchema.UserVmMapTable.ROLE
 								+ ","
@@ -690,7 +689,7 @@ public class DBOperations {
 						+ ", "
 						+ DBSchema.ActivityTable.CURR_STATE
 						+ ", "
-						+ DBSchema.ActivityTable.USERNAME
+						+ DBSchema.ActivityTable.GUID
 						+ ") VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
 				vmid, prevMode, curMode, prevState, curState, operator
 		);
@@ -724,7 +723,7 @@ public class DBOperations {
 				.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
 				.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
 				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
-				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.GUID)
 				.append("=").append(String.format("\"%s\"", username));
 
 		StringBuilder updateUserTableSql = new StringBuilder();
@@ -755,7 +754,7 @@ public class DBOperations {
 										+ vmInfo.getNumCPUs(),
 								DBSchema.UserTable.MEMORY_LEFT_QUOTA,
 								leftMemoryQuota + vmInfo.getMemorySizeInMB()))
-						.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+						.append(" WHERE ").append(DBSchema.UserTable.GUID)
 						.append("=").append(String.format("\"%s\"", username));
 			}
 
@@ -802,7 +801,7 @@ public class DBOperations {
 					.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
 					.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
 					.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
-					.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+					.append(" WHERE ").append(DBSchema.UserTable.GUID)
 					.append("=").append(String.format("\"%s\"", username));
 
 			StringBuilder updateUserTableSql = new StringBuilder();
@@ -833,7 +832,7 @@ public class DBOperations {
 											+ cpu,
 									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
 									leftMemoryQuota + memory))
-							.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+							.append(" WHERE ").append(DBSchema.UserTable.GUID)
 							.append("=").append(String.format("\"%s\"", username));
 				}
 
@@ -1535,14 +1534,14 @@ public class DBOperations {
 			String query = String.format(
 				"SELECT * FROM %s, %s WHERE %s=%s AND %s=\"%s\"",
 				DBSchema.UserTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
-				DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME,
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
+				DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.GUID,
 				DBSchema.VmTable.VM_ID, vmid);
 			pst = connection.prepareStatement(query);
 			
 			ResultSet result = pst.executeQuery();
 			if (result.next()) {
-				return new UserBean(result.getString(DBSchema.UserTable.USER_NAME), 
+				return new UserBean(result.getString(DBSchema.UserTable.GUID),
 					result.getString(DBSchema.UserTable.USER_EMAIL));
 			} else {
 				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
@@ -1568,10 +1567,10 @@ public class DBOperations {
 				DBSchema.UserTable.USER_EMAIL, DBSchema.UserVmMapTable.ROLE,
 				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU,
 				DBSchema.UserVmMapTable.TABLE_NAME, DBSchema.UserTable.TABLE_NAME,
-				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.USER_NAME,
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.GUID,
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
 				DBSchema.UserVmMapTable.VM_ID, vmid,
-				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.USER_NAME, username);
+				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.GUID, username);
 			pst = connection.prepareStatement(query);
 
 			ResultSet result = pst.executeQuery();
@@ -1600,7 +1599,7 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String role_sql = "SELECT " +
-					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ", " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + ", " +
 					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
 					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
 					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + " " +
@@ -1610,8 +1609,8 @@ public class DBOperations {
 					DBSchema.UserVmMapTable.TABLE_NAME + " " +
 					"WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=" +
 					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + " " +
-					"AND "  + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + "=" +
-					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.USER_NAME + " " +
+					"AND "  + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + " " +
 					"AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"" + vmid + "\"";
 			pst = connection.prepareStatement(role_sql);
 			rs = pst.executeQuery();
@@ -1622,7 +1621,7 @@ public class DBOperations {
 							rs.getString(DBSchema.UserTable.USER_EMAIL),
 							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
 							rs.getBoolean(DBSchema.UserVmMapTable.TOU),
-							rs.getString(DBSchema.UserTable.USER_NAME));
+							rs.getString(DBSchema.UserTable.GUID));
 				} else {
 					role = new VmUserRole(
 							rs.getString(DBSchema.UserTable.USER_EMAIL),
@@ -1716,7 +1715,7 @@ public class DBOperations {
 			String query = String.format(
 					"SELECT %s FROM %s WHERE %s=\"%s\"",
 					DBSchema.UserTable.PUB_KEY, DBSchema.UserTable.TABLE_NAME,
-					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
 					userName);
 			pst = connection.prepareStatement(query);
 
@@ -1750,7 +1749,7 @@ public class DBOperations {
 			String query = String.format(
 					"SELECT %s FROM %s WHERE %s=\"%s\"",
 					DBSchema.UserTable.USER_EMAIL, DBSchema.UserTable.TABLE_NAME,
-					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
 					userName);
 			pst = connection.prepareStatement(query);
 
@@ -1775,7 +1774,7 @@ public class DBOperations {
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.PUB_KEY + "=\"%s\" WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", encodedKey, userName);
+				+ DBSchema.UserTable.GUID + "=\"%s\"", encodedKey, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
@@ -1791,7 +1790,7 @@ public class DBOperations {
 			String query = String.format(
 					"SELECT %s FROM %s WHERE %s=\"%s\"",
 					DBSchema.UserTable.TOU, DBSchema.UserTable.TABLE_NAME,
-					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
 					userName);
 			pst = connection.prepareStatement(query);
 
@@ -1815,7 +1814,7 @@ public class DBOperations {
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.TOU + "=%s WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", tou, userName);
+				+ DBSchema.UserTable.GUID + "=\"%s\"", tou, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
@@ -1825,7 +1824,7 @@ public class DBOperations {
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.USER_EMAIL + "=\"%s\" WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", email, userName);
+				+ DBSchema.UserTable.GUID + "=\"%s\"", email, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
