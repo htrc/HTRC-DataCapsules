@@ -98,7 +98,7 @@ public class UpdateResult {
 
                     //construct email content for users
                     for (VmUserRole role : vmUserRoles) {
-                        String contentUser = "Dear " + role.getUsername() + ",\n\n" +
+                        String contentUser = "Dear Data Capsule user,\n\n" +
                                 "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
                                 download_addr + "\n\n" +
                                 "Please note this link is active for 24 hours.";
@@ -144,10 +144,9 @@ public class UpdateResult {
     private String userListToString(List<VmUserRole> vmUserRoles) {
         String str = "\n";
         for(VmUserRole vmUserRole : vmUserRoles) {
-            str += vmUserRole.getUsername() + " (" +
-                    "email : " + vmUserRole.getEmail() + ",\t" +
+            str += "email : " + vmUserRole.getEmail() + ",\t" +
                     "role : " + vmUserRole.getRole() + ",\t" +
-                    "TOU accepted : " + vmUserRole.getTou() + ")\n";
+                    "TOU accepted : " + vmUserRole.getTou();
         }
         return str;
     }

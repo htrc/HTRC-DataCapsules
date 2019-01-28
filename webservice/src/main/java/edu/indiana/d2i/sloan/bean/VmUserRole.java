@@ -19,7 +19,7 @@ import edu.indiana.d2i.sloan.vm.VMRole;
 
 public class VmUserRole {
 	private String email;
-	private String username;
+	private String guid;
 	private VMRole role;
 	private boolean tou;
 
@@ -27,21 +27,21 @@ public class VmUserRole {
 		this.email = email;
 		this.role = role;
 		this.tou = tou;
-		this.username = null;
+		this.guid = null;
 	}
 
-	public VmUserRole(String email, VMRole role, boolean tou, String username) {
+	public VmUserRole(String email, VMRole role, boolean tou, String guid) {
 		this.email = email;
 		this.role = role;
 		this.tou = tou;
-		this.username = username;
+		this.guid = guid;
 	}
 
 	public String getEmail() {
 		return email;
 	}
-	public String getUsername() {
-		return username;
+	public String getGuid() {
+		return guid;
 	}
 	public VMRole getRole() {
 		return role;
@@ -52,6 +52,6 @@ public class VmUserRole {
 
 	@Override
 	public String toString() {
-		return String.format("[username=%s, email=%s, role=%s, tou=%b]", username, email, role.getName(), tou);
+		return String.format("[guid=%s, email=%s, role=%s, tou=%b]", guid, email, role.getName(), tou);
 	}
 }

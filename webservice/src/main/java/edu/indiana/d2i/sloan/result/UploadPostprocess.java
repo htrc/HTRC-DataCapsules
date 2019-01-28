@@ -46,9 +46,8 @@ public class UploadPostprocess {
 			for (VmUserRole role : item.getRoles()) {
 				// message
 				final String content = String.format(
-					"Dear %s, \n\nThank you for using HTRC Data Capsule! " +
-					"You can download your result from the link below. \n%s",
-						role.getUsername(), url);
+					"Dear User, \n\nThank you for using HTRC Data Capsule! " +
+					"You can download your result from the link below. \n%s", url);
 
 				logger.debug(String.format("url: %s, content: %s", url, content));
 
@@ -64,7 +63,7 @@ public class UploadPostprocess {
 				r.call();
 
 				logger.info(String.format("Email has been sent to %s, " +
-						"with username %s, url %s", role.getEmail(), role.getUsername(), url));
+						"with guid %s, url %s", role.getEmail(), role.getGuid(), url));
 			}
 
 			// mark result as notified

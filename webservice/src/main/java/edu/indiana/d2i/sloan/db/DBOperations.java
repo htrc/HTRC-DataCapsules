@@ -157,7 +157,7 @@ public class DBOperations {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
-				List<VmUserRole> roles = getRolesWithVmid(vmid, false);
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
@@ -1563,8 +1563,9 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String query = String.format(
-				"SELECT %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=\"%s\" AND %s=\"%s\"",
+				"SELECT %s, %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=\"%s\" AND %s=\"%s\"",
 				DBSchema.UserTable.USER_EMAIL, DBSchema.UserVmMapTable.ROLE,
+				DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID,
 				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU,
 				DBSchema.UserVmMapTable.TABLE_NAME, DBSchema.UserTable.TABLE_NAME,
 				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.GUID,
@@ -1577,7 +1578,8 @@ public class DBOperations {
 			if (result.next()) {
 				return new VmUserRole(result.getString(DBSchema.UserTable.USER_EMAIL),
 					VMRole.fromName(result.getString(DBSchema.UserVmMapTable.ROLE)),
-					result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU));
+					result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU),
+					result.getString(DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID));
 			} else {
 				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
 			}
