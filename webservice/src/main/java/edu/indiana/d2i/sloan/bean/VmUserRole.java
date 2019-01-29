@@ -22,19 +22,22 @@ public class VmUserRole {
 	private String guid;
 	private VMRole role;
 	private boolean tou;
+	private Boolean full_access;
 
-	public VmUserRole(String email, VMRole role, boolean tou) {
+	public VmUserRole(String email, VMRole role, boolean tou, Boolean full_access) {
 		this.email = email;
 		this.role = role;
 		this.tou = tou;
 		this.guid = null;
+		this.full_access = full_access;
 	}
 
-	public VmUserRole(String email, VMRole role, boolean tou, String guid) {
+	public VmUserRole(String email, VMRole role, boolean tou, String guid, Boolean full_access) {
 		this.email = email;
 		this.role = role;
 		this.tou = tou;
 		this.guid = guid;
+		this.full_access = full_access;
 	}
 
 	public String getEmail() {
@@ -50,8 +53,16 @@ public class VmUserRole {
 		return tou;
 	}
 
+	public Boolean isFull_access() {
+		return full_access;
+	}
+
+	public void setFull_access(Boolean full_access) {
+		this.full_access = full_access;
+	}
+
 	@Override
 	public String toString() {
-		return String.format("[guid=%s, email=%s, role=%s, tou=%b]", guid, email, role.getName(), tou);
+		return String.format("[guid=%s, email=%s, role=%s, tou=%b, full_access=%b]", guid, email, role.getName(), tou, full_access);
 	}
 }

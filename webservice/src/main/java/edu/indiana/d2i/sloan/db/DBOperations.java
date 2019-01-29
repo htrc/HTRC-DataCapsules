@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public class DBOperations {
@@ -158,6 +159,9 @@ public class DBOperations {
 			while (rs.next()) {
 				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+				List<VmUserRole> owner = roles.stream()                // convert list to stream
+						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))     // we dont like mkyong
+						.collect(Collectors.toList());
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
@@ -188,7 +192,7 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
 						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
-						rs.getObject(DBSchema.VmTable.FULL_ACCESS) == null ? null : rs.getBoolean(DBSchema.VmTable.FULL_ACCESS),
+						owner.get(0).isFull_access(),
 						roles);
 				res.add(vminfo);
 			}
@@ -372,7 +376,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -407,7 +411,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -443,7 +447,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -471,7 +475,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -506,7 +510,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -548,7 +552,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -624,11 +628,9 @@ public class DBOperations {
 								+ DBSchema.VmTable.RR_DATA_FILES
 								+ ","
 								+ DBSchema.VmTable.RR_RESULT_USAGE
-								+ ","
-								+ DBSchema.VmTable.FULL_ACCESS
 								+ ") VALUES"
 								+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
-								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s)",
 						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
@@ -641,8 +643,7 @@ public class DBOperations {
 						desc_links != null ? "\"" + StringEscapeUtils.escapeJava(desc_links) + "\"" : desc_links,
 						desc_outside_data != null ? "\"" + StringEscapeUtils.escapeJava(desc_outside_data) + "\"" : desc_outside_data,
 						rr_data_files != null ? "\"" + StringEscapeUtils.escapeJava(rr_data_files) + "\"" : rr_data_files,
-						rr_result_usage != null ? "\"" + StringEscapeUtils.escapeJava(rr_result_usage) + "\"" : rr_result_usage,
-						full_access);
+						rr_result_usage != null ? "\"" + StringEscapeUtils.escapeJava(rr_result_usage) + "\"" : rr_result_usage);
 
 		logger.debug(insertvmsql);
 
@@ -657,9 +658,11 @@ public class DBOperations {
 								+ DBSchema.UserVmMapTable.ROLE
 								+ ","
 								+ DBSchema.UserVmMapTable.TOU
+								+ ","
+								+ DBSchema.UserVmMapTable.FULL_ACCESS
 								+ ") VALUES"
-								+ "(\"%s\", \"%s\", \"%s\", %s)",
-						vmid, userName, VMRole.OWNER_CONTROLLER.getName(), true);
+								+ "(\"%s\", \"%s\", \"%s\", %s, %s)",
+						vmid, userName, VMRole.OWNER_CONTROLLER.getName(), true, full_access);
 
 		List<String> updates = new ArrayList<String>();
 		updates.add(insertvmsql);
@@ -1563,10 +1566,11 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String query = String.format(
-				"SELECT %s, %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=\"%s\" AND %s=\"%s\"",
+				"SELECT %s, %s, %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=\"%s\" AND %s=\"%s\"",
 				DBSchema.UserTable.USER_EMAIL, DBSchema.UserVmMapTable.ROLE,
 				DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID,
 				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU,
+				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS,
 				DBSchema.UserVmMapTable.TABLE_NAME, DBSchema.UserTable.TABLE_NAME,
 				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.GUID,
 				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
@@ -1579,7 +1583,12 @@ public class DBOperations {
 				return new VmUserRole(result.getString(DBSchema.UserTable.USER_EMAIL),
 					VMRole.fromName(result.getString(DBSchema.UserVmMapTable.ROLE)),
 					result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU),
-					result.getString(DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID));
+					result.getString(DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID),
+					result.getObject(
+							DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+							? null
+							: result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS)
+				);
 			} else {
 				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
 			}
@@ -1604,7 +1613,8 @@ public class DBOperations {
 					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + ", " +
 					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
 					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
-					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + " " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS + " " +
 					"FROM " +
 					DBSchema.VmTable.TABLE_NAME + ", " +
 					DBSchema.UserTable.TABLE_NAME + ", " +
@@ -1623,12 +1633,20 @@ public class DBOperations {
 							rs.getString(DBSchema.UserTable.USER_EMAIL),
 							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
 							rs.getBoolean(DBSchema.UserVmMapTable.TOU),
-							rs.getString(DBSchema.UserTable.GUID));
+							rs.getString(DBSchema.UserTable.GUID),
+							rs.getObject(
+									DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+									? null
+									: rs.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS));
 				} else {
 					role = new VmUserRole(
 							rs.getString(DBSchema.UserTable.USER_EMAIL),
 							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
-							rs.getBoolean(DBSchema.UserVmMapTable.TOU));
+							rs.getBoolean(DBSchema.UserVmMapTable.TOU),
+							rs.getObject(
+									DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+									? null
+									: rs.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS));
 				}
 				roles.add(role);
 			}
@@ -1845,8 +1863,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.DESC_LINKS + "=\"%s\", "
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "=\"%s\", "
 				+ DBSchema.VmTable.RR_DATA_FILES + "=\"%s\", "
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\", "
-				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\" "
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
 				type
@@ -1858,9 +1875,15 @@ public class DBOperations {
 				, StringEscapeUtils.escapeJava(desc_outside_data)
 				, StringEscapeUtils.escapeJava(rr_data_files)
 				, StringEscapeUtils.escapeJava(rr_result_usage)
-				, full_access,
-				vmid);
+				, vmid);
+		String update_uservmmap_sql = String.format("UPDATE "
+						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+						+ DBSchema.UserVmMapTable.FULL_ACCESS + "=%s "
+						+ "WHERE "
+						+ DBSchema.UserVmMapTable.VM_ID + "=\"%s\"", //TODO-UN how about users added after full request is made
+				full_access, vmid);
 		updates.add(updatevmsql);
+		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);
 	}
 
@@ -1868,12 +1891,18 @@ public class DBOperations {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
-				+ DBSchema.VmTable.TYPE + "=\"%s\", "
-				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
+				+ DBSchema.VmTable.TYPE + "=\"%s\" "
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
-				type, full_access, vmid);
+				type, vmid);
+		String update_uservmmap_sql = String.format("UPDATE "
+				+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+				+ DBSchema.UserVmMapTable.FULL_ACCESS + "=%s "
+				+ "WHERE "
+				+ DBSchema.UserVmMapTable.VM_ID + "=\"%s\"", //TODO-UN how about users added after full request is made
+				full_access, vmid);
 		updates.add(updatevmsql);
+		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);
 	}
 

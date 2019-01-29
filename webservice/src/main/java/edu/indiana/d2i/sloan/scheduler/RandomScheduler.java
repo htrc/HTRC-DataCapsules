@@ -76,7 +76,7 @@ public class RandomScheduler extends Scheduler {
 
 				List<VmUserRole> roles = new ArrayList<VmUserRole>();
 				String email = DBOperations.getInstance().getUserEmail(request.getUserName());
-				roles.add(new VmUserRole(email, VMRole.OWNER_CONTROLLER, true, request.getUserName()));
+				roles.add(new VmUserRole(email, VMRole.OWNER_CONTROLLER, true, request.getUserName(), request.isFull_access()));
 
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
 						null, // image path
