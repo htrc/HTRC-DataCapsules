@@ -19,9 +19,11 @@ import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
@@ -57,24 +59,15 @@ public class AddVmSharees {
 		}
 
 		try {
-			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
-			//TODO-UN is this needed since not calling hypervisor?
-			if (vmInfo.getVmstate() != VMState.RUNNING && vmInfo.getVmstate() != VMState.SHUTDOWN) {
-				logger.error("Cannot add sharees when VM is not in RUNNING or SHUTDOWN state.");
-				return Response
-						.status(400)
-						.entity(new ErrorBean(400,
-								"Cannot add sharees when VM is not in RUNNING or SHUTDOWN state.")).build();
+			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
+			if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.ADD_SHAREES)) {
+				String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
+						+ RolePermissionUtils.API_CMD.ADD_SHAREES + " on VM " + vmId;
+				logger.error(msg);
+				return Response.status(400).entity(new ErrorBean(400, msg)).build();
 			}
 
-			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
-			if (role.getRole() != VMRole.OWNER && role.getRole() != VMRole.OWNER_CONTROLLER) {
-				logger.error("Cannot add sharees when user is not OWNER or OWNER-CONTROLLER.");
-				return Response
-						.status(400)
-						.entity(new ErrorBean(400,
-								"Cannot add sharees when user is not OWNER or OWNER-CONTROLLER.")).build();
-			}
+			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
 			logger.info("User " + userName + " tries to add " + sharees + " as sharees for vm " + vmId);
 
@@ -91,6 +84,12 @@ public class AddVmSharees {
 					new AddVmShareesCommand(vmInfo, userName, userName, sharees));
 
 			return Response.status(200).build();
+		} catch (NoItemIsFoundInDBException e) {
+			logger.error(e.getMessage(), e);
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400, "Cannot find VM " + vmId
+							+ " associated with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

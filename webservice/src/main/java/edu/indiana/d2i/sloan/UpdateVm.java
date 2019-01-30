@@ -17,10 +17,12 @@ package edu.indiana.d2i.sloan;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
@@ -73,6 +75,14 @@ public class UpdateVm {
 		}
 
 		try {
+			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
+			if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.UPDATE_VM)) {
+				String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
+						+ RolePermissionUtils.API_CMD.UPDATE_VM + " on VM " + vmId;
+				logger.error(msg);
+				return Response.status(400).entity(new ErrorBean(400, msg)).build();
+			}
+
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 

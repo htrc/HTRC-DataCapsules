@@ -23,7 +23,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.indiana.d2i.sloan.bean.UserBean;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.*;
 import org.apache.log4j.Logger;
 
@@ -73,6 +75,14 @@ public class DeleteVM {
 		}
 
 		try {
+			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
+			if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.DELETE_VM)) {
+				String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
+						+ RolePermissionUtils.API_CMD.DELETE_VM + " on VM " + vmid;
+				logger.error(msg);
+				return Response.status(400).entity(new ErrorBean(400, msg)).build();
+			}
+
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 

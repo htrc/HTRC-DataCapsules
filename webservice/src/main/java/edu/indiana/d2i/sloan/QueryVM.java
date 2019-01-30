@@ -32,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.indiana.d2i.sloan.bean.*;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.db.DBOperations;
@@ -93,6 +94,14 @@ public class QueryVM {
 					status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole)); //TODO-UN - add tou right
 				}
 			} else {
+				VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
+				if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.QUERY_VM)) {
+					String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
+							+ RolePermissionUtils.API_CMD.QUERY_VM + " on VM " + vmid;
+					logger.error(msg);
+					return Response.status(400).entity(new ErrorBean(400, msg)).build();
+				}
+
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
 						userName, vmid);
 				vmInfoList.add(vminfo);
