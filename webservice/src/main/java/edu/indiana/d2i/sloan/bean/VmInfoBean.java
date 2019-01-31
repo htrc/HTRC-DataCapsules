@@ -49,6 +49,11 @@ public class VmInfoBean {
 		this.policypath = policypath;
 	}
 
+	public VmInfoBean(String vmid, List<VmUserRole> roles) {
+		this.vmid = vmid;
+		this.roles = roles;
+	}
+
 	public VmInfoBean(String vmid, String publicip, String workDir,
 			String imagepath, String policypath, int sshport, int vncport,
 			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,

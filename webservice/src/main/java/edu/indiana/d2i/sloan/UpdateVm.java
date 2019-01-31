@@ -75,12 +75,10 @@ public class UpdateVm {
 		}
 
 		try {
-			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
-			if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.UPDATE_VM)) {
-				String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
-						+ RolePermissionUtils.API_CMD.UPDATE_VM + " on VM " + vmId;
-				logger.error(msg);
-				return Response.status(400).entity(new ErrorBean(400, msg)).build();
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmId, RolePermissionUtils.API_CMD.UPDATE_VM)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.UPDATE_VM + " on VM " + vmId)).build();
 			}
 
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);

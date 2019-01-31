@@ -492,7 +492,7 @@ public class DBOperations {
 		return getVmInfoInternal(sql);
 	}
 
-	public VmInfoBean getVmInfo(String userName, String vmid) // TODO-UN check permission from callee
+	public VmInfoBean getVmInfo(String userName, String vmid)
 			throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
@@ -609,7 +609,7 @@ public class DBOperations {
 								+ ","
 								+ DBSchema.VmTable.DISK_SPACE
 								+ ","
-								+ DBSchema.VmTable.GUID //TODO-UN
+								+ DBSchema.VmTable.GUID // TODO-UN remove
 								+ ","
 								+ DBSchema.VmTable.TYPE
 								+ ","
@@ -674,6 +674,30 @@ public class DBOperations {
 		logger.debug(insertActivitySQL);
 		updates.add(insertActivitySQL);
 
+		executeTransaction(updates);
+	}
+
+	public void addVmSharee(String vmid, VmUserRole vmUserRole) throws SQLException {
+		String insertUserVmMapsql = String
+				.format("INSERT INTO "
+								+ DBSchema.UserVmMapTable.TABLE_NAME
+								+ " ("
+								+ DBSchema.UserVmMapTable.VM_ID
+								+ ","
+								+ DBSchema.UserVmMapTable.GUID
+								+ ","
+								+ DBSchema.UserVmMapTable.ROLE
+								+ ","
+								+ DBSchema.UserVmMapTable.TOU
+								+ ","
+								+ DBSchema.UserVmMapTable.FULL_ACCESS
+								+ ") VALUES"
+								+ "(\"%s\", \"%s\", \"%s\", %s, %s)",
+						vmid, vmUserRole.getGuid(), vmUserRole.getRole().getName(),
+						vmUserRole.getTou(), vmUserRole.isFull_access());
+		logger.debug(insertUserVmMapsql);
+		List<String> updates = new ArrayList<String>();
+		updates.add(insertUserVmMapsql);
 		executeTransaction(updates);
 	}
 

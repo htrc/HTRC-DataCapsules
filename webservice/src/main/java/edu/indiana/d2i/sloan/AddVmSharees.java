@@ -15,18 +15,15 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
-import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
-import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
-import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -35,7 +32,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Path("/addsharees")
 public class AddVmSharees {
@@ -45,7 +44,7 @@ public class AddVmSharees {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addSharees(@FormParam("vmId") String vmId,
-			@FormParam("sharees") List<String> sharees,
+			@FormParam("sharees") String sharees,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
@@ -58,32 +57,55 @@ public class AddVmSharees {
 							"Username is not present in http header.")).build();
 		}
 
+		Map<String, String> sharees_map = new HashMap<>();
 		try {
-			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
-			if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.ADD_SHAREES)) {
-				String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
-						+ RolePermissionUtils.API_CMD.ADD_SHAREES + " on VM " + vmId;
-				logger.error(msg);
-				return Response.status(400).entity(new ErrorBean(400, msg)).build();
+			JSONArray sharees_array = new JSONArray(sharees);
+			for(int i = 0 ; i < sharees_array.length() ; i++) {
+				JSONObject sharee = sharees_array.getJSONObject(i);
+				sharees_map.put(sharee.getString("guid"), sharee.getString("email"));
+			}
+		} catch (JSONException e) {
+			logger.error("Invalid JSON array of JSON Objects to represent sharees.");
+			return Response.status(400).entity(new ErrorBean(400,
+							"Invalid JSON array of JSON Objects to represent sharees.")).build();
+		}
+
+		try {
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmId, RolePermissionUtils.API_CMD.ADD_SHAREES)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.ADD_SHAREES + " on VM " + vmId)).build();
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
+			boolean full_access = vmInfo.isFull_access() == null ? null : false;
 
-			logger.info("User " + userName + " tries to add " + sharees + " as sharees for vm " + vmId);
+			logger.info("User " + userName + " tries to add " + sharees_map + " as sharees for vm " + vmId);
 
-			//TODO-UN how to get usernames, should add to users table ??
-			for(String sharee : sharees) {
-				//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-				//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-
-				//add to map table
+			for(String guid : sharees_map.keySet()) { // for each user
+				DBOperations.getInstance().insertUserIfNotExists(guid, sharees_map.get(guid));  // add to users table
+				VmUserRole vmUserRole = new VmUserRole(sharees_map.get(guid), VMRole.SHAREE, false, guid, full_access);
+				DBOperations.getInstance().addVmSharee(vmId, vmUserRole); // add to uservmmap table
 			}
 
-			//TODO-UN send the keys?? or shouldn't send right now? only after tou is accepted?
-			HypervisorProxy.getInstance().addCommand(
-					new AddVmShareesCommand(vmInfo, userName, userName, sharees));
+			boolean pub_key_exists = false;
+			boolean tou = false;
+			try {
+				pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
+				tou = DBOperations.getInstance().getUserTOU(userName);
+			} catch (NoItemIsFoundInDBException e) {
+				logger.debug("Cannot retrieve public key or TOU of user since '" + userName + "' is not in the database");
+			}
+			VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
 
-			return Response.status(200).build();
+			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
+			vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
+			status.add(new VmStatusBean(vmInfo, pub_key_exists, tou, vmUserRole));
+
+			// send vminfo back with added guids, AG then sends full_access request email containing all added users
+			// if VM's full_access is true or false
+			return Response.status(200).entity(new QueryVmResponseBean(status)).build();
+
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response

@@ -81,12 +81,10 @@ public class LaunchVM {
 		
 		// launch can only start from shutdown
 		try {
-			VmUserRole role = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
-			if (!RolePermissionUtils.isPermittedCommand(role.getRole(), RolePermissionUtils.API_CMD.LAUNCH_VM)) {
-				String msg = "User " + userName + " with role " + role.getRole() + " cannot perform task "
-						+ RolePermissionUtils.API_CMD.LAUNCH_VM + " on VM " + vmid;
-				logger.error(msg);
-				return Response.status(400).entity(new ErrorBean(400, msg)).build();
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.LAUNCH_VM)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.LAUNCH_VM + " on VM " + vmid)).build();
 			}
 
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
