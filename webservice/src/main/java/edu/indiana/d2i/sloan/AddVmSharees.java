@@ -78,6 +78,10 @@ public class AddVmSharees {
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
+
+			// set full_access of the sharees as null if not requested for full access already
+			// set this to false if VM has requested full access, regardless of the fact that it is granted to VM or not.
+			// This is because all sharees added after full_access for VM is granted should go through approval process
 			boolean full_access = vmInfo.isFull_access() == null ? null : false;
 
 			logger.info("User " + userName + " tries to add " + sharees_map + " as sharees for vm " + vmId);

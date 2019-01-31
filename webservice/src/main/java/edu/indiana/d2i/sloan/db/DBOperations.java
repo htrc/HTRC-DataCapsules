@@ -1853,6 +1853,17 @@ public class DBOperations {
 		}
 	}
 
+	public void updateVmUserTOU(String userName, String vmid, boolean tou) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updateusersql = String.format("UPDATE "
+				+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+				+ DBSchema.UserVmMapTable.TOU + "=%s WHERE "
+				+ DBSchema.UserVmMapTable.GUID + "=\"%s\" AND " + DBSchema.UserVmMapTable.VM_ID + "=\"%s\""
+				, tou, userName, vmid);
+		updates.add(updateusersql);
+		executeTransaction(updates);
+	}
+
 	public void updateUserTOU(String userName, boolean tou) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
 		String updateusersql = String.format("UPDATE "

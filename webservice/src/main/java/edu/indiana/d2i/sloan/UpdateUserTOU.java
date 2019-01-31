@@ -46,16 +46,10 @@ public class UpdateUserTOU {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateUserTou(@FormParam("tou") boolean tou,
+			@FormParam("vmId") String vmId,
 			@Context HttpHeaders httpHeaders,
-			@Context HttpServletRequest httpServletRequest) {		//TODO-UN update tou with vmid
+			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		//if (userEmail == null) userEmail = "";
-
-		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		//if (operator == null) operator = userName;
-		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -66,21 +60,29 @@ public class UpdateUserTOU {
 		}
 
 		try {
-			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			if(!DBOperations.getInstance().userExists(userName)) {
+				logger.info("User '" + userName + "' is not in database, hence not updating TOU!");
+				return Response.status(400).entity(new ErrorBean(400,
+						"User '" + userName + "' is not in database, hence not updating TOU!")).build();
+			}
 
 			logger.info("User " + userName + " tries to update the TOU to " + tou);
-			if(DBOperations.getInstance().userExists(userName)) {
+
+			if(vmId != null) {
+				DBOperations.getInstance().getVmInfo(userName, vmId); // check if user had VM with vmid
+				DBOperations.getInstance().updateVmUserTOU(userName, vmId, tou); // update tou in uservmmap for vmid
+			} else {
 				DBOperations.getInstance().updateUserTOU(userName, tou);
 				logger.info("TOU agreement of user '" + userName + "' was updated in database successfully!");
-				return Response.status(200).build();
-			} else {
-				logger.info("User '" + userName + "' is not in database, hence not updating TOU!");
-				return Response
-						.status(400)
-						.entity(new ErrorBean(400,
-								"User '" + userName + "' is not in database, hence not updating TOU!")).build();
 			}
+
+			return Response.status(200).build();
+		} catch (NoItemIsFoundInDBException e) {
+			logger.error(e.getMessage(), e);
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400, "Cannot find VM " + vmId
+							+ " associated with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
@@ -93,35 +95,21 @@ public class UpdateUserTOU {
 	public Response getUserTou(@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		//if (userEmail == null) userEmail = "";
-
-		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		//if (operator == null) operator = userName;
-		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
-			return Response
-					.status(400)
-					.entity(new ErrorBean(400,
+			return Response.status(400).entity(new ErrorBean(400,
 							"Username is not present in http header.")).build();
 		}
 
 		try {
-			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-
-			try {
-				Boolean tou = DBOperations.getInstance().getUserTOU(userName);
-				logger.debug("TOU agreement of user '" + userName + "' was retrieved successfully!");
-				return Response.status(200).entity(new JSONObject().put("tou", tou)).build();
-			} catch (NoItemIsFoundInDBException e) {
-				logger.debug("User with username '" + userName + "' does not exist in DC-API database!");
-				return Response.status(400).entity(new ErrorBean(400,
-						"User with username '" + userName + "' does not exist in DC-API database!")).build();
-			}
+			Boolean tou = DBOperations.getInstance().getUserTOU(userName);
+			logger.debug("TOU agreement of user '" + userName + "' was retrieved successfully!");
+			return Response.status(200).entity(new JSONObject().put("tou", tou)).build();
+		} catch (NoItemIsFoundInDBException e) {
+			logger.debug("User with username '" + userName + "' does not exist in DC-API database!");
+			return Response.status(400).entity(new ErrorBean(400,
+					"User with username '" + userName + "' does not exist in DC-API database!")).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
