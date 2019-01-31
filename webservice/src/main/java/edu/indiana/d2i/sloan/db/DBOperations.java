@@ -159,9 +159,9 @@ public class DBOperations {
 			while (rs.next()) {
 				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
-				List<VmUserRole> owner = roles.stream()                // convert list to stream
+				VmUserRole owner = roles.stream()                // convert list to stream
 						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))     // we dont like mkyong
-						.collect(Collectors.toList());
+						.collect(Collectors.toList()).get(0);
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
@@ -192,7 +192,7 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
 						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
-						owner.get(0).isFull_access(),
+						owner.isFull_access(),
 						roles);
 				res.add(vminfo);
 			}

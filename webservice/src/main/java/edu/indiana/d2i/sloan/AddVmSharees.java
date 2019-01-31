@@ -88,16 +88,9 @@ public class AddVmSharees {
 				DBOperations.getInstance().addVmSharee(vmId, vmUserRole); // add to uservmmap table
 			}
 
-			boolean pub_key_exists = false;
-			boolean tou = false;
-			try {
-				pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
-				tou = DBOperations.getInstance().getUserTOU(userName);
-			} catch (NoItemIsFoundInDBException e) {
-				logger.debug("Cannot retrieve public key or TOU of user since '" + userName + "' is not in the database");
-			}
+			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
+			boolean tou = DBOperations.getInstance().getUserTOU(userName);
 			VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
-
 			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
 			vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 			status.add(new VmStatusBean(vmInfo, pub_key_exists, tou, vmUserRole));

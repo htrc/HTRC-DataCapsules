@@ -24,6 +24,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
@@ -41,6 +42,7 @@ import java.util.List;
 @Path("/updateuserkey")
 public class UpdateUserKey {
 	private static Logger logger = Logger.getLogger(UpdateUserKey.class);
+	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -77,10 +79,14 @@ public class UpdateUserKey {
 				List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
-				// TODO-UN check tou, update key in all vms with tou=true
 				for (VmInfoBean vminfo : vmInfoList) {
-					// update the public key of VMs that are in RUNNING+SHUTDOWN states
-					if (vminfo.getVmstate() == VMState.RUNNING || vminfo.getVmstate() == VMState.SHUTDOWN) {
+					// update the public key of VMs that are not in ERROR or DELETE* state
+					// && accepted tou
+					// && does have full_access for VM's which are already granted full_access
+					if (vminfo.getVmstate() != VMState.ERROR
+							&& vminfo.getVmstate().name().contains(DELETE)
+							&& RolePermissionUtils.isPermittedCommand(
+									userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
 						HypervisorProxy.getInstance().addCommand(
 								new UpdatePublicKeyCommand(vminfo, userName, userName, pubkey));
 					}

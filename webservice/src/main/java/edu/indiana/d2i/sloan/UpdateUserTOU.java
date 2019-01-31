@@ -47,7 +47,7 @@ public class UpdateUserTOU {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateUserTou(@FormParam("tou") boolean tou,
 			@Context HttpHeaders httpHeaders,
-			@Context HttpServletRequest httpServletRequest) {		
+			@Context HttpServletRequest httpServletRequest) {		//TODO-UN update tou with vmid
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		//if (userEmail == null) userEmail = "";
