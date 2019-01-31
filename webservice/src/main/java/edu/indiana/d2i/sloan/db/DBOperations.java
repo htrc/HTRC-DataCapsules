@@ -23,6 +23,7 @@ import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -159,8 +160,8 @@ public class DBOperations {
 			while (rs.next()) {
 				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
 				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
-				VmUserRole owner = roles.stream()                // convert list to stream
-						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))     // we dont like mkyong
+				VmUserRole owner = roles.stream()
+						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
 						.collect(Collectors.toList()).get(0);
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
@@ -192,7 +193,7 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
 						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
-						owner.isFull_access(),
+						owner.isFull_access(), // owner's full_access is the real full_access of the VM
 						roles);
 				res.add(vminfo);
 			}
@@ -1915,14 +1916,14 @@ public class DBOperations {
 						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
 						+ DBSchema.UserVmMapTable.FULL_ACCESS + "=%s "
 						+ "WHERE "
-						+ DBSchema.UserVmMapTable.VM_ID + "=\"%s\"", //TODO-UN how about users added after full request is made
+						+ DBSchema.UserVmMapTable.VM_ID + "=\"%s\"",
 				full_access, vmid);
 		updates.add(updatevmsql);
 		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);
 	}
 
-	public void updateVmType(String vmid, String type, Boolean full_access) throws SQLException, UnsupportedEncodingException {
+	public void updateVmType(String vmid, String type, Boolean full_access, List<String> guid_list) throws SQLException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
@@ -1930,12 +1931,14 @@ public class DBOperations {
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
 				type, vmid);
-		String update_uservmmap_sql = String.format("UPDATE "
+		String update_uservmmap_sql = "UPDATE "
 				+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
-				+ DBSchema.UserVmMapTable.FULL_ACCESS + "=%s "
-				+ "WHERE "
-				+ DBSchema.UserVmMapTable.VM_ID + "=\"%s\"", //TODO-UN how about users added after full request is made
-				full_access, vmid);
+				+ DBSchema.UserVmMapTable.FULL_ACCESS + "=" + full_access + " "
+				+ "WHERE ("
+				+ DBSchema.UserVmMapTable.VM_ID + "=\"" + vmid + "\") AND "
+				+ DBSchema.UserVmMapTable.GUID + " IN (\""
+				+ StringUtils.join(guid_list, "\",\"")
+				+ "\")";
 		updates.add(updatevmsql);
 		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);

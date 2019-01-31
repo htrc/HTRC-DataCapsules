@@ -20,10 +20,12 @@ import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
 import org.apache.log4j.Logger;
@@ -35,7 +37,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/updatevm")
 public class UpdateVm {
@@ -55,16 +59,10 @@ public class UpdateVm {
 			@FormParam("desc_outside_data") String desc_outside_data,
 			@FormParam("rr_data_files") String rr_data_files,
 			@FormParam("rr_result_usage") String rr_result_usage,
+			@FormParam("guids") String guids,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		if (userEmail == null) userEmail = "";
-
-		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";*/
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -81,9 +79,6 @@ public class UpdateVm {
 								+ RolePermissionUtils.API_CMD.UPDATE_VM + " on VM " + vmId)).build();
 			}
 
-			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-
 			logger.info("User " + userName + " tries to update the VM");
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
@@ -94,6 +89,11 @@ public class UpdateVm {
 						.build();
 			}
 
+
+			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
+			List<String> guid_list = vmUserRoles.stream().map(role -> role.getGuid()).collect(Collectors.toList());
+
+			// If Full_access request is processed (granted or rejected)
 			if(type.equals(VMType.RESEARCH_FULL.getName())) {
 				if(vmInfo.isFull_access() == null) {
 					return Response.status(Response.Status.BAD_REQUEST)
@@ -106,13 +106,36 @@ public class UpdateVm {
 				}
 
 				if(full_access == true) {
-					DBOperations.getInstance().updateVmType(vmId, type, full_access);
+					// if full_access is granted to particular users, then update full_access = true only for them
+					// else set full_access = true for all users
+					if( guids == null )
+						guid_list = Arrays.asList(guids.split(","));
+					DBOperations.getInstance().updateVmType(vmId, type, full_access, guid_list);
 				} else {
-					DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null);
+					// if full_access is not granted , update it to null for all users
+					DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null, guid_list);
 				}
 
 				logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 						+ type + ") in database successfully!");
+
+
+				// sending public keys of users to the hypervisor who's full_access is accepted after owner's
+				VmUserRole owner = vmUserRoles.stream()
+						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
+						.collect(Collectors.toList()).get(0);
+				List<String> user_keys = new ArrayList<>();
+				for(String guid : guid_list) {
+					VmUserRole user = vmUserRoles.stream()
+							.filter(role -> role.getGuid().equals(guid))
+							.collect(Collectors.toList()).get(0);
+					if(owner.isFull_access() == true && user.isFull_access() != true) {
+						user_keys.add(DBOperations.getInstance().getUserPubKey(guid));
+					}
+				}
+				HypervisorProxy.getInstance().addCommand(
+						new AddVmShareesCommand(vmInfo, userName, userName, user_keys));
+
 				return Response.status(200).build();
 			}
 
@@ -121,6 +144,8 @@ public class UpdateVm {
 						.entity(new ErrorBean(400, "Invalid capsule conversion type : " + type))
 						.build();
 			}
+
+			// Processing full_access request from AG
 			if(vmInfo.isFull_access()!= null && vmInfo.isFull_access() == false) {
 				return Response.status(Response.Status.BAD_REQUEST)
 						.entity(new ErrorBean(400, "You have already requested to convert this " +
@@ -144,6 +169,7 @@ public class UpdateVm {
 						.build();
 			}
 
+			// When requesting full access full_access is set to false for all users
 			DBOperations.getInstance().updateVm(vmId, type, title, consent, desc_nature, desc_requirement, desc_links,
 					desc_outside_data, rr_data_files, rr_result_usage, full_access);
 			logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "

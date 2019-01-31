@@ -19,8 +19,10 @@ import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
@@ -41,6 +43,7 @@ import java.util.List;
 @Path("/updateusertou")
 public class UpdateUserTOU {
 	private static Logger logger = Logger.getLogger(UpdateUserTOU.class);
+	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -69,8 +72,22 @@ public class UpdateUserTOU {
 			logger.info("User " + userName + " tries to update the TOU to " + tou);
 
 			if(vmId != null) {
-				DBOperations.getInstance().getVmInfo(userName, vmId); // check if user had VM with vmid
+				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmId); // check if user had VM with vmid
 				DBOperations.getInstance().updateVmUserTOU(userName, vmId, tou); // update tou in uservmmap for vmid
+				String pubkey = DBOperations.getInstance().getUserPubKey(userName);
+
+				// update the public key of VMs that are not in ERROR or DELETE* state
+				// && pubkey != null
+				// && accepted tou for VM
+				// && does have full_access for VM's which are already granted full_access
+				if (vminfo.getVmstate() != VMState.ERROR
+						&& vminfo.getVmstate().name().contains(DELETE)
+						&& pubkey != null
+						&& RolePermissionUtils.isPermittedCommand(
+						userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+					HypervisorProxy.getInstance().addCommand(
+							new UpdatePublicKeyCommand(vminfo, userName, userName, pubkey));
+				}
 			} else {
 				DBOperations.getInstance().updateUserTOU(userName, tou);
 				logger.info("TOU agreement of user '" + userName + "' was updated in database successfully!");
