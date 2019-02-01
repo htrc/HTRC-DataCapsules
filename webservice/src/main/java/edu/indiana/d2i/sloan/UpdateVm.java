@@ -44,6 +44,7 @@ import java.util.stream.Collectors;
 @Path("/updatevm")
 public class UpdateVm {
 	private static Logger logger = Logger.getLogger(UpdateVm.class);
+	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -89,30 +90,53 @@ public class UpdateVm {
 						.build();
 			}
 
-
-			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
-			List<String> guid_list = vmUserRoles.stream().map(role -> role.getGuid()).collect(Collectors.toList());
-
 			// If Full_access request is processed (granted or rejected)
 			if(type.equals(VMType.RESEARCH_FULL.getName())) {
+
+				// don't allow to process full_access if capsule is in delete* or error state
+				if (vmInfo.getVmstate() != VMState.ERROR
+						&& vmInfo.getVmstate().name().contains(DELETE)){
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "Cannot request/grant full access for a capsule which is in "
+									+ VMState.ERROR + " or " + DELETE + "* state!"))
+							.build();
+				}
+
+				// fails if the owner's full_access is null, means full_access is not requested or already rejected
 				if(vmInfo.isFull_access() == null) {
 					return Response.status(Response.Status.BAD_REQUEST)
 							.entity(new ErrorBean(400, "User has not requested full access for " +
-									"this capsule!")).build();
-				} else if(vmInfo.isFull_access() == true) {
-					return Response.status(Response.Status.BAD_REQUEST)
-							.entity(new ErrorBean(400, "This capsule is already a " +
-									VMType.RESEARCH_FULL.getName() + " capsule!")).build();
+									"this capsule, or the full access request has already been rejected!")).build();
+				}
+
+				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
+				List<String> guid_list = vmUserRoles.stream().map(role -> role.getGuid()).collect(Collectors.toList());
+				VmUserRole owner = vmUserRoles.stream()
+						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
+						.collect(Collectors.toList()).get(0);
+				if( guids != null ) {
+					List<String> sub_list = Arrays.asList(guids.split(","));
+
+					// fail if full access is granted for list of users expect the owner while owner is not yet granted
+					if(vmInfo.isFull_access() == false && full_access == true && !sub_list.contains(owner.getGuid())) {
+						return Response.status(Response.Status.BAD_REQUEST)
+								.entity(new ErrorBean(400, "Cannot grant full access for a list" +
+										" of users when owner does not have full access!")).build();
+					}
+
+					// if full_access is granted/rejected to particular users, then update full_access only for them
+					// else set full_access attribute for all users
+					// however if owner is in the list and full access is rejected, reject it for all users
+					if(!sub_list.contains(owner.getGuid()) || full_access == true) {
+						guid_list = sub_list;
+					}
 				}
 
 				if(full_access == true) {
-					// if full_access is granted to particular users, then update full_access = true only for them
-					// else set full_access = true for all users
-					if( guids == null )
-						guid_list = Arrays.asList(guids.split(","));
+					//update vmtype to RESEARCH-FULL and set full_access=true
 					DBOperations.getInstance().updateVmType(vmId, type, full_access, guid_list);
 				} else {
-					// if full_access is not granted , update it to null for all users
+					//update vmtype to RESEARCH and set full_access=null
 					DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null, guid_list);
 				}
 
@@ -120,21 +144,22 @@ public class UpdateVm {
 						+ type + ") in database successfully!");
 
 
-				// sending public keys of users to the hypervisor who's full_access is accepted after owner's
-				VmUserRole owner = vmUserRoles.stream()
-						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
-						.collect(Collectors.toList()).get(0);
-				List<String> user_keys = new ArrayList<>();
-				for(String guid : guid_list) {
-					VmUserRole user = vmUserRoles.stream()
-							.filter(role -> role.getGuid().equals(guid))
-							.collect(Collectors.toList()).get(0);
-					if(owner.isFull_access() == true && user.isFull_access() != true) {
-						user_keys.add(DBOperations.getInstance().getUserPubKey(guid));
+				// If owner's full access was true before, sending public keys of users to the hypervisor whose :
+				// 			- full_access is accepted
+				// 			- all the users if owner's full access was also rejected this time
+				if(owner.isFull_access() == true) {
+					List<String> user_keys = new ArrayList<>();
+					for (String guid : guid_list) {
+						if (RolePermissionUtils.isPermittedCommand(
+										guid, vmInfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+							user_keys.add(DBOperations.getInstance().getUserPubKey(guid));
+						}
 					}
+
+					if (user_keys.size() != 0)
+						HypervisorProxy.getInstance().addCommand(
+							new AddVmShareesCommand(vmInfo, userName, userName, user_keys));
 				}
-				HypervisorProxy.getInstance().addCommand(
-						new AddVmShareesCommand(vmInfo, userName, userName, user_keys));
 
 				return Response.status(200).build();
 			}

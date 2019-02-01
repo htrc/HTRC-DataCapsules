@@ -32,7 +32,8 @@ public class RolePermissionUtils {
 
         if(!vmUserRole.getTou() // if user has not yet accepted tou
                 // if the VM has full access but user's full access request is not yet granted
-                || (owner.isFull_access() == true && vmUserRole.isFull_access() != true)) {
+                || ((owner.isFull_access() != null && owner.isFull_access())
+                        && (vmUserRole.isFull_access() == null || !vmUserRole.isFull_access()))) {
             return isPermitted;
         }
 
