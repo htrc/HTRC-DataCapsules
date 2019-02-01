@@ -83,30 +83,32 @@ public class UpdateVm {
 			logger.info("User " + userName + " tries to update the VM");
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
-			if(!vmInfo.getType().equals(VMType.RESEARCH.getName())) {
-				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Only a " + VMType.RESEARCH.getName() +
-								" capsule can be converted to a " + VMType.RESEARCH_FULL.getName() + " capsule!"))
-						.build();
-			}
-
 			// If Full_access request is processed (granted or rejected)
 			if(type.equals(VMType.RESEARCH_FULL.getName())) {
-
-				// don't allow to process full_access if capsule is in delete* or error state
-				if (vmInfo.getVmstate() != VMState.ERROR
-						&& vmInfo.getVmstate().name().contains(DELETE)){
-					return Response.status(Response.Status.BAD_REQUEST)
-							.entity(new ErrorBean(400, "Cannot request/grant full access for a capsule which is in "
-									+ VMState.ERROR + " or " + DELETE + "* state!"))
-							.build();
-				}
 
 				// fails if the owner's full_access is null, means full_access is not requested or already rejected
 				if(vmInfo.isFull_access() == null) {
 					return Response.status(Response.Status.BAD_REQUEST)
 							.entity(new ErrorBean(400, "User has not requested full access for " +
 									"this capsule, or the full access request has already been rejected!")).build();
+				}
+
+				// capsule should be RESEARCH if owner's full_access = false and should be RESEARCH_FULL if its true
+				if(!(vmInfo.getType().equals(VMType.RESEARCH.getName())  && !vmInfo.isFull_access())
+					&& !(vmInfo.getType().equals(VMType.RESEARCH_FULL.getName())  && vmInfo.isFull_access())) {
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "Invalid capsule conversion when VM type is "
+								+ vmInfo.getType() + " and owner's full access permission is " + vmInfo.isFull_access()))
+							.build();
+				}
+
+				// don't allow to process full_access if capsule is in delete* or error state
+				if (vmInfo.getVmstate() == VMState.ERROR
+						|| vmInfo.getVmstate().name().contains(DELETE)){
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "Cannot request/grant full access for a capsule which is in "
+									+ VMState.ERROR + " or " + DELETE + "* state!"))
+							.build();
 				}
 
 				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
@@ -164,10 +166,9 @@ public class UpdateVm {
 				return Response.status(200).build();
 			}
 
-			if(!type.equals(VMType.RESEARCH.getName())) {
-				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Invalid capsule conversion type : " + type))
-						.build();
+			if(!type.equals(VMType.RESEARCH.getName()) || !vmInfo.getType().equals(VMType.RESEARCH.getName())) {
+				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
+						"Invalid capsule conversion type : " + vmInfo.getType() + " to " + type)).build();
 			}
 
 			// Processing full_access request from AG

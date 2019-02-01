@@ -84,7 +84,7 @@ public class UpdateUserKey {
 					// && accepted tou
 					// && does have full_access for VM's which are already granted full_access
 					if (vminfo.getVmstate() != VMState.ERROR
-							&& vminfo.getVmstate().name().contains(DELETE)
+							&& !vminfo.getVmstate().name().contains(DELETE)
 							&& RolePermissionUtils.isPermittedCommand(
 									userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
 						HypervisorProxy.getInstance().addCommand(

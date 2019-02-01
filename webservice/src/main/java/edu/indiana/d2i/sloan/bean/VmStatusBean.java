@@ -22,7 +22,7 @@ public class VmStatusBean {
 	private final boolean pub_key_exists;
 	private final boolean tou;
 	private final boolean vm_tou;
-	private final boolean user_full_access;
+	private final Boolean user_full_access;
 	private final String role;
 
 	public VmStatusBean(VmInfoBean vminfo, boolean ssh_key_exists, boolean tou, VmUserRole vmUserRole) {

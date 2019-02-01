@@ -49,9 +49,37 @@ public class VmInfoBean {
 		this.policypath = policypath;
 	}
 
-	public VmInfoBean(String vmid, List<VmUserRole> roles) {
+	public VmInfoBean(String vmid, List<VmUserRole> roles, Boolean full_access) {
 		this.vmid = vmid;
 		this.roles = roles;
+		this.publicip = "";
+		this.workDir = "";
+		this.imagepath = "";
+		this.policypath = "";
+		this.sshport = -1;
+		this.vncport = -1;
+		this.numCPUs = -1;
+		this.memorySize = -1;
+		this.volumeSize = -1;
+		this.vmmode = VMMode.NOT_DEFINED;
+		this.vmstate = VMState.NOT_DEFINED;
+		this.vncloginId = "";
+		this.vncloginPwd = "";
+		this.imagename = "";
+		this.policyname = "";
+		this.requestedVMMode = VMMode.NOT_DEFINED;
+		this.vmloginid = "";
+		this.vmloginpwd = "";
+		this.consent = null;
+		this.full_access = full_access;
+		this.type = "";
+		this.title = "";
+		this.desc_nature = "";
+		this.desc_requirement = "";
+		this.desc_links = "";
+		this.desc_outside_data = "";
+		this.rr_data_files = "";
+		this.rr_result_usage = "";
 	}
 
 	public VmInfoBean(String vmid, String publicip, String workDir,
