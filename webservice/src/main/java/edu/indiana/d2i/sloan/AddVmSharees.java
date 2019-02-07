@@ -80,7 +80,7 @@ public class AddVmSharees {
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
 			// cannot add sharees when the capsule's full access request is pending
-			if(vmInfo.isFull_access() == false) {
+			if(vmInfo.isFull_access() != null && vmInfo.isFull_access() == false) {
 				return Response.status(400).entity(new ErrorBean(400,
 						"Cannot add sharees when capsule's full access request is pending!" + vmId)).build();
 			}

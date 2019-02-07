@@ -703,6 +703,7 @@ public class DBOperations {
 	}
 
 	public void removeVmSharee(String vmid, List<String> guid_list) throws SQLException {
+		List<String> updates = new ArrayList<String>();
 		// remove sharees from UserVmMap table
 		String deleteUserVmMapsql = "DELETE FROM " + DBSchema.UserVmMapTable.TABLE_NAME + " WHERE "
 						+ DBSchema.UserVmMapTable.VM_ID
@@ -710,14 +711,22 @@ public class DBOperations {
 						+ DBSchema.UserVmMapTable.GUID + " IN (\""
 						+ StringUtils.join(guid_list, "\",\"")
 						+ "\")";
-		// remove sharees from users table if theres no foreign key constraints
-		String deleteUser = "DELETE FROM " + DBSchema.UserTable.TABLE_NAME + " WHERE " + DBSchema.UserVmMapTable.GUID
-				+ " IN (\"" + StringUtils.join(guid_list, "\",\"") + "\")";
 		logger.debug(deleteUserVmMapsql);
-		logger.debug(deleteUser);
-		List<String> updates = new ArrayList<String>();
 		updates.add(deleteUserVmMapsql);
-		updates.add(deleteUser);
+
+		// remove sharees from users table if there are no foreign key constraints in vms,vmacitivty or uservmmap tables
+		for(String guid : guid_list) {
+			String deleteUser = "DELETE FROM " + DBSchema.UserTable.TABLE_NAME + " WHERE "
+					+ DBSchema.UserVmMapTable.GUID + "=\"" + guid + "\" AND"
+					+ " NOT EXISTS (SELECT " + DBSchema.ActivityTable.GUID + " FROM " + DBSchema.ActivityTable.TABLE_NAME
+					+ " WHERE " + DBSchema.ActivityTable.GUID + "=\"" + guid + "\") AND"
+					+ " NOT EXISTS (SELECT " + DBSchema.VmTable.GUID + " FROM " + DBSchema.VmTable.TABLE_NAME
+					+ " WHERE " + DBSchema.VmTable.GUID + "=\"" + guid + "\") AND"
+					+ " NOT EXISTS (SELECT " + DBSchema.UserVmMapTable.GUID + " FROM " + DBSchema.UserVmMapTable.TABLE_NAME
+					+ " WHERE " + DBSchema.UserVmMapTable.GUID + "=\"" + guid + "\")";
+			logger.debug(deleteUser);
+			updates.add(deleteUser);
+		}
 		executeTransaction(updates);
 	}
 
@@ -1944,12 +1953,15 @@ public class DBOperations {
 
 	public void updateVmType(String vmid, String type, Boolean full_access, List<String> guid_list) throws SQLException {
 		List<String> updates = new ArrayList<String>();
-		String updatevmsql = String.format("UPDATE "
-				+ DBSchema.VmTable.TABLE_NAME + " SET "
-				+ DBSchema.VmTable.TYPE + "=\"%s\" "
-				+ "WHERE "
-				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
-				type, vmid);
+		if(type != null) {
+			String updatevmsql = String.format("UPDATE "
+							+ DBSchema.VmTable.TABLE_NAME + " SET "
+							+ DBSchema.VmTable.TYPE + "=\"%s\" "
+							+ "WHERE "
+							+ DBSchema.VmTable.VM_ID + "=\"%s\"",
+					type, vmid);
+			updates.add(updatevmsql);
+		}
 		String update_uservmmap_sql = "UPDATE "
 				+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
 				+ DBSchema.UserVmMapTable.FULL_ACCESS + "=" + full_access + " "
@@ -1958,7 +1970,6 @@ public class DBOperations {
 				+ DBSchema.UserVmMapTable.GUID + " IN (\""
 				+ StringUtils.join(guid_list, "\",\"")
 				+ "\")";
-		updates.add(updatevmsql);
 		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);
 	}

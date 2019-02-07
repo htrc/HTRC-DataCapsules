@@ -155,6 +155,22 @@ def stop_running_vms():
                 time.sleep(5)
 
 
+def update_user_key(username, pubkey):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': username}
+
+    params = urllib.urlencode({'pubkey': pubkey})
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan/updateuserkey', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+
+    print data
+
+
 def update_vmtype_for_sharees(vmid, username, status, guids):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': username}
@@ -171,7 +187,7 @@ def update_vmtype_for_sharees(vmid, username, status, guids):
     response = conn.getresponse()
 
     data = response.read()
-    #print data
+    print data
     show_shared_capsules()
     print ("==================================================\n\n")
 
@@ -396,6 +412,7 @@ if __name__ == '__main__':
     update_vm_request(vmid, 'A')
     update_vmtype(vmid, 'A', 'true')
     add_sharees(vmid, 'A', '[{guid:\'B\', email : \'bbb@umail.iu.edu\'}]')
+    update_user_key('B', '123')
     accept_tou(vmid, 'B')
     update_vmtype_for_sharees(vmid, 'A', 'true', 'B')
 

@@ -43,7 +43,6 @@ import java.util.List;
 @Path("/updateusertou")
 public class UpdateUserTOU {
 	private static Logger logger = Logger.getLogger(UpdateUserTOU.class);
-	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
