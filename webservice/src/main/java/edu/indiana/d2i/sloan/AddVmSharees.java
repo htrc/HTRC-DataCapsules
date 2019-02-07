@@ -20,6 +20,7 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
+import edu.indiana.d2i.sloan.vm.VMType;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -78,6 +79,11 @@ public class AddVmSharees {
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
+
+			if(vmInfo.getType().equals(VMType.DEMO.getName())) {
+				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
+						"Cannot add sharees to a " + VMType.DEMO.getName() +" capsule!")).build();
+			}
 
 			// cannot add sharees when the capsule's full access request is pending
 			if(vmInfo.isFull_access() != null && vmInfo.isFull_access() == false) {
