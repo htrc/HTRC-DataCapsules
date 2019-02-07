@@ -116,19 +116,22 @@ public class UpdateVm {
 				VmUserRole owner = vmUserRoles.stream()
 						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
 						.collect(Collectors.toList()).get(0);
+
+				// initial full access request shoudn't have a list and subsequent requests should have a list
+				if((vmInfo.isFull_access() == false && guids != null)
+						|| (vmInfo.isFull_access() == true && guids == null)) {
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "Initial full access processing requests should not " +
+							"have a list of GUIDs and the subsequent full access processing requests must specify a list " +
+							"of GUIDs!")).build();
+				}
+
+				// if full_access is granted/rejected to particular users, then update full_access only for them
+				List<String> sub_list = null;
 				if( guids != null ) {
-					List<String> sub_list = Arrays.asList(guids.split(","));
-
-					// fail if full access is granted for list of users expect the owner while owner is not yet granted
-					if(vmInfo.isFull_access() == false && full_access == true && !sub_list.contains(owner.getGuid())) {
-						return Response.status(Response.Status.BAD_REQUEST)
-								.entity(new ErrorBean(400, "Cannot grant full access for a list" +
-										" of users when owner does not have full access!")).build();
-					}
-
-					// if full_access is granted/rejected to particular users, then update full_access only for them
-					// else set full_access attribute for all users
-					// however if owner is in the list and full access is rejected, reject it for all users
+					sub_list = Arrays.asList(guids.split(","));
+					// if the list for subsequent full access processing request containing owners guid, and its not
+					// granted, then full access will be denied for all sharees
 					if(!sub_list.contains(owner.getGuid()) || full_access == true) {
 						guid_list = sub_list;
 					}
@@ -137,27 +140,35 @@ public class UpdateVm {
 				if(full_access == true) {
 					//update vmtype to RESEARCH-FULL and set full_access=true
 					DBOperations.getInstance().updateVmType(vmId, type, full_access, guid_list);
+					logger.info("Users " + guid_list + " were accepted for full access in VM " + vmId);
+				} else if (full_access == false && vmInfo.isFull_access() == true
+						&& !sub_list.contains(owner.getGuid())) {
+					//remove sharee from VM
+					DBOperations.getInstance().removeVmSharee(vmId, guid_list);
+					logger.info("Users " + guid_list + " were removed from VM " + vmId);
+					// TODO-UN send notification to the owner
 				} else {
 					//update vmtype to RESEARCH and set full_access=null
 					DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null, guid_list);
+					logger.info("Users " + guid_list + " were rejected for full access in VM " + vmId);
 				}
 
 				logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 						+ type + ") in database successfully!");
 
 
-				// If owner's full access was true before, sending public keys of users to the hypervisor whose :
+				// If VM was already RESEARCH-FULL, sending public keys of users to the hypervisor whose tou is accepted
+				// and has a publik key and:
 				// 			- full_access is accepted
 				// 			- all the users if owner's full access was also rejected this time
-				if(owner.isFull_access() == true) {
+				if(vmInfo.isFull_access() == true) {
 					List<String> user_keys = new ArrayList<>();
 					for (String guid : guid_list) {
-						if (RolePermissionUtils.isPermittedCommand(
-										guid, vmInfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+						if (RolePermissionUtils.isPermittedToUpdateKey(
+										guid, vmInfo, RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
 							user_keys.add(DBOperations.getInstance().getUserPubKey(guid));
 						}
 					}
-
 					if (user_keys.size() != 0)
 						HypervisorProxy.getInstance().addCommand(
 							new AddVmShareesCommand(vmInfo, userName, userName, user_keys));

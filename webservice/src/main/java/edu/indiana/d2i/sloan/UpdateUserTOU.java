@@ -76,15 +76,8 @@ public class UpdateUserTOU {
 				DBOperations.getInstance().updateVmUserTOU(userName, vmId, tou); // update tou in uservmmap for vmid
 				String pubkey = DBOperations.getInstance().getUserPubKey(userName);
 
-				// update the public key of VMs that are not in ERROR or DELETE* state
-				// && pubkey != null
-				// && accepted tou for VM
-				// && does have full_access for VM's which are already granted full_access
-				if (vminfo.getVmstate() != VMState.ERROR
-						&& !vminfo.getVmstate().name().contains(DELETE)
-						&& pubkey != null
-						&& RolePermissionUtils.isPermittedCommand(
-						userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+				if (RolePermissionUtils.isPermittedToUpdateKey(
+						userName, vminfo, RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
 					HypervisorProxy.getInstance().addCommand(
 							new UpdatePublicKeyCommand(vminfo, userName, userName, pubkey));
 				}

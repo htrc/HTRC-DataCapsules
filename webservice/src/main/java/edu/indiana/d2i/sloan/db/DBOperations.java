@@ -702,6 +702,25 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	public void removeVmSharee(String vmid, List<String> guid_list) throws SQLException {
+		// remove sharees from UserVmMap table
+		String deleteUserVmMapsql = "DELETE FROM " + DBSchema.UserVmMapTable.TABLE_NAME + " WHERE "
+						+ DBSchema.UserVmMapTable.VM_ID
+						+ "=\"" + vmid + "\" AND "
+						+ DBSchema.UserVmMapTable.GUID + " IN (\""
+						+ StringUtils.join(guid_list, "\",\"")
+						+ "\")";
+		// remove sharees from users table if theres no foreign key constraints
+		String deleteUser = "DELETE FROM " + DBSchema.UserTable.TABLE_NAME + " WHERE " + DBSchema.UserVmMapTable.GUID
+				+ " IN (\"" + StringUtils.join(guid_list, "\",\"") + "\")";
+		logger.debug(deleteUserVmMapsql);
+		logger.debug(deleteUser);
+		List<String> updates = new ArrayList<String>();
+		updates.add(deleteUserVmMapsql);
+		updates.add(deleteUser);
+		executeTransaction(updates);
+	}
+
 	private String getInsertActivitySQL(String vmid, String prevMode, String curMode,
 										String prevState, String curState, String operator) {
 		String insertActivitySQL = String.format("INSERT INTO "

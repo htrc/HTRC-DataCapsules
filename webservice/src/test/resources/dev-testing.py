@@ -369,23 +369,24 @@ def show_shared_capsules():
         resp = show_capsules(guid)['status']
         header_list = ['vmid', 'role', 'vm_tou', 'type', 'full_access', 'users_full_access', 'roles']
         df = pandas.DataFrame(columns=header_list)
-        print('------------------user:' + guid + '-------------------------')
         for res in resp:
             roles = res['roles']
             roles_list = ''
             for role in roles:
                 roles_list += ' [' + role['guid'] + ' ' + ' | ' +  role['role'] + ' | tou:'  +  str(role['tou']) \
-                              + ' | fa:' + ('null' if role['full_access'] == None else str(role['full_access'])) + ' ] '
+                              + ' | fa:' + str(role['full_access']) + ' ] '
             df2 = pandas.DataFrame([[ res['vmid'],
                                       res['role'],
                                       str(res['vm_tou']),
                                       res['type'],
-                                      ('null' if res['full_access'] == None else str(res['full_access'])) ,
-                                      ('null' if res['user_full_access'] == None else str(res['user_full_access'])),
+                                      str(res['full_access']) ,
+                                      str(res['user_full_access']),
                                       roles_list]], columns=header_list)
             df = df.append(df2, ignore_index=True)
-        print(df)
-        print('-------------------------------------------------')
+        if df.empty != True:
+            print('------------------user:' + guid + '-------------------------')
+            print(df)
+            print('-------------------------------------------------')
 
 if __name__ == '__main__':
 

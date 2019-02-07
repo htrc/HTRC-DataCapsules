@@ -85,6 +85,7 @@ public class SwitchVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					logger.info("Failed to switch mode of VM '" + vminfo.getVmid() + "!");
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 					return null;

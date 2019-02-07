@@ -42,7 +42,6 @@ import java.util.List;
 @Path("/updateuserkey")
 public class UpdateUserKey {
 	private static Logger logger = Logger.getLogger(UpdateUserKey.class);
-	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -80,13 +79,8 @@ public class UpdateUserKey {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 
 				for (VmInfoBean vminfo : vmInfoList) {
-					// update the public key of VMs that are not in ERROR or DELETE* state
-					// && accepted tou
-					// && does have full_access for VM's which are already granted full_access
-					if (vminfo.getVmstate() != VMState.ERROR
-							&& !vminfo.getVmstate().name().contains(DELETE)
-							&& RolePermissionUtils.isPermittedCommand(
-									userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+					if (RolePermissionUtils.isPermittedToUpdateKey(
+									userName, vminfo, RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
 						HypervisorProxy.getInstance().addCommand(
 								new UpdatePublicKeyCommand(vminfo, userName, userName, pubkey));
 					}

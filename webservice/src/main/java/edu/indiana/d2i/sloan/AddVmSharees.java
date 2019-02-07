@@ -79,9 +79,14 @@ public class AddVmSharees {
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
+			// cannot add sharees when the capsule's full access request is pending
+			if(vmInfo.isFull_access() == false) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"Cannot add sharees when capsule's full access request is pending!" + vmId)).build();
+			}
+
 			// set full_access of the sharees as null if not requested for full access already
-			// set this to false if VM has requested full access, regardless of the fact that it is granted to VM or not.
-			// This is because all sharees added after full_access for VM is granted should go through approval process
+			// set this to false if VM has requested full access
 			Boolean full_access = vmInfo.isFull_access() == null ? null : false;
 
 			logger.info("User " + userName + " tries to add " + sharees_map + " as sharees for vm " + vmId);

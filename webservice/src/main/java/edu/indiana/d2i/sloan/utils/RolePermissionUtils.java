@@ -1,5 +1,6 @@
 package edu.indiana.d2i.sloan.utils;
 
+import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
@@ -7,12 +8,14 @@ import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class RolePermissionUtils {
     private static Logger logger = Logger.getLogger(RolePermissionUtils.class);
+    private static final String DELETE = "DELETE";
 
     public enum API_CMD {
         DELETE_VM, LAUNCH_VM, QUERY_VM, MIGRATE_VM, SWITCH_VM, STOP_VM, UPDATE_VM, ADD_SHAREES, UPDATE_SSH_KEY
@@ -85,4 +88,28 @@ public class RolePermissionUtils {
         return isPermitted;
     }
 
+    public static boolean isPermittedToUpdateKey(String username, VmInfoBean vminfo, API_CMD api_cmd)
+            throws SQLException {
+        // update the public key of VMs that are not in ERROR or DELETE* state
+        // && accepted tou && pubkey is not null
+        // && does have full_access for VM's which are already granted full_access
+
+        if(vminfo.getVmstate() == VMState.ERROR || vminfo.getVmstate().name().contains(DELETE)) {
+            return false;
+        }
+
+        try {
+            String pubkey = DBOperations.getInstance().getUserPubKey(username);
+            if (pubkey == null)
+                return false;
+
+            return isPermittedCommand(username, vminfo.getVmid(), api_cmd);
+        } catch (UnsupportedEncodingException e) {
+            logger.debug("No public key in DB for user " + username);
+        } catch (NoItemIsFoundInDBException e) {
+            logger.debug("VM " + vminfo.getVmid() +  " is not associated with user " + username);
+        }
+
+        return false;
+    }
 }
