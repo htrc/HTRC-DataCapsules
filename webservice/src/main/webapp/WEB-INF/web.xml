@@ -54,6 +54,7 @@
 		<url-pattern>/updatevm</url-pattern>
 		<url-pattern>/updateuseremail</url-pattern>
 		<url-pattern>/migratevm</url-pattern>
+		<url-pattern>/addsharees</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>
