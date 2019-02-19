@@ -30,7 +30,7 @@ public class VmStatusBean {
 		this.pub_key_exists = ssh_key_exists;
 		this.tou = tou;
 		this.vm_tou = vmUserRole.getTou();
-		this.role = vmUserRole.getRole().getName();
+		this.role = vmUserRole.getRole().toString();
 		this.user_full_access = vmUserRole.isFull_access();
 	}
 	

@@ -88,7 +88,7 @@ public class AddVmSharees {
 			// cannot add sharees when the capsule's full access request is pending
 			if(vmInfo.isFull_access() != null && vmInfo.isFull_access() == false) {
 				return Response.status(400).entity(new ErrorBean(400,
-						"Cannot add sharees when capsule's full access request is pending!" + vmId)).build();
+						"Cannot add sharees when capsule's full access request is pending!")).build();
 			}
 
 			// set full_access of the sharees as null if not requested for full access already
@@ -118,7 +118,7 @@ public class AddVmSharees {
 			logger.error(e.getMessage(), e);
 			return Response
 					.status(400)
-					.entity(new ErrorBean(400, "Cannot find VM " + vmId
+					.entity(new ErrorBean(400, "Cannot find a VM " + vmId
 							+ " associated with username " + userName)).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

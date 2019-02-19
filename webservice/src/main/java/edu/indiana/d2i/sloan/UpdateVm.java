@@ -15,9 +15,7 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
@@ -213,7 +211,14 @@ public class UpdateVm {
 			logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 					+ type + ") in database successfully!");
 
-			return Response.status(200).build();
+			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
+			boolean tou = DBOperations.getInstance().getUserTOU(userName);
+			VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
+			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
+			status.add(new VmStatusBean(vmInfo, pub_key_exists, tou, vmUserRole));
+
+			// send vminfo back with all guids, AG then sends full_access request email containing all users emails
+			return Response.status(200).entity(new QueryVmResponseBean(status)).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response
