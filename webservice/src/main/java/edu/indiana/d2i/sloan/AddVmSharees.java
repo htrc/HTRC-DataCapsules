@@ -36,6 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static edu.indiana.d2i.sloan.Constants.MAX_NO_OF_SHAREES;
 
 @Path("/addsharees")
 public class AddVmSharees {
@@ -97,7 +100,18 @@ public class AddVmSharees {
 
 			logger.info("User " + userName + " tries to add " + sharees_map + " as sharees for vm " + vmId);
 
+			List<VmUserRole> current_roles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
+			if(current_roles.size() + sharees_map.size() > MAX_NO_OF_SHAREES) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"A Data Capsule cannot have more than " + MAX_NO_OF_SHAREES + " sharees!")).build();
+			}
+
 			for(String guid : sharees_map.keySet()) { // for each user
+				if(current_roles.stream().filter(
+						role -> role.getGuid().equals(guid)).collect(Collectors.toList()).size() > 0) {
+					logger.warn("Sharee " + guid + " already exists in capsule " + vmId + "!");
+					continue; // skip adding existing users
+				}
 				DBOperations.getInstance().insertUserIfNotExists(guid, sharees_map.get(guid));  // add to users table
 				VmUserRole vmUserRole = new VmUserRole(sharees_map.get(guid), VMRole.SHAREE, false, guid, full_access);
 				DBOperations.getInstance().addVmSharee(vmId, vmUserRole); // add to uservmmap table

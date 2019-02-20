@@ -146,7 +146,7 @@ public class UpdateResult {
         for(VmUserRole vmUserRole : vmUserRoles) {
             str += "email : " + vmUserRole.getEmail() + ",\t" +
                     "role : " + vmUserRole.getRole() + ",\t" +
-                    "TOU accepted : " + vmUserRole.getTou();
+                    "TOU accepted : " + vmUserRole.getTou() + "\n";
         }
         return str;
     }
