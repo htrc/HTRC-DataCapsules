@@ -40,7 +40,7 @@ public class CreateVMCommand extends HypervisorCommand {
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.createVM(vminfo, publicKey);
+		HypervisorResponse resp = hypervisor.createVM(vminfo, publicKey, operator);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
@@ -71,6 +71,7 @@ public class CreateVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					logger.error("Error occurred while creating VM " + vminfo.getVmid());
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 					return null;

@@ -148,7 +148,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		logger.debug("createvm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -169,6 +169,7 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--loginpwd", String.valueOf(vminfo.getVNCloginPwd()))
 					.addArgument("--volsize", String.valueOf(vminfo.getVolumeSizeInGB()) + "G")
 					.addArgument("--pubkey", "\"" + pubKey + "\"")
+					.addArgument("--guid", userId)
 					.build();
 
 			Commands createVMCmd = new Commands(
@@ -359,8 +360,8 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
-		logger.debug("update public key of vm: " + vminfo);
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
+		logger.debug("update public key of user " + userId + " in vm: " + vminfo);
 
 		SSHProxy sshProxy = null;
 
@@ -372,6 +373,7 @@ class CapsuleHypervisor implements IHypervisor {
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().
 					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--guid", userId).
 					addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands updateKeyCmd = new Commands(
@@ -429,8 +431,8 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse addVmSharees(VmInfoBean vminfo, List<String> sharees) throws Exception {
-		logger.debug("add sharees to vm: " + vminfo);
+	public HypervisorResponse deletePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
+		logger.debug("delete public key of user " + userId + " in vm: " + vminfo);
 
 		SSHProxy sshProxy = null;
 
@@ -442,12 +444,13 @@ class CapsuleHypervisor implements IHypervisor {
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().
 					addArgument("--wdir", vminfo.getWorkDir()).
-					addArgument("--sharees", sharees.toString()).build();
+					addArgument("--guid", userId).
+					addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands shareVMCmd = new Commands(
 					Collections
 							.<String> singletonList(CommandUtils
-									.composeFullCommand(HYPERVISOR_CMD.SHARE_VM,
+									.composeFullCommand(HYPERVISOR_CMD.DELETE_KEY,
 											argList)),
 					false);
 

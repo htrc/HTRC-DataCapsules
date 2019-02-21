@@ -18,7 +18,7 @@ public class RolePermissionUtils {
     private static final String DELETE = "DELETE";
 
     public enum API_CMD {
-        DELETE_VM, LAUNCH_VM, QUERY_VM, MIGRATE_VM, SWITCH_VM, STOP_VM, UPDATE_VM, ADD_SHAREES, UPDATE_SSH_KEY
+        DELETE_VM, LAUNCH_VM, QUERY_VM, MIGRATE_VM, SWITCH_VM, STOP_VM, UPDATE_VM, ADD_SHAREES, UPDATE_SSH_KEY, DELETE_SHAREES
     }
 
     public static boolean isPermittedCommand(String username, String vmid, API_CMD api_cmd)
@@ -45,6 +45,7 @@ public class RolePermissionUtils {
                 if (api_cmd == API_CMD.QUERY_VM
                         || api_cmd == API_CMD.DELETE_VM
                         || api_cmd == API_CMD.ADD_SHAREES
+                        || api_cmd == API_CMD.DELETE_SHAREES
                         || api_cmd == API_CMD.UPDATE_VM
                         || api_cmd == API_CMD.LAUNCH_VM
                         || api_cmd == API_CMD.STOP_VM
@@ -58,6 +59,7 @@ public class RolePermissionUtils {
                 if (api_cmd == API_CMD.QUERY_VM
                         || api_cmd == API_CMD.DELETE_VM
                         || api_cmd == API_CMD.ADD_SHAREES
+                        || api_cmd == API_CMD.DELETE_SHAREES
                         || api_cmd == API_CMD.UPDATE_VM
                         || api_cmd == API_CMD.UPDATE_SSH_KEY) {
                     isPermitted = true;

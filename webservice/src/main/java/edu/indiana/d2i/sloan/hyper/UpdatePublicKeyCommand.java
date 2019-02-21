@@ -43,7 +43,7 @@ public class UpdatePublicKeyCommand extends HypervisorCommand {
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.updatePubKey(vminfo, publicKey);
+		HypervisorResponse resp = hypervisor.updatePubKey(vminfo, publicKey, username);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
@@ -72,7 +72,7 @@ public class UpdatePublicKeyCommand extends HypervisorCommand {
 				new Callable<Void>() {
 					@Override
 					public Void call() throws Exception {
-						logger.info("Failed to update public key of user '" + username + "'in " + vminfo.getVmid() + "!");
+						logger.error("Failed to update public key of user '" + username + "'in " + vminfo.getVmid() + "!");
 						VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 								vminfo.getVmstate(), VMState.ERROR, operator);
 						return null;

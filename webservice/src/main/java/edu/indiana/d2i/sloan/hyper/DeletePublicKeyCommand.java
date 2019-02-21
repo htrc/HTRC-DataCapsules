@@ -25,25 +25,24 @@ import org.apache.log4j.Logger;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.concurrent.Callable;
 
-public class AddVmShareesCommand extends HypervisorCommand {
-	private static Logger logger = Logger.getLogger(AddVmShareesCommand.class);
-	private final List<String> sharees;
+public class DeletePublicKeyCommand extends HypervisorCommand {
+	private static Logger logger = Logger.getLogger(DeletePublicKeyCommand.class);
+	private final String publicKey;
 	private final String username;
 	private final String operator;
 
-	public AddVmShareesCommand(VmInfoBean vminfo, String username, String operator, List<String> sharees) throws Exception {
+	public DeletePublicKeyCommand(VmInfoBean vminfo, String username, String operator, String publicKey) throws Exception {
 		super(vminfo);
-		this.sharees = sharees;
+		this.publicKey = publicKey;
 		this.username = username;
 		this.operator = operator;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.addVmSharees(vminfo, sharees);
+		HypervisorResponse resp = hypervisor.deletePubKey(vminfo, publicKey, username);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
@@ -56,7 +55,7 @@ public class AddVmShareesCommand extends HypervisorCommand {
 				new Callable<Void>() {
 					@Override
 					public Void call() throws Exception {
-						logger.info("Sharees '" + sharees + "' was/were added to data capsule "
+						logger.info("Public key of user '" + username + "' was deleted in data capsule "
 								+ vminfo.getVmid() + " successfully!");
 						return null;
 					}
@@ -72,7 +71,7 @@ public class AddVmShareesCommand extends HypervisorCommand {
 				new Callable<Void>() {
 					@Override
 					public Void call() throws Exception {
-						logger.info("Failed to add sharees '" + sharees + "' to " + vminfo.getVmid() + "!");
+						logger.error("Failed to delete pubkey of user '" + username + "' in vm " + vminfo.getVmid() + "!");
 						VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 								vminfo.getVmstate(), VMState.ERROR, operator);
 						return null;
@@ -84,6 +83,6 @@ public class AddVmShareesCommand extends HypervisorCommand {
 
 	@Override
 	public String toString() {
-		return "AddVmSharees " + vminfo;
+		return "DeleteUserKey " + vminfo;
 	}
 }

@@ -19,14 +19,10 @@ import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
-import edu.indiana.d2i.sloan.vm.VMMode;
-import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,10 +31,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 @Path("/updateusertou")
 public class UpdateUserTOU {

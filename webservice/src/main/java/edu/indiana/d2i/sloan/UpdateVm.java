@@ -18,7 +18,6 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.hyper.AddVmShareesCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
@@ -161,16 +160,14 @@ public class UpdateVm {
 					// Send public keys of users to the hypervisor whose :  tou is accepted + has a publik key  AND
 					// 			- full_access is accepted OR
 					// 			- all the users if owner's full access was also rejected this time
-					List<String> user_keys = new ArrayList<>();
 					for (String guid : guid_list) {
 						if (RolePermissionUtils.isPermittedToUpdateKey(
 								guid, vmInfo, RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
-							user_keys.add(DBOperations.getInstance().getUserPubKey(guid));
+							HypervisorProxy.getInstance().addCommand(
+									new UpdatePublicKeyCommand(vmInfo, userName, userName,
+											DBOperations.getInstance().getUserPubKey(guid)));
 						}
 					}
-					if (user_keys.size() != 0)
-						HypervisorProxy.getInstance().addCommand(
-								new AddVmShareesCommand(vmInfo, userName, userName, user_keys));
 				}
 
 				return Response.status(200).build();

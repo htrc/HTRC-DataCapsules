@@ -41,7 +41,7 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 	
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
@@ -71,7 +71,7 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
@@ -81,7 +81,7 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse addVmSharees(VmInfoBean vminfo, List<String> sharees) throws Exception {
+	public HypervisorResponse deletePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 

@@ -26,7 +26,7 @@ import edu.indiana.d2i.sloan.Configuration;
 
 public class CommandUtils {
 	public enum HYPERVISOR_CMD {
-		CREATE_VM, LAUNCH_VM, QUERY_VM, SWITCH_VM, STOP_VM, DELETE_VM, UPDATE_KEY, MIGRATE_VM, SHARE_VM
+		CREATE_VM, LAUNCH_VM, QUERY_VM, SWITCH_VM, STOP_VM, DELETE_VM, UPDATE_KEY, MIGRATE_VM, DELETE_KEY
 	}
 
 	private static final Map<HYPERVISOR_CMD, String> commands;
@@ -60,8 +60,8 @@ public class CommandUtils {
 				put(HYPERVISOR_CMD.MIGRATE_VM, Configuration.getInstance()
 						.getString(Configuration.PropertyName.MIGRATE_VM));
 
-				put(HYPERVISOR_CMD.SHARE_VM, Configuration.getInstance()
-						.getString(Configuration.PropertyName.SHARE_VM));
+				put(HYPERVISOR_CMD.DELETE_KEY, Configuration.getInstance()
+						.getString(Configuration.PropertyName.CMD_DELETE_KEY));
 			}
 		};
 	}

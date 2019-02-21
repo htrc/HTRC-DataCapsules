@@ -81,6 +81,7 @@ public class LaunchVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					logger.error("Error occurred while launching VM " + vminfo.getVmid());
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 					return null;

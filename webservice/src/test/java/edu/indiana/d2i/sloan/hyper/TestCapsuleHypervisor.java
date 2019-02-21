@@ -144,7 +144,7 @@ public class TestCapsuleHypervisor {
 				"password", "test-image", "ubuntu", "password", "test-policy", VMMode.MAINTENANCE
 					, "DEMO", null, null, null, null, null, null, null, null, null, null);
 			
-			HypervisorResponse response = hypervisor.createVM(vminfo, "pubkey1");
+			HypervisorResponse response = hypervisor.createVM(vminfo, "pubkey1", "user" + i);
 			Assert.assertEquals(0, response.getResponseCode());
 			Assert.assertEquals(SUCCESSFUL_STATE, response.getVmState());			
 			Assert.assertEquals(SUCCESSFUL_DESCRIPTION, response.getDescription());
