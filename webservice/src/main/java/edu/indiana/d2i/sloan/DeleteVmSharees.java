@@ -23,6 +23,7 @@ import edu.indiana.d2i.sloan.hyper.DeleteVMCommand;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
+import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -43,6 +44,7 @@ import static edu.indiana.d2i.sloan.Constants.MAX_NO_OF_SHAREES;
 @Path("/deletesharees")
 public class DeleteVmSharees {
 	private static Logger logger = Logger.getLogger(DeleteVmSharees.class);
+	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -73,6 +75,13 @@ public class DeleteVmSharees {
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
+			// don't allow to remove sharees if capsule is in delete* or error state
+			if (vmInfo.getVmstate() == VMState.ERROR
+					|| vmInfo.getVmstate().name().contains(DELETE)){
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "Cannot remove sharees when capsule is in "
+								+ VMState.ERROR + " or " + DELETE + "* state!")).build();
+			}
 
 			logger.info("User " + userName + " tries to delete sharee/(s) " + sharees + " for vm " + vmId);
 
@@ -89,16 +98,16 @@ public class DeleteVmSharees {
 				}
 			}
 
-			// remove users from the Database.
-			// This removes users from the users table too, if the user don't have other capsules owned
-			DBOperations.getInstance().removeVmSharee(vmId, sharees_list);
-
 			// remove users keys from the data capsule backend
 			for(String sharee : sharees_list) {
 				String pubKey = DBOperations.getInstance().getUserPubKey(sharee);
 				HypervisorProxy.getInstance().addCommand(
 						new DeletePublicKeyCommand(vmInfo, sharee, sharee, pubKey));
 			}
+
+			// remove users from the Database.
+			// This removes users from the users table too, if the user don't have other capsules owned
+			DBOperations.getInstance().removeVmSharee(vmId, sharees_list);
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

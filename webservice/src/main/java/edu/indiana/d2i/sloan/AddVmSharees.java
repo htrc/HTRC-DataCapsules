@@ -20,6 +20,7 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
+import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
 import org.apache.log4j.Logger;
 import org.codehaus.jettison.json.JSONArray;
@@ -43,6 +44,7 @@ import static edu.indiana.d2i.sloan.Constants.MAX_NO_OF_SHAREES;
 @Path("/addsharees")
 public class AddVmSharees {
 	private static Logger logger = Logger.getLogger(AddVmSharees.class);
+	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -82,6 +84,14 @@ public class AddVmSharees {
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
+
+			// don't allow to add sharees if capsule is in delete* or error state
+			if (vmInfo.getVmstate() == VMState.ERROR
+					|| vmInfo.getVmstate().name().contains(DELETE)){
+				return Response.status(Response.Status.BAD_REQUEST)
+						.entity(new ErrorBean(400, "Cannot add sharees when capsule is in "
+								+ VMState.ERROR + " or " + DELETE + "* state!")).build();
+			}
 
 			if(vmInfo.getType().equals(VMType.DEMO.getName())) {
 				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
