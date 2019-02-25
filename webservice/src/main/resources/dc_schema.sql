@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`vms` (
   `desc_links` varchar(2048) DEFAULT NULL,
   `rr_data_files` varchar(2048) DEFAULT NULL,
   `rr_result_usage` varchar(2048) DEFAULT NULL,
+  `desc_shared` varchar(6144) DEFAULT NULL,
   `consent` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`vmid`),
   INDEX `fk_images_idx` (`imagename` ASC),

@@ -194,7 +194,8 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
 						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
 						owner.isFull_access(), // owner's full_access is the real full_access of the VM
-						roles);
+						roles,
+						rs.getString(DBSchema.VmTable.DESC_SHARED));
 				res.add(vminfo);
 			}
 		} finally {
@@ -377,7 +378,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -412,7 +413,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -448,7 +449,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -476,7 +477,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -511,7 +512,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -553,7 +554,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -578,7 +579,7 @@ public class DBOperations {
 			String vncLoginId, String vncLoginPwd, VMPorts host,
 			String workDir, int numCPUs, int memorySize, int diskSpace, String type, String title, Boolean consent,
 			String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage, Boolean full_access)
+			String rr_data_files, String rr_result_usage, Boolean full_access, String desc_shared)
 			throws SQLException {
 		String insertvmsql = String
 				.format("INSERT INTO "
@@ -629,9 +630,11 @@ public class DBOperations {
 								+ DBSchema.VmTable.RR_DATA_FILES
 								+ ","
 								+ DBSchema.VmTable.RR_RESULT_USAGE
+								+ ","
+								+ DBSchema.VmTable.DESC_SHARED
 								+ ") VALUES"
 								+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
-								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s)",
+								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s, %s)",
 						vmid, VMState.CREATE_PENDING.toString(),
 						VMMode.NOT_DEFINED.toString(), host.publicip,
 						host.sshport, host.vncport, workDir, imageName,
@@ -644,7 +647,8 @@ public class DBOperations {
 						desc_links != null ? "\"" + StringEscapeUtils.escapeJava(desc_links) + "\"" : desc_links,
 						desc_outside_data != null ? "\"" + StringEscapeUtils.escapeJava(desc_outside_data) + "\"" : desc_outside_data,
 						rr_data_files != null ? "\"" + StringEscapeUtils.escapeJava(rr_data_files) + "\"" : rr_data_files,
-						rr_result_usage != null ? "\"" + StringEscapeUtils.escapeJava(rr_result_usage) + "\"" : rr_result_usage);
+						rr_result_usage != null ? "\"" + StringEscapeUtils.escapeJava(rr_result_usage) + "\"" : rr_result_usage,
+						desc_shared != null ? "\"" + StringEscapeUtils.escapeJava(desc_shared) + "\"" : desc_shared);
 
 		logger.debug(insertvmsql);
 
@@ -678,7 +682,8 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
-	public void addVmSharee(String vmid, VmUserRole vmUserRole) throws SQLException {
+	public void addVmSharee(String vmid, VmUserRole vmUserRole, String desc_shared) throws SQLException {
+		List<String> updates = new ArrayList<String>();
 		String insertUserVmMapsql = String
 				.format("INSERT INTO "
 								+ DBSchema.UserVmMapTable.TABLE_NAME
@@ -697,8 +702,16 @@ public class DBOperations {
 						vmid, vmUserRole.getGuid(), vmUserRole.getRole().getName(),
 						vmUserRole.getTou(), vmUserRole.isFull_access());
 		logger.debug(insertUserVmMapsql);
-		List<String> updates = new ArrayList<String>();
 		updates.add(insertUserVmMapsql);
+		if (desc_shared != null) {
+			String updateDescShared = String.format("UPDATE "
+							+ DBSchema.VmTable.TABLE_NAME + " SET "
+							+ DBSchema.VmTable.DESC_SHARED + "=CONCAT(IFNULL(" + DBSchema.VmTable.DESC_SHARED + ",''),\"%s\") "
+							+ "WHERE "
+							+ DBSchema.VmTable.VM_ID + "=\"%s\"", desc_shared + "\n", vmid);
+			logger.debug(updateDescShared);
+			updates.add(updateDescShared);
+		}
 		executeTransaction(updates);
 	}
 
@@ -1915,7 +1928,8 @@ public class DBOperations {
 
 	public void updateVm(String vmid, String type, String title, Boolean consent,
 						 String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-						 String rr_data_files, String rr_result_usage, Boolean full_access) throws SQLException, UnsupportedEncodingException {
+						 String rr_data_files, String rr_result_usage, Boolean full_access, String desc_shared)
+			throws SQLException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
@@ -1927,7 +1941,8 @@ public class DBOperations {
 				+ DBSchema.VmTable.DESC_LINKS + "=\"%s\", "
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "=\"%s\", "
 				+ DBSchema.VmTable.RR_DATA_FILES + "=\"%s\", "
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\" "
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\", "
+				+ DBSchema.VmTable.DESC_SHARED + "=\"%s\" "
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
 				type
@@ -1939,6 +1954,7 @@ public class DBOperations {
 				, StringEscapeUtils.escapeJava(desc_outside_data)
 				, StringEscapeUtils.escapeJava(rr_data_files)
 				, StringEscapeUtils.escapeJava(rr_result_usage)
+				, desc_shared != null ? StringEscapeUtils.escapeJava(desc_shared) + "\n" : ""
 				, vmid);
 		String update_uservmmap_sql = String.format("UPDATE "
 						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "

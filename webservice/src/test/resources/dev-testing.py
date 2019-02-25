@@ -268,7 +268,7 @@ def update_vm_request(vmid, username):
                                'desc_requirement':'req1', 'consent':'true', 'title':'title1'
                                   , 'rr_data_files':'data_file1', 'rr_result_usage':'rr_usage1'
                                   , 'desc_nature':'desc_nature1', 'desc_outside_data':'outside_data1'
-                                  , 'desc_links':'links1'})
+                                  , 'desc_links':'links1', 'desc_shared' : 'desc_shared1'})
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan/updatevm', params, headers)

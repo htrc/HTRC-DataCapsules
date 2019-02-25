@@ -30,7 +30,7 @@ public class VmInfoBean {
 	private Boolean consent;
 	private Boolean full_access;
 	private String type, title, desc_nature, desc_requirement, desc_links,
-			desc_outside_data, rr_data_files, rr_result_usage;
+			desc_outside_data, rr_data_files, rr_result_usage, desc_shared;
 	private List<VmUserRole> roles;
 
 	public void setImagePath(String imagePath) {
@@ -80,6 +80,7 @@ public class VmInfoBean {
 		this.desc_outside_data = "";
 		this.rr_data_files = "";
 		this.rr_result_usage = "";
+		this.desc_shared = "";
 	}
 
 	public VmInfoBean(String vmid, String publicip, String workDir,
@@ -89,7 +90,7 @@ public class VmInfoBean {
 			String vmloginid, String vmloginpwd,
 			String imagename, String policyname, VMMode requestedVMMode, String type, String title,
 					  Boolean consent, String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage, Boolean full_access, List<VmUserRole> roles ) {
+			String rr_data_files, String rr_result_usage, Boolean full_access, List<VmUserRole> roles, String desc_shared) {
 		this.vmid = vmid;
 		this.publicip = publicip;
 		this.workDir = workDir;
@@ -119,6 +120,7 @@ public class VmInfoBean {
 		this.desc_outside_data = desc_outside_data;
 		this.rr_data_files = rr_data_files;
 		this.rr_result_usage = rr_result_usage;
+		this.desc_shared = desc_shared;
 		this.roles = roles;
 	}
 
@@ -270,6 +272,14 @@ public class VmInfoBean {
 
 	public void setRr_result_usage(String rr_result_usage) {
 		this.rr_result_usage = rr_result_usage;
+	}
+
+	public String getDesc_shared() {
+		return desc_shared;
+	}
+
+	public void setDesc_shared(String desc_shared) {
+		this.desc_shared = desc_shared;
 	}
 
 	public List<VmUserRole> getRoles() {

@@ -120,7 +120,7 @@ public class CreateVM {
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
 					vcpu, volumeSizeInGB, workDir, type, title, consent, desc_nature, desc_requirement,  desc_links,
-					desc_outside_data, rr_data_files, rr_result_usage, full_access);
+					desc_outside_data, rr_data_files, rr_result_usage, full_access, null);
 			logger.info("User " + userName + " tries to create vm " + request);
 			
 			// check quota

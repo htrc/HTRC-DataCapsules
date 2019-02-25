@@ -20,13 +20,13 @@ public class CreateVmRequestBean {
 	private int memory, vcpu, volumeSizeInGB;
 	private Boolean consent, full_access;
 	private String type, title, desc_nature, desc_requirement, desc_links,
-			desc_outside_data, rr_data_files, rr_result_usage;
+			desc_outside_data, rr_data_files, rr_result_usage, desc_shared;
 
 	public CreateVmRequestBean(String userName, String imageName, String vmid,
 			String vncLoginID, String vncLoginPasswd, int memory, int vcpu,
 			int volumeSizeInGB, String workDir, String type, String title, Boolean consent, String desc_nature,
 			String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage, Boolean full_access ) {
+			String rr_data_files, String rr_result_usage, Boolean full_access, String desc_shared) {
 		this.userName = userName;
 		this.imageName = imageName;
 		this.vmid = vmid;
@@ -46,6 +46,7 @@ public class CreateVmRequestBean {
 		this.desc_outside_data = desc_outside_data;
 		this.rr_data_files = rr_data_files;
 		this.rr_result_usage = rr_result_usage;
+		this.desc_shared = desc_shared;
 	}
 
 	public String getUserName() {
@@ -162,6 +163,14 @@ public class CreateVmRequestBean {
 
 	public void setRr_result_usage(String rr_result_usage) {
 		this.rr_result_usage = rr_result_usage;
+	}
+
+	public String getDesc_shared() {
+		return desc_shared;
+	}
+
+	public void setDesc_shared(String desc_shared) {
+		this.desc_shared = desc_shared;
 	}
 
 	@Override

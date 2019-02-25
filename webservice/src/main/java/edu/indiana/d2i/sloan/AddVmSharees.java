@@ -51,6 +51,7 @@ public class AddVmSharees {
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response addSharees(@FormParam("vmId") String vmId,
 			@FormParam("sharees") String sharees,
+			@FormParam("desc_shared") String desc_shared,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
@@ -104,12 +105,20 @@ public class AddVmSharees {
 						"Cannot add sharees when capsule's full access request is pending!")).build();
 			}
 
+			if(vmInfo.isFull_access() != null && vmInfo.isFull_access() == true && desc_shared == null) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"desc_shared should not be null when requesting full access for a "
+								+ VMType.RESEARCH_FULL.getName() + " capsule!")).build();
+			}
+			desc_shared = vmInfo.isFull_access() != null && vmInfo.isFull_access() == true ? desc_shared : null;
+
 			// set full_access of the sharees as null if not requested for full access already
 			// set this to false if VM has requested full access
 			Boolean full_access = vmInfo.isFull_access() == null ? null : false;
 
 			logger.info("User " + userName + " tries to add " + sharees_map + " as sharees for vm " + vmId);
 
+			// do not allow to add more than MAX_NO_OF_SHAREES=5 sharees
 			List<VmUserRole> current_roles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
 			if(current_roles.size() + sharees_map.size() > MAX_NO_OF_SHAREES) {
 				return Response.status(400).entity(new ErrorBean(400,
@@ -124,7 +133,7 @@ public class AddVmSharees {
 				}
 				DBOperations.getInstance().insertUserIfNotExists(guid, sharees_map.get(guid));  // add to users table
 				VmUserRole vmUserRole = new VmUserRole(sharees_map.get(guid), VMRole.SHAREE, false, guid, full_access);
-				DBOperations.getInstance().addVmSharee(vmId, vmUserRole); // add to uservmmap table
+				DBOperations.getInstance().addVmSharee(vmId, vmUserRole, desc_shared); // add to uservmmap table
 			}
 
 			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;

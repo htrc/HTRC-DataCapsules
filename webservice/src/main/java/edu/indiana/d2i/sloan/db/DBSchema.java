@@ -62,6 +62,7 @@ public class DBSchema {
 		public static String DESC_OUTSIDE_DATA = "desc_outside_data";
 		public static String RR_DATA_FILES = "rr_data_files";
 		public static String RR_RESULT_USAGE = "rr_result_usage";
+		public static String DESC_SHARED = "desc_shared";
 
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{

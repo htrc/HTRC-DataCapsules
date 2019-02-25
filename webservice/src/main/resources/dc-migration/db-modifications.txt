@@ -106,4 +106,9 @@ ENGINE = InnoDB;
 
 INSERT INTO uservmmap (vmid, guid, role, tou, full_access) SELECT vmid, guid, 'OWNER-CONTROLLER', true, full_access FROM vms;
 
+
+drop full_access column and add desc_shared column
+
 ALTER TABLE vms DROP COLUMN full_access;
+
+ALTER TABLE vms ADD desc_shared VARCHAR(6144) CHARACTER SET utf8 DEFAULT NULL;

@@ -57,6 +57,7 @@ public class UpdateVm {
 			@FormParam("desc_outside_data") String desc_outside_data,
 			@FormParam("rr_data_files") String rr_data_files,
 			@FormParam("rr_result_usage") String rr_result_usage,
+			@FormParam("desc_shared") String desc_shared,
 			@FormParam("guids") String guids,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
@@ -202,9 +203,14 @@ public class UpdateVm {
 						.build();
 			}
 
+			if(full_access != null && full_access == true) {
+				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
+								"Full access request cannot be made with full_access=true value!")).build();
+			}
+
 			// When requesting full access full_access is set to false for all users
 			DBOperations.getInstance().updateVm(vmId, type, title, consent, desc_nature, desc_requirement, desc_links,
-					desc_outside_data, rr_data_files, rr_result_usage, full_access);
+					desc_outside_data, rr_data_files, rr_result_usage, full_access, desc_shared);
 			logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 					+ type + ") in database successfully!");
 

@@ -112,6 +112,9 @@ public class VmStatusBean {
 	public String getRr_result_usage() {
 		return vminfo.getRr_result_usage();
 	}
+	public String getDesc_shared() {
+		return vminfo.getDesc_shared();
+	}
 	public boolean getTou() {
 		return tou;
 	}
