@@ -743,6 +743,28 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
+	// assign owner_role to owner_guid and sharee_role to sharee_guid
+	public void manageController(String vmid, String owner_guid, VMRole owner_role, String sharee_guid, VMRole sharee_role)
+			throws SQLException {
+		List<String> updates = new ArrayList<String>();
+		String updateownersql = String.format("UPDATE "
+						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+						+ DBSchema.UserVmMapTable.ROLE + "=\"%s\" WHERE "
+						+ DBSchema.UserVmMapTable.GUID + "=\"%s\" AND " + DBSchema.UserVmMapTable.VM_ID + "=\"%s\""
+				, owner_role.getName(), owner_guid, vmid);
+		logger.debug(updateownersql);
+		updates.add(updateownersql);
+		String updateshareesql = String.format("UPDATE "
+						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+						+ DBSchema.UserVmMapTable.ROLE + "=\"%s\" WHERE "
+						+ DBSchema.UserVmMapTable.GUID + "=\"%s\" AND " + DBSchema.UserVmMapTable.VM_ID + "=\"%s\""
+				, sharee_role.getName(), sharee_guid, vmid);
+		logger.debug(updateshareesql);
+		updates.add(updateshareesql);
+
+		executeTransaction(updates);
+	}
+
 	private String getInsertActivitySQL(String vmid, String prevMode, String curMode,
 										String prevState, String curState, String operator) {
 		String insertActivitySQL = String.format("INSERT INTO "

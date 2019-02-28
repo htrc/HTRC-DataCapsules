@@ -10,7 +10,9 @@ import org.apache.log4j.Logger;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RolePermissionUtils {
@@ -18,7 +20,20 @@ public class RolePermissionUtils {
     private static final String DELETE = "DELETE";
 
     public enum API_CMD {
-        DELETE_VM, LAUNCH_VM, QUERY_VM, MIGRATE_VM, SWITCH_VM, STOP_VM, UPDATE_VM, ADD_SHAREES, UPDATE_SSH_KEY, DELETE_SHAREES
+        DELETE_VM, LAUNCH_VM, QUERY_VM, MIGRATE_VM, SWITCH_VM, STOP_VM, UPDATE_VM, ADD_SHAREES, UPDATE_SSH_KEY,
+        DELETE_SHAREES, OBTAIN_CONTROLLER
+    }
+
+    public enum CNTR_ACTION {
+        DELEGATE("DELEGATE"),
+        REVOKE("REVOKE");
+        private final String name;
+        CNTR_ACTION(String name) {
+            this.name = name;
+        }
+        public String getName() {
+            return this.name;
+        }
     }
 
     public static boolean isPermittedCommand(String username, String vmid, API_CMD api_cmd)
@@ -61,7 +76,8 @@ public class RolePermissionUtils {
                         || api_cmd == API_CMD.ADD_SHAREES
                         || api_cmd == API_CMD.DELETE_SHAREES
                         || api_cmd == API_CMD.UPDATE_VM
-                        || api_cmd == API_CMD.UPDATE_SSH_KEY) {
+                        || api_cmd == API_CMD.UPDATE_SSH_KEY
+                        || api_cmd == API_CMD.OBTAIN_CONTROLLER) {
                     isPermitted = true;
                 }
                 break;
@@ -78,7 +94,8 @@ public class RolePermissionUtils {
 
             case SHAREE:
                 if (api_cmd == API_CMD.QUERY_VM
-                        || api_cmd == API_CMD.UPDATE_SSH_KEY) {
+                        || api_cmd == API_CMD.UPDATE_SSH_KEY
+                        || api_cmd == API_CMD.OBTAIN_CONTROLLER) {
                     isPermitted = true;
                 }
                 break;
@@ -88,6 +105,51 @@ public class RolePermissionUtils {
         }
 
         return isPermitted;
+    }
+
+    public static Map<VMRole, VMRole> getValidCntrlAction(String vmid, VmUserRole owner,
+                                                         VmUserRole user, CNTR_ACTION action)
+            throws NoItemIsFoundInDBException, SQLException {
+
+        // check if owner can perform controller action on user,
+        // and if so, return the map of resulting roles for owner and user
+        Map<VMRole, VMRole> roles_map = null;
+
+        if(action  == CNTR_ACTION.DELEGATE) {
+            // owner-controller delegates controller to a sharee and becomes owner, sharee becomes controller
+            if(owner.getRole() == VMRole.OWNER_CONTROLLER
+                    && user.getRole() == VMRole.SHAREE
+                    && isPermittedCommand(user.getGuid(), vmid, API_CMD.OBTAIN_CONTROLLER)) {
+                roles_map = new HashMap<>();
+                roles_map.put(VMRole.OWNER, VMRole.CONTROLLER);
+            }
+
+            // controller delegates controller to sharee and becomes sharee, sharee becomes controller
+            if(owner.getRole() == VMRole.CONTROLLER
+                    && user.getRole() == VMRole.SHAREE
+                    && isPermittedCommand(user.getGuid(), vmid, API_CMD.OBTAIN_CONTROLLER)) {
+                roles_map = new HashMap<>();
+                roles_map.put(VMRole.SHAREE, VMRole.CONTROLLER);
+            }
+
+            // controller delegates controller to owner and becomes sharee, owner becomes owner-controller
+            if(owner.getRole() == VMRole.CONTROLLER
+                    && user.getRole() == VMRole.OWNER
+                    && isPermittedCommand(user.getGuid(), vmid, API_CMD.OBTAIN_CONTROLLER)) {
+                roles_map = new HashMap<>();
+                roles_map.put(VMRole.SHAREE, VMRole.OWNER_CONTROLLER);
+            }
+
+        } else if (action == CNTR_ACTION.REVOKE) {
+            // owner revokes controller role from controller and becomes owner-controller, controller becomes sharee
+            if(owner.getRole() == VMRole.OWNER
+                    && user.getRole() == VMRole.CONTROLLER) {
+                roles_map = new HashMap<>();
+                roles_map.put(VMRole.OWNER_CONTROLLER, VMRole.SHAREE);
+            }
+        }
+
+        return roles_map;
     }
 
     public static boolean isPermittedToUpdateKey(String username, VmInfoBean vminfo, API_CMD api_cmd)
