@@ -54,8 +54,8 @@ public class ManageController {
 							"Username/Controller is not present in http header.")).build();
 		}
 
-		if(action == null || action != RolePermissionUtils.CNTR_ACTION.REVOKE.getName()
-				|| action != RolePermissionUtils.CNTR_ACTION.DELEGATE.getName()) {
+		if(action == null || (!action.equals(RolePermissionUtils.CNTR_ACTION.REVOKE.getName())
+				&& !action.equals(RolePermissionUtils.CNTR_ACTION.DELEGATE.getName()))) {
 			String message = "Action should be either '" + RolePermissionUtils.CNTR_ACTION.DELEGATE + "' or '" +
 					RolePermissionUtils.CNTR_ACTION.REVOKE + "'!";
 			logger.error(message);
@@ -77,7 +77,7 @@ public class ManageController {
 			VmUserRole controller_role = DBOperations.getInstance().getUserRoleWithVmid(controller, vmId);
 
 			Map<VMRole, VMRole> roleMap = RolePermissionUtils.getValidCntrlAction(vmId, owner_role, controller_role,
-					RolePermissionUtils.CNTR_ACTION.valueOf(controller));
+					RolePermissionUtils.CNTR_ACTION.valueOf(action));
 			if (roleMap == null) {
 				String message = "User " + userName + " cannot perform controller action "
 						+ action + " on sharee " + controller + " in VM " + vmId;

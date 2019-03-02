@@ -90,11 +90,11 @@ public class DeleteVmSharees {
 			// return error if any of the sharees is not a role in VM
 			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
 			for(String sharee : sharees_list) {
-				if( vmUserRoles.stream().filter(role ->
-						role.getGuid().equals(sharee)).collect(Collectors.toList()).size() == 0 ) {
+				VmUserRole sharee_role = DBOperations.getInstance().getUserRoleWithVmid(sharee, vmId);
+				if(sharee_role.getRole() != VMRole.SHAREE) {
 					return Response.status(400)
 							.entity(new ErrorBean(400, "User " + sharee
-									+ " is not a sharee of VM " + vmId)).build();
+									+ " should be a " + VMRole.SHAREE + " of VM " + vmId)).build();
 				}
 			}
 
