@@ -61,10 +61,13 @@ public class RandomScheduler extends Scheduler {
 			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(request.getVmId(), hosts[scheduleIndex]);
 
 			if (vmhost != null) {
+				java.util.Date dt = new java.util.Date();
+				String created_at = DATE_FORMATOR.format(dt);
+
 				DBOperations.getInstance().addVM(request.getUserName(),
 						request.getVmId(), request.getImageName(),
 						request.getVncLoginID(), request.getVncLoginPasswd(),
-						vmhost, workDir, request.getVcpu(), 
+						vmhost, created_at, workDir, request.getVcpu(),
 						request.getMemory(), request.getVolumeSizeInGB(),
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
@@ -72,7 +75,7 @@ public class RandomScheduler extends Scheduler {
 
 				DBOperations.getInstance().addPorts(request.getVmId(), vmhost);
 
-				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
+				return new VmInfoBean(request.getVmId(), vmhost.publicip, created_at, workDir,
 						null, // image path
 						null, // policy path
 						vmhost.sshport, vmhost.vncport, 

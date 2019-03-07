@@ -43,7 +43,8 @@ import edu.indiana.d2i.sloan.vm.VMState;
 @Ignore
 public class TestDBOperations {
 	private static Logger logger = Logger.getLogger(TestDBOperations.class);
-
+	protected final java.text.SimpleDateFormat DATE_FORMATOR =
+			new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private int[] portsUsed = null;
 	private void loadDataToImageTable(int records) throws SQLException {
 		Connection connection = null;
@@ -216,6 +217,9 @@ public class TestDBOperations {
 		List<String> vmids = new ArrayList<String>();
 		List<String> userNames = new ArrayList<String>();
 
+		java.util.Date dt = new java.util.Date();
+		String created_at = DATE_FORMATOR.format(dt);
+
 		for (int index = 0; index < count; index++) {
 			userName = "username-" + index;
 			if (index == count-1) {
@@ -231,7 +235,7 @@ public class TestDBOperations {
 			portsExpected[index*2] = 2000 + index*2;
 			portsExpected[index*2+1] = 2000 + index*2 + 1;
 			DBOperations.getInstance().addVM(userName, vmid, "imagename-"+(index%imageCnt), 
-				"vncusername", "vncpassword", host, workDir, 2, 1024, 10
+				"vncusername", "vncpassword", host, created_at, workDir, 2, 1024, 10
 					,"DEMO", null, null, null, null, null, null, null, null, null);
 		}
 
@@ -279,7 +283,7 @@ public class TestDBOperations {
 
 		// delete vm
 		for (int i = 0; i < vmids.size(); i++) {
-			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null,
+			VmInfoBean vinfo = new VmInfoBean(vmids.get(i), null, null, null,
 				null, null, 0, 0, 2, 1024, 10, VMMode.NOT_DEFINED, VMState.CREATE_PENDING, null, null,
 				null, null, null, null, null
 					, "DEMO", null, null, null, null, null, null, null, null, null);
@@ -339,7 +343,7 @@ public class TestDBOperations {
 		Assert.assertTrue(DBOperations.getInstance().quotasNotExceedLimit(request));
 		Assert.assertFalse(DBOperations.getInstance().quotasNotExceedLimit(request));
 		
-		VmInfoBean vmInfo = new VmInfoBean("vmid-0", null, null, null, null, 
+		VmInfoBean vmInfo = new VmInfoBean("vmid-0", null, null, null, null, null,
 			2000, 2001, request.getVcpu(), request.getMemory(), request.getVolumeSizeInGB(),
 				VMMode.MAINTENANCE, VMState.RUNNING, null, null, null, null, null, null, null
 				, "DEMO", null, null, null, null, null, null, null, null, null);
@@ -380,6 +384,8 @@ public class TestDBOperations {
 		loadDataToUserTable(count);
 		loadDataToImageTable(count);
 		loadDataToHostsTable(count);
+		java.util.Date dt = new java.util.Date();
+		String created_at = DATE_FORMATOR.format(dt);
 		
 		// add vm to uservm table
 		String userName = "username-0";
@@ -388,7 +394,7 @@ public class TestDBOperations {
 			VMPorts host = new VMPorts("192.168.0." + (index+2), 2000 + index*2, 2000 + index*2 + 1);
 			String workDir = "/var/instance/" + "vmid-" + index;
 			DBOperations.getInstance().addVM(userName, vmid, "imagename-0", 
-				"vncusername", "vncpassword", host, workDir, 2, 1024, 10
+				"vncusername", "vncpassword", host, created_at, workDir, 2, 1024, 10
 					,"DEMO", null, null, null, null, null, null, null, null, null);
 		}
 
@@ -412,7 +418,7 @@ public class TestDBOperations {
 		
 		// delete vm
 		for (int i = 0; i < 3; i++) {
-			VmInfoBean vinfo = new VmInfoBean("vmid-"+i, null, null,
+			VmInfoBean vinfo = new VmInfoBean("vmid-"+i, null, null, null,
 					null, null, 0, 0, 2, 1024, 10, VMMode.NOT_DEFINED, VMState.CREATE_PENDING, null, null,
 					null, null, null, null, null
 					, "DEMO", null, null, null, null, null, null, null, null, null);

@@ -35,6 +35,9 @@ public class VmStatusBean {
 	public String getPublicip() {
 		return vminfo.getPublicip();
 	}
+	public String getCreated_at() {
+		return vminfo.getCreated_at();
+	}
 	public int getVncport() {
 		return vminfo.getVncport();
 	}

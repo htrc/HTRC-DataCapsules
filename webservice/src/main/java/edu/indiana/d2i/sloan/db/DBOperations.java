@@ -159,6 +159,7 @@ public class DBOperations {
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
+						rs.getString(DBSchema.VmTable.CREATED_AT),
 						rs.getString(DBSchema.VmTable.WORKING_DIR),
 						null, // image path
 						null, // policy path
@@ -355,7 +356,7 @@ public class DBOperations {
 	public List<VmInfoBean> getAllVmInfo() throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.HOST + ","
+				+ "," + DBSchema.VmTable.HOST + "," + DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -390,7 +391,7 @@ public class DBOperations {
 	public VmInfoBean getAllVmInfoByID(String vmid) throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.HOST + ","
+				+ "," + DBSchema.VmTable.HOST + "," + DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -426,7 +427,7 @@ public class DBOperations {
 	public List<VmInfoBean> getExistingVmInfo() throws SQLException {
 		String sql = "SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.HOST + ","
+				+ "," + DBSchema.VmTable.HOST + "," + DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -454,7 +455,7 @@ public class DBOperations {
 	public List<VmInfoBean> getVmInfo(String userName) throws SQLException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.HOST + ","
+				+ "," + DBSchema.VmTable.HOST + "," + DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -486,7 +487,7 @@ public class DBOperations {
 			throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.HOST + ","
+				+ "," + DBSchema.VmTable.HOST + "," + DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -526,7 +527,7 @@ public class DBOperations {
 			throws SQLException, NoItemIsFoundInDBException {
 		String sql = String.format("SELECT " + DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID
-				+ "," + DBSchema.VmTable.HOST + ","
+				+ "," + DBSchema.VmTable.HOST + "," + DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + "," + DBSchema.VmTable.SSH_PORT
 				+ "," + DBSchema.VmTable.VNC_PORT + ","
 				+ DBSchema.VmTable.WORKING_DIR + ","
@@ -562,7 +563,7 @@ public class DBOperations {
 	}
 
 	public void addVM(String userName, String vmid, String imageName,
-			String vncLoginId, String vncLoginPwd, VMPorts host,
+			String vncLoginId, String vncLoginPwd, VMPorts host, String created_at,
 			String workDir, int numCPUs, int memorySize, int diskSpace, String type, String title, Boolean consent,
 			String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
 			String rr_data_files, String rr_result_usage, Boolean full_access)
@@ -578,6 +579,8 @@ public class DBOperations {
 								+ DBSchema.VmTable.VM_MODE
 								+ ","
 								+ DBSchema.VmTable.HOST
+								+ ","
+								+ DBSchema.VmTable.CREATED_AT
 								+ ","
 								+ DBSchema.VmTable.SSH_PORT
 								+ ","
@@ -619,10 +622,10 @@ public class DBOperations {
 								+ ","
 								+ DBSchema.VmTable.FULL_ACCESS
 								+ ") VALUES"
-								+ "(\"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
+								+ "(\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
 								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s, %s)",
 						vmid, VMState.CREATE_PENDING.toString(),
-						VMMode.NOT_DEFINED.toString(), host.publicip,
+						VMMode.NOT_DEFINED.toString(), host.publicip, created_at,
 						host.sshport, host.vncport, workDir, imageName,
 						vncLoginId, vncLoginPwd, numCPUs, memorySize,
 						diskSpace, userName, type,
