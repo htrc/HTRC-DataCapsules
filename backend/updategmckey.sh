@@ -84,19 +84,6 @@ fi
 # Load config file
 . $VM_DIR/config
 
-# Check if VM is running
-if [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Not_Running" ]]; then
-  echo "Error: VM is not running!"
-  exit 3
-fi
-
-# Check if VM is in Maintenance mode
-if [ `cat $VM_DIR/mode` =  "Secure" ]; then
-    echo "Error: Capsule is not in the Maintenance mode. "
-    logger "Cannot add ssh key. Capsule is not in the Maintenance mode. "
-    exit 4
-fi
-
 
 if grep -w "$GMC_PUB_KEY"  $VM_DIR/authorized_keys
 then

@@ -96,7 +96,7 @@ if [[ -z "$VM_DIR" || -z "$DC_TYPE"  ]]; then
   exit 1
 fi
 
-if [ ! -d $VM_DIR ] ; then
+if [[ ! -d "$VM_DIR" ]] ; then
   echo "Error: Invalid VM directory specified!"
   exit 2
 fi
@@ -371,7 +371,7 @@ scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/authorized_keys ro
 # update htrc package
 logger "$VM_DIR Update htrc package"
 scp -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY -r $GUEST_SCRIPTS dcuser@$VM_IP_ADDR:/tmp/ > $VM_DIR/install_python_packages_out 2>&1
-ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip install --upgrade pip && /opt/anaconda/bin/pip install --upgrade htrc-feature-reader && /opt/anaconda/bin/pip install --upgrade topicexplorer && /opt/anaconda/bin/pip install --upgrade htrc && /opt/anaconda/bin/python /tmp/guest_scripts/download_nltk_data.py" >> $VM_DIR/install_python_packages_out 2>&1
+ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip install --upgrade pip && /opt/anaconda/bin/pip install --upgrade htrc-feature-reader && /opt/anaconda/bin/pip install -U topicexplorer==1.0b222 && /opt/anaconda/bin/pip install --upgrade htrc && /opt/anaconda/bin/python /tmp/guest_scripts/download_nltk_data.py" >> $VM_DIR/install_python_packages_out 2>&1
 ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/bin/rm -r /tmp/guest_scripts" >> $VM_DIR/install_python_packages_out 2>&1
 
 # Return successfully (only reaches here if no errors occur)
