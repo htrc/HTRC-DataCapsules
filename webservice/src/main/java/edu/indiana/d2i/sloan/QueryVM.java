@@ -94,7 +94,8 @@ public class QueryVM {
 				for (VmInfoBean vminfo : vmInfoList) {
 					VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vminfo.getVmid());
 					if (!RolePermissionUtils.isPermittedCommand(userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.QUERY_VM)) {
-						vminfo = new VmInfoBean(vminfo.getVmid(), vminfo.getRoles(), vminfo.isFull_access());
+						vminfo = new VmInfoBean(vminfo.getVmid(), vminfo.getRoles(), vminfo.isFull_access()
+								, vminfo.getCreated_at());
 					}
 					status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
 				}
@@ -102,7 +103,7 @@ public class QueryVM {
 				VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
 				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmid);
 				if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.QUERY_VM)) {
-					vminfo = new VmInfoBean(vmid, vminfo.getRoles(), vminfo.isFull_access());
+					vminfo = new VmInfoBean(vmid, vminfo.getRoles(), vminfo.isFull_access(), vminfo.getCreated_at());
 				}
 				vmInfoList.add(vminfo);
 				status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));

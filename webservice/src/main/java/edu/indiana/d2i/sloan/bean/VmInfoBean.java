@@ -49,10 +49,11 @@ public class VmInfoBean {
 		this.policypath = policypath;
 	}
 
-	public VmInfoBean(String vmid, List<VmUserRole> roles, Boolean full_access) {
+	public VmInfoBean(String vmid, List<VmUserRole> roles, Boolean full_access, String created_at) {
 		this.vmid = vmid;
 		this.roles = roles;
 		this.publicip = "";
+		this.created_at = created_at;
 		this.workDir = "";
 		this.imagepath = "";
 		this.policypath = "";
