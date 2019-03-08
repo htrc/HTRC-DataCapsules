@@ -25,6 +25,8 @@ import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 
 public abstract class Scheduler {
 	protected static final String[] hosts;
+	protected final java.text.SimpleDateFormat DATE_FORMATOR =
+			new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	static {
 		hosts = Configuration.getInstance()

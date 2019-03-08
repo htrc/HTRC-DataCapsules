@@ -137,7 +137,7 @@ public class TestCapsuleHypervisor {
 	
 	private void testCreateVM(IHypervisor hypervisor, int records) throws Exception {
 		for (int i = 0; i < records; i++) {
-			VmInfoBean vminfo = new VmInfoBean("vmid-" + i, "192.168.0." + i, 
+			VmInfoBean vminfo = new VmInfoBean("vmid-" + i, "192.168.0." + i, null,
 				"/path/to/work/dir-"+i, 
 				"/path/to/image", "/path/to/policy", 2000 + i*2, 2000 + i*2 +1, 2, 2048, 
 				10, VMMode.NOT_DEFINED, VMState.LAUNCH_PENDING, "ubuntu", 

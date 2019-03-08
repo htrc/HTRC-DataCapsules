@@ -21,7 +21,7 @@ import edu.indiana.d2i.sloan.vm.VMState;
 import java.util.List;
 
 public class VmInfoBean {
-	private String vmid, publicip, workDir, imagepath, policypath, vncloginId,
+	private String vmid, publicip, created_at, workDir, imagepath, policypath, vncloginId,
 			vncloginPwd, imagename, policyname, vmloginid, vmloginpwd;
 	private int sshport, vncport, numCPUs, memorySize, volumeSize;
 	private VMMode vmmode;
@@ -83,7 +83,7 @@ public class VmInfoBean {
 		this.desc_shared = "";
 	}
 
-	public VmInfoBean(String vmid, String publicip, String workDir,
+	public VmInfoBean(String vmid, String publicip, String created_at, String workDir,
 			String imagepath, String policypath, int sshport, int vncport,
 			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,
 			VMState vmstate, String vncloginId, String vncloginPwd,
@@ -91,8 +91,10 @@ public class VmInfoBean {
 			String imagename, String policyname, VMMode requestedVMMode, String type, String title,
 					  Boolean consent, String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
 			String rr_data_files, String rr_result_usage, Boolean full_access, List<VmUserRole> roles, String desc_shared) {
+
 		this.vmid = vmid;
 		this.publicip = publicip;
+		this.created_at = created_at;
 		this.workDir = workDir;
 		this.imagepath = imagepath;
 		this.policypath = policypath;
@@ -129,6 +131,9 @@ public class VmInfoBean {
 	}
 	public String getPublicip() {
 		return publicip;
+	}
+	public String getCreated_at() {
+		return created_at;
 	}
 	public String getWorkDir() {
 		return workDir;

@@ -120,7 +120,7 @@ while :; do
     shift
 done
 
-if [[ -z "$VM_DIR" || -z "NEW_VNC_PORT" || -z "NEW_SSH_PORT" || -z "DES_HOST" ]]; then
+if [[ -z "$VM_DIR" || -z "$NEW_VNC_PORT" || -z "$NEW_SSH_PORT" || -z "$DES_HOST" ]]; then
   printf 'WARN: Missing required argument'  >&2
   usage
   exit 1

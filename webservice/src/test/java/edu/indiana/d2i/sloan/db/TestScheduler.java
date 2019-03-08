@@ -185,7 +185,7 @@ public class TestScheduler {
 		}
 
 		// release one
-		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null,
+		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null, null,
 				null, null, null, 0, 0, 2, 1024, 10, null, null, null, null,
 				null, null, null, null, null
 				, "DEMO", null, null, null, null, null, null, null, null, null, null, null);
