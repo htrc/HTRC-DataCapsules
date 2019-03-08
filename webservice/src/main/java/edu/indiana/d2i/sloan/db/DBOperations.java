@@ -159,7 +159,7 @@ public class DBOperations {
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
-						rs.getString(DBSchema.VmTable.CREATED_AT),
+						DATE_FORMATOR.format(rs.getTimestamp(DBSchema.VmTable.CREATED_AT)),
 						rs.getString(DBSchema.VmTable.WORKING_DIR),
 						null, // image path
 						null, // policy path
