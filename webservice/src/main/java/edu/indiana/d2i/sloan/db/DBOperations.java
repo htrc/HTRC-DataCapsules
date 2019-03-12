@@ -1881,10 +1881,13 @@ public class DBOperations {
 
 	public void updateUserPubKey(String userName, String sshKey) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
-		String encodedKey = Base64.getEncoder().encodeToString(sshKey.getBytes("utf-8"));
+		String encodedKey = null;
+		if(sshKey != null) {
+			encodedKey = Base64.getEncoder().encodeToString(sshKey.getBytes("utf-8"));
+		}
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
-				+ DBSchema.UserTable.PUB_KEY + "=\"%s\" WHERE "
+				+ DBSchema.UserTable.PUB_KEY + (sshKey ==  null ? "=%s" : "=\"%s\"")  + " WHERE "
 				+ DBSchema.UserTable.GUID + "=\"%s\"", encodedKey, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);

@@ -38,7 +38,11 @@ import java.util.List;
 @Path("/updateuserkey")
 public class UpdateUserKey {
 	private static Logger logger = Logger.getLogger(UpdateUserKey.class);
+	private static final String DELETE = "DELETE";
 
+	/*
+		Update SSH key of the user in the database and update all VMs(update the ssh key) that the user has access to
+	*/
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -46,13 +50,6 @@ public class UpdateUserKey {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		//if (userEmail == null) userEmail = "";
-
-		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		//if (operator == null) operator = userName;
-		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -62,10 +59,13 @@ public class UpdateUserKey {
 							"Username is not present in http header.")).build();
 		}
 
-		try {
-			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+		if (pubkey == null) {
+			logger.error("SSH Key is not present in the request.");
+			return Response.status(400).entity(new ErrorBean(400,
+							"SSH Key is not present in the request.")).build();
+		}
 
+		try {
 			logger.info("User " + userName + " tries to update the public key");
 			if(DBOperations.getInstance().userExists(userName)) {
 				DBOperations.getInstance().updateUserPubKey(userName, pubkey);
@@ -98,6 +98,10 @@ public class UpdateUserKey {
 	}
 
 
+	/*
+    	if vmid != null : update VM with all sharees SSH keys
+    	if vmid == null : for all VMs, update the SSH keys of all sharees
+	*/
 	@PUT
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
@@ -147,5 +151,63 @@ public class UpdateUserKey {
 					.entity(new ErrorBean(500, e.getMessage())).build();
 		}
 
+	}
+
+	/*
+    	Remove user's SSH key from all the VMs that this user has access to, and Set the SSH key to null in the database
+	*/
+	@DELETE
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response deleteUserKey(@Context HttpHeaders httpHeaders,
+								  @Context HttpServletRequest httpServletRequest) {
+		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+
+		if (userName == null) {
+			logger.error("Username is not present in http header.");
+			return Response.status(400).entity(new ErrorBean(400,
+							"Username is not present in http header.")).build();
+		}
+
+		try {
+			String pubkey = DBOperations.getInstance().getUserPubKey(userName);
+			if(pubkey == null ) {
+				logger.error("User's public key is already set to NULL.");
+				return Response.status(400).entity(new ErrorBean(400,
+						"User's public key is already set to NULL")).build();
+			}
+
+			logger.info("User " + userName + " tries to remove the public key");
+			if(DBOperations.getInstance().userExists(userName)) {
+				List<VmInfoBean> vmInfoList = new ArrayList<VmInfoBean>();
+				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
+
+				for (VmInfoBean vminfo : vmInfoList) {
+					if(vminfo.getVmstate().name().contains(DELETE))
+						continue; // don't do anything if capsule is in DELETE* state
+
+					if (RolePermissionUtils.isPermittedCommand(
+							userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+						HypervisorProxy.getInstance().addCommand(
+								new UpdatePublicKeyCommand(vminfo, userName, userName, null));
+					}
+				}
+
+				DBOperations.getInstance().updateUserPubKey(userName, null);
+				logger.info("Public key of user '" + userName + "' was set to NULL in database successfully!");
+				return Response.status(200).build();
+			} else {
+				logger.info("User '" + userName + "' is not in database, hence not updating public key!");
+				return Response
+						.status(400)
+						.entity(new ErrorBean(400,
+								"Username '" + userName + "' does not have any capsules created. Public key " +
+										"can be added/updated only if the user has created capsules previously.")).build();
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return Response.status(500)
+					.entity(new ErrorBean(500, e.getMessage())).build();
+		}
 	}
 }
