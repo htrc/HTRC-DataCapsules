@@ -20,6 +20,7 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMRole;
@@ -62,13 +63,14 @@ public class UpdateVm {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 
-		if (userName == null) {
-			logger.error("Username is not present in http header.");
+		if (userName == null || userEmail == null) {
+			logger.error("Username/E-mail is not present in http header.");
 			return Response
 					.status(400)
 					.entity(new ErrorBean(400,
-							"Username is not present in http header.")).build();
+							"Username/E-mail is not present in http header.")).build();
 		}
 
 		try {
@@ -154,7 +156,15 @@ public class UpdateVm {
 							DBOperations.getInstance().removeVmSharee(vmId, guid_list);
 							logger.info("Users " + guid_list
 									+ "  were subsequently rejected for full access hence removed from VM " + vmId);
-							// TODO-UN send notification to the owner
+
+							//send notification to the owner
+							EmailUtil send_email = new EmailUtil();
+							String content = "Following User/(s) added to Research-Full capsule with VM ID " + vmId
+									+ " has/have been rejected :\n";
+							for(String guid : guid_list) {
+								content += "\t" + DBOperations.getInstance().getUserEmail(guid) + "\n";
+							}
+							send_email.sendEMail(userEmail, "User/(s) Rejected from Research-Full Data Capsule", content);
 						}
 					}
 

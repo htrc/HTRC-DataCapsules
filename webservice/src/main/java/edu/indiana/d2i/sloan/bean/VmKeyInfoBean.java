@@ -14,14 +14,14 @@ public class VmKeyInfoBean {
 	private int numCPUs, memorySize;
 	private VMMode vmmode;
 	private VMState vmState;
-	private String host;
+	private String host, created_at;
 	private int numHostCPUCores;
 	private int numHostMemoryGB;
 	private List<VmUserRole> roles;
 
 	public VmKeyInfoBean(String vmid, String username, String userEmail,
 						 int numCPUs, int memorySize, VMMode vmmode, VMState vmState,
-						 String host, int numHostCPUCores, int numHostMemoryGB, List<VmUserRole> roles ) {
+						 String host, String created_at, int numHostCPUCores, int numHostMemoryGB, List<VmUserRole> roles ) {
 		this.vmid = vmid;
 		this.username = username;
 		this.userEmail = userEmail;
@@ -30,6 +30,7 @@ public class VmKeyInfoBean {
 		this.vmmode = vmmode;
 		this.vmState = vmState;
 		this.host = host;
+		this.created_at = created_at;
 		this.numHostCPUCores = numHostCPUCores;
 		this.numHostMemoryGB = numHostMemoryGB;
 		this.roles = roles;
@@ -45,6 +46,10 @@ public class VmKeyInfoBean {
 
 	public String getHost() {
 		return host;
+	}
+
+	public String getCreated_at() {
+		return created_at;
 	}
 
 	public String getVmid() {

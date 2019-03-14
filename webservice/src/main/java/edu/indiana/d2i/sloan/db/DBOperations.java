@@ -92,6 +92,7 @@ public class DBOperations {
 		String sql = "SELECT " + DBSchema.VmTable.VM_ID + ","
 				+ DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.HOST + ","
+				+ DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + ","
 				+ DBSchema.VmTable.NUM_CPUS + ","
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
@@ -126,6 +127,7 @@ public class DBOperations {
 						VMState.valueOf(rs
 								.getString(DBSchema.VmTable.STATE)),
 						rs.getString(DBSchema.VmTable.HOST),
+						DATE_FORMATOR.format(rs.getTimestamp(DBSchema.VmTable.CREATED_AT)),
 						rs.getInt(DBSchema.HostTable.CPU_CORES),
 						rs.getInt(DBSchema.HostTable.MEMORY_GB),
 						roles
