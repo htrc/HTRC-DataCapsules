@@ -10,7 +10,7 @@ import java.util.List;
  * Created by liang on 9/21/16.
  */
 public class VmKeyInfoBean {
-	private String vmid, username, userEmail;
+	private String vmid, username, userEmail, type;
 	private int numCPUs, memorySize;
 	private VMMode vmmode;
 	private VMState vmState;
@@ -21,7 +21,8 @@ public class VmKeyInfoBean {
 
 	public VmKeyInfoBean(String vmid, String username, String userEmail,
 						 int numCPUs, int memorySize, VMMode vmmode, VMState vmState,
-						 String host, String created_at, int numHostCPUCores, int numHostMemoryGB, List<VmUserRole> roles ) {
+						 String host, String created_at, int numHostCPUCores, int numHostMemoryGB, String type,
+						 List<VmUserRole> roles ) {
 		this.vmid = vmid;
 		this.username = username;
 		this.userEmail = userEmail;
@@ -33,6 +34,7 @@ public class VmKeyInfoBean {
 		this.created_at = created_at;
 		this.numHostCPUCores = numHostCPUCores;
 		this.numHostMemoryGB = numHostMemoryGB;
+		this.type = type;
 		this.roles = roles;
 	}
 
@@ -78,6 +80,10 @@ public class VmKeyInfoBean {
 
 	public VMState getVmState() {
 		return vmState;
+	}
+
+	public String getType() {
+		return type;
 	}
 
 	public List<VmUserRole> getRoles() {

@@ -96,6 +96,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.STATE + ","
 				+ DBSchema.VmTable.NUM_CPUS + ","
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.TYPE + ","
 				+ DBSchema.HostTable.CPU_CORES + ","
 				+ DBSchema.HostTable.MEMORY_GB + " FROM "
 				+ DBSchema.VmTable.TABLE_NAME + ", "
@@ -130,6 +131,7 @@ public class DBOperations {
 						DATE_FORMATOR.format(rs.getTimestamp(DBSchema.VmTable.CREATED_AT)),
 						rs.getInt(DBSchema.HostTable.CPU_CORES),
 						rs.getInt(DBSchema.HostTable.MEMORY_GB),
+						rs.getString(DBSchema.VmTable.TYPE),
 						roles
 				);
                 res.add(vmKeyInfoBean);
