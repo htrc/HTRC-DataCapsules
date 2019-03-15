@@ -7,6 +7,7 @@ import argparse
 import string
 import httplib
 import time
+from datetime import datetime, date, timedelta
 
 # DC
 DC_API = 'htc2.carbonate.uits.iu.edu'
@@ -214,7 +215,6 @@ def stop_running_vms():
         for vm in vms:
             if vm["vmState"] == "RUNNING":
                 roles = vm["roles"]
-                #roles = json.load(vm["roles"])
                 for role in roles:
                     if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER" or role["role"] == "CONTROLLER":
                         print 'Stopping VM: {}'.format(vm["vmid"])
@@ -256,10 +256,6 @@ def migrate_vm(guid, vm, dst_host):
 
 
 def migrate_all(src_host, dst_host):
-    vms_to_migrate = []
-    headers = {'Content-Type': 'application/json',
-               'Accept': 'application/json'}
-
     # Get request
     conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
@@ -270,11 +266,11 @@ def migrate_all(src_host, dst_host):
 
         for vm in vms:
             if vm["vmState"] == "SHUTDOWN" and vm["host"] == src_host:
-                roles = json.load(vm["roles"])
+                roles = vm["roles"]
                 for role in roles:
                     if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
                         print 'Migrating VM: {}'.format(vm["vmid"])
-                        migrate_vm(vm["username"], role["guid"], dst_host)
+                        migrate_vm(role["guid"], vm["vmid"], dst_host)
                         time.sleep(5)
 
 
@@ -292,22 +288,41 @@ def show_capsules(guid):
     print json.dumps(parsed, indent=4, sort_keys=True)
 
 
-def show_pending_fullaccess(guid):
-    headers = {'Content-Type': 'application/x-www-form-urlencoded',
-               'htrc-remote-user': guid}
-
-    # POST the request
+def show_pending_fullaccess():
+    # Get request
     conn = httplib.HTTPConnection(DC_API, PORT)
-    conn.request("POST", '/sloan-ws/show', "", headers)
+    conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
 
     if response.status == 200:
-        vms = json.loads(response.read())['status']
+        vms = json.loads(response.read())['vmsInfo']
 
         for vm in vms:
-            if vm["full_access"] is not None and vm["full_access"] is False:
-                print 'VM ID : {} has pending request for full data access.'.format(vm["vmid"])
+            roles = vm["roles"]
+            for role in roles:
+                if role["full_access"] is not None and role["full_access"] is False:
+                    print 'VM ID : {} User : {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["email"])
 
+def delete_expired_capsules():
+    # Get request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/listvms')
+    response = conn.getresponse()
+
+    if response.status == 200:
+        vms = json.loads(response.read())['vmsInfo']
+
+        for vm in vms:
+            if vm["type"] == "DEMO":
+                created_date = datetime.strptime(vm["created_at"],"%Y-%m-%d %H:%M:%S").date()
+                expired_date = created_date + timedelta(days=31)
+                if expired_date < date.today():
+                    roles = vm["roles"]
+                    for role in roles:
+                        if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                            print 'Deleting Expired Capsule : {} owned by : {} Email: {}'.format(vm["vmid"] , role["guid"], role["email"])
+                            delete_vm(vm["vmid"] , role["guid"])
+                            time.sleep(5)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -380,7 +395,6 @@ if __name__ == '__main__':
     showcapsules.add_argument('guid')
 
     showpendingfullaccess = subparsers.add_parser('showpendingfullaccess', description='Show VM IDs which have pending requests for full data access.')
-    showpendingfullaccess.add_argument('guid')
 
     migrateall = subparsers.add_parser('migrateall', description='Migrate all VMs from one host to another.')
     migrateall.add_argument('srchost')
@@ -391,6 +405,9 @@ if __name__ == '__main__':
     migrate.add_argument('guid')
     migrate.add_argument('vm')
     migrate.add_argument('desthost')
+
+    deleteexpiredcapsules = subparsers.add_parser('deleteexpiredcapsules', description='Delete expired capsules.')
+
 
     parsed = parser.parse_args()
 
@@ -465,10 +482,8 @@ if __name__ == '__main__':
             update_result(parsed.rid, 'Rejected')
 
     if parsed.sub_commands == 'stoprunning':
-        confirmation = query_yes_no('Are you sure you want to stop all the running capsules?')
-        if confirmation:
-            print 'Stopping all the running VMs'
-            stop_running_vms()
+        print 'Stopping all the running VMs'
+        stop_running_vms()
 
     if parsed.sub_commands == 'approvefullaccess':
         confirmation = query_yes_no('Are you sure you want to give approval for full access to VM ' + parsed.vm + '?')
@@ -483,12 +498,12 @@ if __name__ == '__main__':
             update_vmtype(parsed.vm, parsed.guid, 'false')
 
     if parsed.sub_commands == 'showcapsules':
-        print 'Showing capsules information for user ' + parsed.vmuser + '....'
+        print 'Showing capsules information for GUID ' + parsed.guid + '....'
         show_capsules(parsed.guid)
 
     if parsed.sub_commands == 'showpendingfullaccess':
-        print 'Showing capsules list which has pending requests for full data access. Username: ' + parsed.vmuser + '....'
-        show_pending_fullaccess(parsed.guid)
+        print 'Showing capsules list which has pending requests for full data access.'
+        show_pending_fullaccess()
 
     if parsed.sub_commands == 'migrateall':
         print 'Migrating all the capsules in {} to {}'.format(parsed.srchost, parsed.desthost)
@@ -497,3 +512,7 @@ if __name__ == '__main__':
     if parsed.sub_commands == 'migrate':
         print 'Migrating VM {} to {}'.format(parsed.vm, parsed.desthost)
         migrate_vm(parsed.guid, parsed.vm, parsed.desthost)
+
+    if parsed.sub_commands == 'deleteexpiredcapsules':
+        print 'Deleting expired capsules.'
+        delete_expired_capsules()
