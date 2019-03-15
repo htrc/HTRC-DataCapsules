@@ -20,8 +20,8 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
 usage () {
 
-  echo "Usage: $0 <Directory for VM> --image <Image Name> --vcpu <Number of CPUs> --mem <Guest Memory Size>"
-  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size>   --pubkey <User's ssh key> --guid <User's Global ID>"
+  echo "Usage: $0 --wdir <Directory for VM> --image <Image Name> --vcpu <Number of CPUs> --mem <Guest Memory Size>"
+  echo "       --vnc <VNC Port>   --ssh <SSH Port>        --volsize <Volume Size>   --guid <User's Global ID> --pubkey <User's ssh key>"
   echo ""
   echo "Creates a new VM by allocating a directory for it and instantiating configuration files."
   echo ""
@@ -43,7 +43,7 @@ usage () {
   echo ""
   echo "--loginpwd Login Password: (optional) Password to be used to log in to VNC sessions"
   echo ""
-  echo "--guid  User's ssh public key to add in the VM"
+  echo "--guid  User's global ID"
   echo ""
   echo "--pubkey  User's ssh public key."
   echo ""
