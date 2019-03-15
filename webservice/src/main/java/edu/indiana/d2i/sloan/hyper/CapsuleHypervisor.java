@@ -168,8 +168,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--loginid", String.valueOf(vminfo.getVNCloginId()))
 					.addArgument("--loginpwd", String.valueOf(vminfo.getVNCloginPwd()))
 					.addArgument("--volsize", String.valueOf(vminfo.getVolumeSizeInGB()) + "G")
-					.addArgument("--pubkey", "\"" + pubKey + "\"")
 					.addArgument("--guid", userId)
+					.addArgument("--pubkey", "\"" + pubKey + "\"")
 					.build();
 
 			Commands createVMCmd = new Commands(
