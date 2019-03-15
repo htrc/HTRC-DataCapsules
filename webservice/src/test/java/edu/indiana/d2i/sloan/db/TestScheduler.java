@@ -39,15 +39,17 @@ public class TestScheduler {
 	@BeforeClass
 	public static void beforeClass() {
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.DB_DRIVER_CLASS,
-				"com.mysql.jdbc.Driver");
+				Configuration.PropertyName.DB_DRIVER_CLASS, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_DRIVER_CLASS));
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.JDBC_URL,
-				"jdbc:mysql://localhost:3306/" + DBSchema.DB_NAME);
+				Configuration.PropertyName.JDBC_URL, Configuration.getInstance().getString(
+						Configuration.PropertyName.JDBC_URL));
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.DB_USER, "root");
+				Configuration.PropertyName.DB_USER, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_USER));
 		Configuration.getInstance().setProperty(
-				Configuration.PropertyName.DB_PWD, "root");
+				Configuration.PropertyName.DB_PWD, Configuration.getInstance().getString(
+						Configuration.PropertyName.DB_PWD));
 
 		// configurations for scheduler
 		/* test round-robin scheduler */
@@ -74,12 +76,14 @@ public class TestScheduler {
 
 	@Before
 	public void before() throws Exception {
-		Class.forName("com.mysql.jdbc.Driver");
-		Connection connection = DriverManager.getConnection(
-				"jdbc:mysql://localhost:3306", "root", "root");
+		Class.forName(Configuration.getInstance().getString(Configuration.PropertyName.DB_DRIVER_CLASS));
+		Connection connection = DriverManager.getConnection(Configuration.getInstance().getString(
+				Configuration.PropertyName.JDBC_URL), Configuration.getInstance().getString(
+				Configuration.PropertyName.DB_USER),  Configuration.getInstance().getString(
+				Configuration.PropertyName.DB_PWD));
 		ScriptRunner script = new ScriptRunner(connection, false, false);
 		script.runScript(new java.io.FileReader(
-				"src/main/resources/createtables.sql"));
+				"src/main/resources/dc_schema.sql"));
 		connection.close();
 	}
 
@@ -181,7 +185,7 @@ public class TestScheduler {
 		}
 
 		// release one
-		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null,
+		VmInfoBean vmInfo = new VmInfoBean("vmid-" + (scheduled - 1), null, null,
 				null, null, null, 0, 0, 2, 1024, 10, null, null, null, null,
 				null, null, null, null, null
 				, "DEMO", null, null, null, null, null, null, null, null, null);

@@ -18,6 +18,7 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.vm.VMMode;
@@ -55,13 +56,13 @@ public class UpdateVm {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		if (userEmail == null) userEmail = "";
 
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
 		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
 		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		if (operatorEmail == null) operatorEmail = "";*/
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -72,8 +73,8 @@ public class UpdateVm {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			logger.info("User " + userName + " tries to update the VM");
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
@@ -141,6 +142,13 @@ public class UpdateVm {
 					+ type + ") in database successfully!");
 
 			return Response.status(200).build();
+		} catch (NoItemIsFoundInDBException e) {
+			logger.error(e.getMessage(), e);
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400, "VM " + vmId
+							+ " is not associated with user " + userName))
+					.build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

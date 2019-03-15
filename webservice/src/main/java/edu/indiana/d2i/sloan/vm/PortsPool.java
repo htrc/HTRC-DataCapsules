@@ -16,12 +16,10 @@
 package edu.indiana.d2i.sloan.vm;
 
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import edu.indiana.d2i.sloan.bean.PortBean;
+import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -31,35 +29,19 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 public class PortsPool {
 	private static Logger logger = Logger.getLogger(PortsPool.class);
 	
-	// <host, <ports_in_use>>
-	private Map<String, Set<Integer>> portsUsed;
+	private ArrayList<String> vmHosts;
 	private final int PORT_RANGE_MIN, PORT_RANGE_MAX;
 	
-//	private static PortsPool instance = null;
-	public PortsPool() {
+	private static PortsPool instance = null;
+
+	private PortsPool() {
 		// load hosts
-		portsUsed = new HashMap<String, Set<Integer>>();
+		vmHosts = new ArrayList<String>();
 		String[] hosts = Configuration.getInstance().getString(
 				Configuration.PropertyName.HOSTS).split(";");
 		for (String host : hosts) {
-			portsUsed.put(host, new HashSet<Integer>());
+			vmHosts.add(host);
 		}
-		
-		// load from db
-		try {
-			List<VmInfoBean> vmStatus = DBOperations.getInstance().getExistingVmInfo();
-			for (VmInfoBean status : vmStatus) {
-				if (!portsUsed.containsKey(status.getPublicip())) {
-					portsUsed.put(status.getPublicip(), new HashSet<Integer>());
-				}
-				portsUsed.get(status.getPublicip()).add(status.getSshport());
-				portsUsed.get(status.getPublicip()).add(status.getVncport());
-			}
-			logger.debug("Ports used: " + portsUsed.toString());
-		} catch (SQLException e) {
-			logger.fatal(e.getMessage(), e);
-			throw new RuntimeException(e);
-		}		
 		
 		// load port range from configuration
 		PORT_RANGE_MIN = Integer.valueOf(Configuration.getInstance()
@@ -67,50 +49,75 @@ public class PortsPool {
 		PORT_RANGE_MAX = Integer.valueOf(Configuration.getInstance()
 			.getString(Configuration.PropertyName.PORT_RANGE_MAX));
 	}
-	
-//	static {
-//		instance = new PortsPool();
-//	}
-//	
-//	public static PortsPool getInstance() {
-//		return instance;
-//	}
+
+	public static PortsPool getInstance() {
+		if (instance == null) {
+			synchronized (PortsPool.class) {
+				if(instance==null) {
+					instance = new PortsPool();
+				}
+			}
+		}
+		return instance;
+	}
 	
 	/**
 	 * @param host
 	 * @return null if no available port pair is found
 	 */
-	public VMPorts nextAvailablePortPairAtHost(String host) {
-		synchronized (portsUsed) {
-			if (!portsUsed.containsKey(host)) {
-				throw new IllegalArgumentException("Hostname " + host + " is illegal!");
-			}
-			
-			VMPorts vmport = new VMPorts(host, -1, -1);
-			for (int port = PORT_RANGE_MIN; port <= PORT_RANGE_MAX; port++) {
-				if (!portsUsed.get(host).contains(port)) {
-					if (vmport.sshport == -1) {
-						vmport.sshport = port;
-						portsUsed.get(host).add(port);
-					} else {
-						vmport.vncport = port;
-						portsUsed.get(host).add(port);
-						return vmport;
-					}
+	public synchronized VMPorts nextAvailablePortPairAtHost(String vmid, String host) throws SQLException {
+		if (!vmHosts.contains(host)) {
+			throw new IllegalArgumentException("Hostname " + host + " is illegal!");
+		}
+		List<Integer> portsUsed = DBOperations.getInstance().getPortsOfHost(host);
+		VMPorts vmport = new VMPorts(host, -1, -1);
+		for (int port = PORT_RANGE_MIN; port <= PORT_RANGE_MAX; port++) {
+			if (!portsUsed.contains(port)) {
+				if (vmport.sshport == -1) {
+					vmport.sshport = port;
+				} else {
+					vmport.vncport = port;
+					//DBOperations.getInstance().addPorts(vmid, vmport);
+					logger.debug("port allocated : " + vmport.toString());
+					return vmport;
 				}
 			}
-			return null;
 		}
+		return null;
+	}
+
+	public synchronized VMPorts getMigrationPortPair(String vmid, VMPorts vmPorts) throws InvalidHostNameException,
+			SQLException {
+		String host = vmPorts.publicip;
+		if (!vmHosts.contains(host)) {
+			throw new InvalidHostNameException("Hostname " + host + " is invalid!");
+		}
+
+		List<Integer> portsUsed = DBOperations.getInstance().getPortsOfHost(host);
+		VMPorts vmport = new VMPorts(host, -1, -1);
+
+		if (!portsUsed.contains(vmPorts.sshport)
+				&& !portsUsed.contains(vmPorts.vncport)) {
+			vmport.sshport = vmPorts.sshport;
+			vmport.vncport = vmPorts.vncport;
+			DBOperations.getInstance().addPorts(vmid, vmport);
+			logger.debug("port allocated : " + vmport.toString());
+			return vmport;
+		}
+
+		vmport = nextAvailablePortPairAtHost(vmid, host);
+		if(vmport == null)
+			return null;
+
+		DBOperations.getInstance().addPorts(vmid, vmport);
+		return vmport;
 	}
 	
-//	public synchronized void release(VMPorts ports) {
-//		synchronized (portsUsed) {
-//			if (!portsUsed.containsKey(ports.host)) {
-//				throw new IllegalArgumentException("Hostname " + ports.host + " is illegal!");
-//			}
-//			
-//			portsUsed.get(ports.host).remove(ports.sshport);
-//			portsUsed.get(ports.host).remove(ports.vncport);
-//		}
-//	}
+	public synchronized void release(String vmid, VMPorts ports) throws SQLException, InvalidHostNameException {
+		if (!vmHosts.contains(ports.publicip)) {
+			throw new InvalidHostNameException("Hostname " + ports.publicip + " is illegal!");
+		}
+		DBOperations.getInstance().deletePort(vmid, ports);
+		logger.debug("port released : " + ports.toString());
+	}
 }

@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package edu.indiana.d2i.sloan.vm;
+package edu.indiana.d2i.sloan.exception;
 
-public enum VMState {
-	CREATE_PENDING,
-	LAUNCH_PENDING,
-	RUNNING,
-	SWITCH_TO_MAINTENANCE_PENDING,
-	SWITCH_TO_SECURE_PENDING,
-	SHUTDOWN_PENDING,
-	SHUTDOWN,
-	DELETE_PENDING,
-	ERROR,
-	DELETED,
-	DELETE_ERROR,
-	MIGRATE_PENDING
+@SuppressWarnings("serial")
+public class InvalidHostNameException extends SloanWSException {
+	public InvalidHostNameException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+
+    public InvalidHostNameException(String message) {
+        super(message);
+    }
 }

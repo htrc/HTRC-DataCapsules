@@ -36,26 +36,30 @@ public class RoundRobinScheduler extends Scheduler {
 	@Override
 	protected VmInfoBean doSchedule(CreateVmRequestBean request)
 			throws NoResourceAvailableException, SQLException {
-		PortsPool portsPool = new PortsPool();
+		//PortsPool portsPool = new PortsPool();
 		int start = scheduleIndex;
 
 		String workDir = request.getWorkDir();
 
 		do {
-			VMPorts vmhost = portsPool
-					.nextAvailablePortPairAtHost(hosts[scheduleIndex]);
+			VMPorts vmhost = PortsPool.getInstance().nextAvailablePortPairAtHost(request.getVmId(), hosts[scheduleIndex]);
 			scheduleIndex = (scheduleIndex + 1) % hosts.length;
 			if (vmhost != null) {
+				java.util.Date dt = new java.util.Date();
+				String created_at = DATE_FORMATOR.format(dt);
+
 				DBOperations.getInstance().addVM(request.getUserName(),
 						request.getVmId(), request.getImageName(),
 						request.getVncLoginID(), request.getVncLoginPasswd(),
-						vmhost, workDir, request.getVcpu(), 
+						vmhost, created_at, workDir, request.getVcpu(),
 						request.getMemory(), request.getVolumeSizeInGB(),
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
 						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
-			
-				return new VmInfoBean(request.getVmId(), vmhost.publicip, workDir, 
+
+				DBOperations.getInstance().addPorts(request.getVmId(), vmhost);
+
+				return new VmInfoBean(request.getVmId(), vmhost.publicip, created_at, workDir,
 						null, // image path
 						null, // policy path
 						vmhost.sshport, vmhost.vncport, 

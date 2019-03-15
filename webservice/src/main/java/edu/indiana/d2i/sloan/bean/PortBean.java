@@ -13,19 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package edu.indiana.d2i.sloan.vm;
+package edu.indiana.d2i.sloan.bean;
 
-public enum VMState {
-	CREATE_PENDING,
-	LAUNCH_PENDING,
-	RUNNING,
-	SWITCH_TO_MAINTENANCE_PENDING,
-	SWITCH_TO_SECURE_PENDING,
-	SHUTDOWN_PENDING,
-	SHUTDOWN,
-	DELETE_PENDING,
-	ERROR,
-	DELETED,
-	DELETE_ERROR,
-	MIGRATE_PENDING
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMState;
+
+public class PortBean {
+	private String vmid, publicip;
+	private int sshport, vncport;
+
+	public PortBean(String vmid, String publicip, int sshport, int vncport) {
+		this.vmid = vmid;
+		this.publicip = publicip;
+		this.sshport = sshport;
+		this.vncport = vncport;
+	}
+
+	public String getVmid() {
+		return vmid;
+	}
+	public String getPublicip() {
+		return publicip;
+	}
+	public int getSshport() {
+		return sshport;
+	}
+	public int getVncport() {
+		return vncport;
+	}
+
+	@Override
+	public String toString() {
+		return String.format("[vmid=%s, publicip=%s, sshport=%d, vncport=%d]",  vmid, publicip, sshport, vncport);
+	}
 }

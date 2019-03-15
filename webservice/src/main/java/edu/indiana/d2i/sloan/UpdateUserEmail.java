@@ -35,12 +35,18 @@ public class UpdateUserEmail {
 	public Response updateUserEmail(@Context HttpHeaders httpHeaders, @Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
 		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		if (userEmail == null) userEmail = "";
+		if (userEmail == null) {
+			logger.error("Email is not present in http header.");
+			return Response
+					.status(400)
+					.entity(new ErrorBean(400,
+							"User's email is not present in http header.")).build();
+		}
 
-		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		//if (operator == null) operator = userName;
+		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -51,15 +57,21 @@ public class UpdateUserEmail {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			logger.info("User " + userName + " tries to update the email to " + userEmail);
-
-			DBOperations.getInstance().updateUserEmail(userName, userEmail);
-			logger.info("Email of user '" + userName + "' was updated in database successfully!");
-
-			return Response.status(200).build();
+			if(DBOperations.getInstance().userExists(userName)) {
+				DBOperations.getInstance().updateUserEmail(userName, userEmail);
+				logger.info("Email of user '" + userName + "' was updated in database successfully!");
+                return Response.status(200).build();
+			} else {
+				logger.info("User '" + userName + "' is not in database, hence not updating email!");
+                return Response
+                        .status(400)
+                        .entity(new ErrorBean(400,
+                                "User '" + userName + "' is not in database, hence not updating email!")).build();
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

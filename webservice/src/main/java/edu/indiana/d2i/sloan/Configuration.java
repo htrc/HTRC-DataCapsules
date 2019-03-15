@@ -48,7 +48,7 @@ public final class Configuration {
 		loadConfigurations("default.xml");
 		String sitesXmlPath = properties.get("sites.xml.path");
 		loadConfigurations(sitesXmlPath);
-		logger.info(properties.toString());
+		logger.debug(properties.toString());
 	}
 
 	private Map<String, String> properties = null;
@@ -100,6 +100,7 @@ public final class Configuration {
 		public static final String CMD_STOP_VM = "cmd.stop.vm";
 		public static final String CMD_DELETE_VM = "cmd.delete.vm";
 		public static final String CMD_UPDATE_KEY = "cmd.update.key";
+		public static final String MIGRATE_VM = "cmd.migrate.vm";
 
 		/* hypervisor fire wall policy */
 		public static final String MAINTENANCE_FIREWALL_POLICY = "hypervisor.fw.maintenance";

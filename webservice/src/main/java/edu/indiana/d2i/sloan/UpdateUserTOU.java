@@ -18,11 +18,13 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +33,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,13 +49,13 @@ public class UpdateUserTOU {
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		if (userEmail == null) userEmail = "";
+		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		//if (userEmail == null) userEmail = "";
 
-		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		//if (operator == null) operator = userName;
+		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -62,15 +66,21 @@ public class UpdateUserTOU {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
 			logger.info("User " + userName + " tries to update the TOU to " + tou);
-
-			DBOperations.getInstance().updateUserTOU(userName, tou);
-			logger.info("TOU agreement of user '" + userName + "' was updated in database successfully!");
-
-			return Response.status(200).build();
+			if(DBOperations.getInstance().userExists(userName)) {
+				DBOperations.getInstance().updateUserTOU(userName, tou);
+				logger.info("TOU agreement of user '" + userName + "' was updated in database successfully!");
+				return Response.status(200).build();
+			} else {
+				logger.info("User '" + userName + "' is not in database, hence not updating TOU!");
+				return Response
+						.status(400)
+						.entity(new ErrorBean(400,
+								"User '" + userName + "' is not in database, hence not updating TOU!")).build();
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
@@ -83,13 +93,13 @@ public class UpdateUserTOU {
 	public Response getUserTou(@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		if (userEmail == null) userEmail = "";
+		//String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
+		//if (userEmail == null) userEmail = "";
 
-		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";
+		//String operator = httpServletRequest.getHeader(Constants.OPERATOR);
+		//String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
+		//if (operator == null) operator = userName;
+		//if (operatorEmail == null) operatorEmail = "";
 
 		if (userName == null) {
 			logger.error("Username is not present in http header.");
@@ -100,13 +110,18 @@ public class UpdateUserTOU {
 		}
 
 		try {
-			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
+			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
-			Boolean tou = DBOperations.getInstance().getUserTOU(userName);
-			logger.debug("TOU agreement of user '" + userName + "' was retrieved successfully!");
-
-			return Response.status(200).entity(new JSONObject().put("tou", tou)).build();
+			try {
+				Boolean tou = DBOperations.getInstance().getUserTOU(userName);
+				logger.debug("TOU agreement of user '" + userName + "' was retrieved successfully!");
+				return Response.status(200).entity(new JSONObject().put("tou", tou)).build();
+			} catch (NoItemIsFoundInDBException e) {
+				logger.debug("User with username '" + userName + "' does not exist in DC-API database!");
+				return Response.status(400).entity(new ErrorBean(400,
+						"User with username '" + userName + "' does not exist in DC-API database!")).build();
+			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)

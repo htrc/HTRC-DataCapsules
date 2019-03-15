@@ -89,6 +89,8 @@ public class CreateVM {
 							"Image name, login username and login password cannot be empty!"))
 					.build();
 		}
+		int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
+				.getString(Configuration.PropertyName.VOLUME_SIZE_IN_GB, Constants.DEFAULT_VOLUME_SIZE_IN_GB));
 
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
@@ -105,10 +107,6 @@ public class CreateVM {
 			}
 			
 			// check if policy name is valid
-			
-			int volumeSizeInGB = Integer.valueOf(Configuration.getInstance()
-					.getString(Configuration.PropertyName.VOLUME_SIZE_IN_GB,
-							Constants.DEFAULT_VOLUME_SIZE_IN_GB));
 
 			// vm parameters
 			String vmid = UUID.randomUUID().toString();
@@ -144,7 +142,7 @@ public class CreateVM {
 			// if because of port unavailable error, restore user quota
             if (e.getMessage().equals("No port resource available.")) {
 				try {
-					DBOperations.getInstance().restoreQuota(userName, vcpu, memory, 10);
+					DBOperations.getInstance().restoreQuota(userName, vcpu, memory, volumeSizeInGB);
 				} catch (SQLException e1) {
 					e1.printStackTrace();
 				} catch (NoItemIsFoundInDBException e1) {
