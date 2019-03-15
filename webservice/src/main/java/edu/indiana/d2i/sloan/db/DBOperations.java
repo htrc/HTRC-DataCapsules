@@ -89,9 +89,11 @@ public class DBOperations {
 		String sql = "SELECT " + DBSchema.VmTable.VM_ID + ","
 				+ DBSchema.VmTable.VM_MODE + ","
 				+ DBSchema.VmTable.HOST + ","
+				+ DBSchema.VmTable.CREATED_AT + ","
 				+ DBSchema.VmTable.STATE + ","
 				+ DBSchema.VmTable.NUM_CPUS + ","
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
+				+ DBSchema.VmTable.TYPE + ","
 				+ DBSchema.HostTable.CPU_CORES + ","
 				+ DBSchema.HostTable.MEMORY_GB + ","
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ","
@@ -125,8 +127,10 @@ public class DBOperations {
 						VMState.valueOf(rs
 								.getString(DBSchema.VmTable.STATE)),
 						rs.getString(DBSchema.VmTable.HOST),
+						DATE_FORMATOR.format(rs.getTimestamp(DBSchema.VmTable.CREATED_AT)),
 						rs.getInt(DBSchema.HostTable.CPU_CORES),
-						rs.getInt(DBSchema.HostTable.MEMORY_GB)
+						rs.getInt(DBSchema.HostTable.MEMORY_GB),
+						rs.getString(DBSchema.VmTable.TYPE)
 				);
                 res.add(vmKeyInfoBean);
 			}
