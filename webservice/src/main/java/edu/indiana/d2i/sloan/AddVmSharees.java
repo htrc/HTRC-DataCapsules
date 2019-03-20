@@ -72,16 +72,15 @@ public class AddVmSharees {
 				sharees_map.put(sharee.getString("guid"), sharee.getString("email"));
 			}
 		} catch (JSONException e) {
-			logger.error("Invalid JSON array of JSON Objects to represent sharees.");
+			logger.error("Invalid JSON array of JSON Objects to represent collaborators.");
 			return Response.status(400).entity(new ErrorBean(400,
-							"Invalid JSON array of JSON Objects to represent sharees.")).build();
+							"Invalid JSON array of JSON Objects to represent collaborators.")).build();
 		}
 
 		try {
 			if (!RolePermissionUtils.isPermittedCommand(userName, vmId, RolePermissionUtils.API_CMD.ADD_SHAREES)) {
 				return Response.status(400).entity(new ErrorBean(400,
-						"User " + userName + " cannot perform task "
-								+ RolePermissionUtils.API_CMD.ADD_SHAREES + " on VM " + vmId)).build();
+						"User " + userName + " cannot add collaborators on VM " + vmId)).build();
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
@@ -90,19 +89,19 @@ public class AddVmSharees {
 			if (vmInfo.getVmstate() == VMState.ERROR
 					|| vmInfo.getVmstate().name().contains(DELETE)){
 				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Cannot add sharees when capsule is in "
+						.entity(new ErrorBean(400, "Cannot add collaborators when capsule is in "
 								+ VMState.ERROR + " or " + DELETE + "* state!")).build();
 			}
 
 			if(vmInfo.getType().equals(VMType.DEMO.getName())) {
 				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
-						"Cannot add sharees to a " + VMType.DEMO.getName() +" capsule!")).build();
+						"Cannot add collaborators to a " + VMType.DEMO.getName() +" capsule!")).build();
 			}
 
 			// cannot add sharees when the capsule's full access request is pending
 			if(vmInfo.isFull_access() != null && vmInfo.isFull_access() == false) {
 				return Response.status(400).entity(new ErrorBean(400,
-						"Cannot add sharees when capsule's full access request is pending!")).build();
+						"Cannot add collaborators when capsule's full access request is pending!")).build();
 			}
 
 			if(vmInfo.isFull_access() != null && vmInfo.isFull_access() == true && desc_shared == null) {
@@ -116,19 +115,19 @@ public class AddVmSharees {
 			// set this to false if VM has requested full access
 			Boolean full_access = vmInfo.isFull_access() == null ? null : false;
 
-			logger.info("User " + userName + " tries to add " + sharees_map + " as sharees for vm " + vmId);
+			logger.info("User " + userName + " tries to add " + sharees_map + " as collaborators for vm " + vmId);
 
 			// do not allow to add more than MAX_NO_OF_SHAREES=5 sharees
 			List<VmUserRole> current_roles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
 			if(current_roles.size() + sharees_map.size() > MAX_NO_OF_SHAREES) {
 				return Response.status(400).entity(new ErrorBean(400,
-						"A Data Capsule cannot have more than " + MAX_NO_OF_SHAREES + " sharees!")).build();
+						"A Data Capsule cannot have more than " + MAX_NO_OF_SHAREES + " collaborators!")).build();
 			}
 
 			for(String guid : sharees_map.keySet()) { // for each user
 				if(current_roles.stream().filter(
 						role -> role.getGuid().equals(guid)).collect(Collectors.toList()).size() > 0) {
-					logger.warn("Sharee " + guid + " already exists in capsule " + vmId + "!");
+					logger.warn("Collaborator " + guid + " already exists in capsule " + vmId + "!");
 					continue; // skip adding existing users
 				}
 				DBOperations.getInstance().insertUserIfNotExists(guid, sharees_map.get(guid));  // add to users table

@@ -64,14 +64,13 @@ public class DeleteVmSharees {
 		}
 		if (sharees == null) {
 			return Response.status(400)
-					.entity(new ErrorBean(400, "Invalid sharees input!")).build();
+					.entity(new ErrorBean(400, "Invalid collaborators input!")).build();
 		}
 
 		try {
 			if (!RolePermissionUtils.isPermittedCommand(userName, vmId, RolePermissionUtils.API_CMD.DELETE_SHAREES)) {
 				return Response.status(400).entity(new ErrorBean(400,
-						"User " + userName + " cannot perform task "
-								+ RolePermissionUtils.API_CMD.DELETE_SHAREES + " on VM " + vmId)).build();
+						"User " + userName + " cannot delete collaborators from VM " + vmId)).build();
 			}
 
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
@@ -79,11 +78,11 @@ public class DeleteVmSharees {
 			if (vmInfo.getVmstate() == VMState.ERROR
 					|| vmInfo.getVmstate().name().contains(DELETE)){
 				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Cannot remove sharees when capsule is in "
+						.entity(new ErrorBean(400, "Cannot remove collaborators when capsule is in "
 								+ VMState.ERROR + " or " + DELETE + "* state!")).build();
 			}
 
-			logger.info("User " + userName + " tries to delete sharee/(s) " + sharees + " for vm " + vmId);
+			logger.info("User " + userName + " tries to delete collaborator/(s) " + sharees + " for vm " + vmId);
 
 			List<String> sharees_list = Arrays.asList(sharees.split(","));
 
@@ -94,7 +93,7 @@ public class DeleteVmSharees {
 				if(sharee_role.getRole() != VMRole.SHAREE) {
 					return Response.status(400)
 							.entity(new ErrorBean(400, "User " + sharee
-									+ " should be a " + VMRole.SHAREE + " of VM " + vmId)).build();
+									+ " should be a collaborator of VM " + vmId)).build();
 				}
 			}
 

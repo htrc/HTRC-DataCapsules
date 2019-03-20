@@ -69,7 +69,7 @@ public class ManageController {
 			if (vmInfo.getVmstate() == VMState.ERROR
 					|| vmInfo.getVmstate().name().contains(DELETE)){
 				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Cannot add sharees when capsule is in "
+						.entity(new ErrorBean(400, "Cannot manage controller when capsule is in "
 								+ VMState.ERROR + " or " + DELETE + "* state!")).build();
 			}
 
@@ -79,8 +79,8 @@ public class ManageController {
 			Map<VMRole, VMRole> roleMap = RolePermissionUtils.getValidCntrlAction(vmId, owner_role, controller_role,
 					RolePermissionUtils.CNTR_ACTION.valueOf(action));
 			if (roleMap == null) {
-				String message = "User " + userName + " cannot perform controller action "
-						+ action + " on sharee " + controller + " in VM " + vmId;
+				String message = "User " + userName + " cannot " + action.toLowerCase() + " control on collaborator "
+						+ controller + " in VM " + vmId;
 				logger.error(message);
 				return Response.status(400).entity(new ErrorBean(400, message)).build();
 			}
