@@ -34,6 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -145,12 +146,18 @@ public class UpdateVm {
 						// granted, then full access will be denied for all sharees and VM type will be set to RESEARCH
 						DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null, guid_list);
 						logger.info("Users " + guid_list + " were subsequently rejected for full access in VM " + vmId);
+
+						// send email notification to sharees(except owner) about shared capsule
+						sendNotificationsToSharees(sub_list, userEmail, vmId);
 					} else {
 						guid_list = sub_list;
 						if(full_access == true) {
 							//update full_access=true for the sub list
 							DBOperations.getInstance().updateVmType(vmId, null, full_access, guid_list);
 							logger.info("Users " + guid_list + " were subsequently accepted for full access in VM " + vmId);
+
+							// send email notification to sharees about shared capsule
+							sendNotificationsToSharees(guid_list, userEmail, vmId);
 						} else {
 							//remove sharee from VM
 							DBOperations.getInstance().removeVmSharee(vmId, guid_list);
@@ -243,6 +250,23 @@ public class UpdateVm {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
 					.entity(new ErrorBean(500, e.getMessage())).build();
+		}
+	}
+
+	private void sendNotificationsToSharees(List<String> guids, String owner_email, String vmId)
+			throws NoItemIsFoundInDBException, SQLException {
+		EmailUtil email_util = new EmailUtil();
+		for(String guid : guids) {
+			String shareeEmail = DBOperations.getInstance().getUserEmail(guid);
+			if(shareeEmail.equals(owner_email))
+				continue; // don't send email to owner
+
+			String email_body = "Dear Data Capsule user,\n"
+					+ "HTRC user with email " + owner_email + " has shared their Data Capusle(" + vmId + ") with you." +
+					"\nYou will be able to access this Data Capsule once you accept the TOU agreement.";
+			email_util.sendEMail(shareeEmail, "A HTRC Data Capsule Has Been Shared With You",
+					email_body);
+			logger.info("Email notification on shared capsule sent to " + shareeEmail);
 		}
 	}
 }

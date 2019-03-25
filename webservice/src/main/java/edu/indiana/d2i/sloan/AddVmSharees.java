@@ -18,6 +18,7 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
@@ -53,15 +54,16 @@ public class AddVmSharees {
 			@FormParam("sharees") String sharees,
 			@FormParam("desc_shared") String desc_shared,
 			@Context HttpHeaders httpHeaders,
-			@Context HttpServletRequest httpServletRequest) {		
+			@Context HttpServletRequest httpServletRequest) {
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 
-		if (userName == null) {
-			logger.error("Username is not present in http header.");
+		if (userName == null || userEmail == null) {
+			logger.error("Username/E-mail is not present in http header.");
 			return Response
 					.status(400)
 					.entity(new ErrorBean(400,
-							"Username is not present in http header.")).build();
+							"Username/E-mail is not present in http header.")).build();
 		}
 
 		Map<String, String> sharees_map = new HashMap<>();
@@ -133,6 +135,17 @@ public class AddVmSharees {
 				DBOperations.getInstance().insertUserIfNotExists(guid, sharees_map.get(guid));  // add to users table
 				VmUserRole vmUserRole = new VmUserRole(sharees_map.get(guid), VMRole.SHAREE, false, guid, full_access);
 				DBOperations.getInstance().addVmSharee(vmId, vmUserRole, desc_shared); // add to uservmmap table
+
+				// send email to user if adding to a RESEARCH capsule
+				if(vmInfo.isFull_access() == null) {
+					EmailUtil email_util = new EmailUtil();
+					String email_body = "Dear Data Capsule user,\n"
+							+ "HTRC user with email " + userEmail + " has shared their Data Capusle(" + vmId + ") with you." +
+							"\nYou will be able to access this Data Capsule once you accept the TOU agreement.";
+					email_util.sendEMail(sharees_map.get(guid), "A HTRC Data Capsule Has Been Shared With You",
+							email_body);
+					logger.info("Email notification on shared capsule sent to " + sharees_map.get(guid));
+				}
 			}
 
 			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
