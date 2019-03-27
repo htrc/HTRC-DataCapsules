@@ -30,6 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.log4j.Logger;
 
@@ -70,7 +71,10 @@ public class UploadResult {
 
 			//get roles of the vm
 			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
-			logger.info("Prepare to upload result for " + vmid + ", " + vmUserRoles);
+			//filter roles who are allowed to view results
+			List<VmUserRole> allowedVmUserRoles = RolePermissionUtils.filterPermittedRoles(vmUserRoles, vmid,
+					RolePermissionUtils.API_CMD.VIEW_RESULT);
+			logger.info("Prepare to upload result for " + vmid + ", " + allowedVmUserRoles);
 			
 			// write to DB
 			String randomid = UUID.randomUUID().toString();
@@ -78,10 +82,10 @@ public class UploadResult {
 			
 			// add to post-process
 			if (!Configuration.getInstance().getBoolean(
-				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) {
+				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) { // results reviewed by a reviewer
 				UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
-						null, null, randomid, vmUserRoles));
-			}	else {
+						null, null, randomid, vmid, allowedVmUserRoles));
+			} else { // results not reviewed by a reviewer
 				// send email to the reviewer
 				String emails = Configuration.getInstance().getString(
 					Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
@@ -97,7 +101,7 @@ public class UploadResult {
 				}
 			}
 			
-			logger.info("Upload result for " + vmid + ", " + vmUserRoles + " successfully.");
+			logger.info("Upload result for " + vmid + ", " + allowedVmUserRoles + " successfully.");
 			
 			return Response.status(200).build();
 		} catch (Exception e) {

@@ -1475,7 +1475,7 @@ public class DBOperations {
 				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
 				String resultId = rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID);
 
-				UserResultBean bean = new UserResultBean(null, null, resultId, vmUserRoles);
+				UserResultBean bean = new UserResultBean(null, null, resultId, vmid, vmUserRoles);
 				res.add(bean);
 			}
 		} finally {
@@ -1694,6 +1694,50 @@ public class DBOperations {
 			if (connection != null)
 				connection.close();
 		}
+	}
+
+	public VmUserRole getOwnerOfVM(String vmid) throws SQLException, NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = "SELECT " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + ", " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS + " " +
+					"FROM " +
+					DBSchema.UserTable.TABLE_NAME + ", " + DBSchema.UserVmMapTable.TABLE_NAME + " " +
+					"WHERE " + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + " " +
+					"AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + "=\"" +
+					vmid + "\" " +
+					"AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE +
+					" LIKE \"%%" + VMRole.OWNER + "%%\"";
+			pst = connection.prepareStatement(query);
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return new VmUserRole(
+						result.getString(DBSchema.UserTable.USER_EMAIL),
+						VMRole.fromName(result.getString(DBSchema.UserVmMapTable.ROLE)),
+						result.getBoolean(DBSchema.UserVmMapTable.TOU),
+						result.getString(DBSchema.UserTable.GUID),
+						result.getObject(
+								DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+								? null
+								: result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS));
+			} else {
+				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
 	}
 
 	public List<VmUserRole> getRolesWithVmid(String vmid, boolean getUsername) throws SQLException {

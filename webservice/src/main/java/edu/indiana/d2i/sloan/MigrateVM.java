@@ -23,6 +23,7 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.MigrateVMCommand;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.*;
 import org.apache.log4j.Logger;
 
@@ -72,6 +73,11 @@ public class MigrateVM {
 		}
 
 		try {
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.MIGRATE_VM)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.MIGRATE_VM + " on VM " + vmid)).build();
+			}
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 

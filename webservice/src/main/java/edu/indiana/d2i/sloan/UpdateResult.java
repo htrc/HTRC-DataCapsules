@@ -7,6 +7,7 @@ import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.log4j.Logger;
 
@@ -80,6 +81,9 @@ public class UpdateResult {
 
                 //get roles of the vm
                 List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
+                //filter roles who are allowed to view results
+                List<VmUserRole> allowedVmUserRoles = RolePermissionUtils.filterPermittedRoles(vmUserRoles, vmid,
+                        RolePermissionUtils.API_CMD.VIEW_RESULT);
 
                 String reviewer_email = Configuration.getInstance().
                         getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
@@ -97,18 +101,18 @@ public class UpdateResult {
                     String download_addr = download_url +  resultid;
 
                     //construct email content for users
-                    for (VmUserRole role : vmUserRoles) {
+                    for (VmUserRole role : allowedVmUserRoles) {
                         String contentUser = "Dear Data Capsule user,\n\n" +
                                 "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
                                 download_addr + "\n\n" +
                                 "Please note this link is active for 24 hours.";
                         send_email.sendEMail(role.getEmail(), "HTRC Data Capsule Result Download URL", contentUser);
                     }
-                    logger.info("Download result email sent to users " + vmUserRoles + " - download URL : " + download_addr);
+                    logger.info("Download result email sent to users " + allowedVmUserRoles + " - download URL : " + download_addr);
 
                     //construct email content for reviewer
-                    String contentReviewer = String.format("Result \"%s\" \nhas been released to users: %s",
-                            resultid, userListToString(vmUserRoles));
+                    String contentReviewer = String.format("Result \"%s\" has been released to users: %s",
+                            resultid, userListToString(allowedVmUserRoles));
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
 
                 }else{
@@ -120,7 +124,7 @@ public class UpdateResult {
                     //send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
 
                     //construct email content for reviewer
-                    String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom users: %s",
+                    String contentReviewer = String.format("Result \"%s\" has been rejected from users: %s",
                             resultid, userListToString(vmUserRoles));
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
