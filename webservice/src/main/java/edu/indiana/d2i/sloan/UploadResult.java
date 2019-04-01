@@ -96,7 +96,9 @@ public class UploadResult {
 					for (String email : addrs) {
 						EmailUtil emailUtil = new EmailUtil();
 						emailUtil.sendEMail(email, "HTRC Data Capsules Result Review Request", 
-							"Dear Reviewer, \nThere is a new result pending for your review. Its id is " + randomid);
+							"Dear Reviewer, \nThere is a new result pending for your review. Its id is " +
+									randomid + ".\nFollowing are the collaborators of this capsule with ID " +
+									vmid + ":" + emailUtil.userListToString(vmUserRoles, allowedVmUserRoles));
 					}
 				}
 			}
@@ -110,4 +112,6 @@ public class UploadResult {
 					.entity(new ErrorBean(500, e.getMessage())).build();
 		}		
 	}
+
+
 }
