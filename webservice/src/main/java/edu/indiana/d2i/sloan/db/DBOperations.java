@@ -20,8 +20,10 @@ import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public class DBOperations {
@@ -95,14 +98,9 @@ public class DBOperations {
 				+ DBSchema.VmTable.MEMORY_SIZE + ","
 				+ DBSchema.VmTable.TYPE + ","
 				+ DBSchema.HostTable.CPU_CORES + ","
-				+ DBSchema.HostTable.MEMORY_GB + ","
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + ","
-				+ DBSchema.UserTable.USER_EMAIL + " FROM "
+				+ DBSchema.HostTable.MEMORY_GB + " FROM "
 				+ DBSchema.VmTable.TABLE_NAME + ", "
-				+ DBSchema.HostTable.TABLE_NAME + ", "
-				+ DBSchema.UserTable.TABLE_NAME + " WHERE "
-				+ DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME + " = "
-				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME + " AND "
+				+ DBSchema.HostTable.TABLE_NAME + " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.HOST + "="
 				+ DBSchema.HostTable.TABLE_NAME + "." + DBSchema.HostTable.HOST_NAME + " AND "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"";
@@ -116,10 +114,13 @@ public class DBOperations {
 			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
 				VmKeyInfoBean vmKeyInfoBean = new VmKeyInfoBean(
-						rs.getString(DBSchema.VmTable.VM_ID),
-						rs.getString(DBSchema.UserTable.USER_NAME),
-						rs.getString(DBSchema.UserTable.USER_EMAIL),
+						vmid,
+						null,
+						null,
 						rs.getInt(DBSchema.VmTable.NUM_CPUS),
 						rs.getInt(DBSchema.VmTable.MEMORY_SIZE),
 						VMMode.valueOf(rs
@@ -130,7 +131,8 @@ public class DBOperations {
 						DATE_FORMATOR.format(rs.getTimestamp(DBSchema.VmTable.CREATED_AT)),
 						rs.getInt(DBSchema.HostTable.CPU_CORES),
 						rs.getInt(DBSchema.HostTable.MEMORY_GB),
-						rs.getString(DBSchema.VmTable.TYPE)
+						rs.getString(DBSchema.VmTable.TYPE),
+						roles
 				);
                 res.add(vmKeyInfoBean);
 			}
@@ -160,6 +162,11 @@ public class DBOperations {
 			pst = connection.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				String vmid = rs.getString(DBSchema.VmTable.VM_ID);
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+				VmUserRole owner = roles.stream()
+						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
+						.collect(Collectors.toList()).get(0);
 				VmInfoBean vminfo = new VmInfoBean(
 						rs.getString(DBSchema.VmTable.VM_ID),
 						rs.getString(DBSchema.VmTable.HOST),
@@ -191,7 +198,9 @@ public class DBOperations {
 						rs.getString(DBSchema.VmTable.DESC_OUTSIDE_DATA),
 						rs.getString(DBSchema.VmTable.RR_DATA_FILES),
 						rs.getString(DBSchema.VmTable.RR_RESULT_USAGE),
-						rs.getObject(DBSchema.VmTable.FULL_ACCESS) == null ? null : rs.getBoolean(DBSchema.VmTable.FULL_ACCESS));
+						owner.isFull_access(), // owner's full_access is the real full_access of the VM
+						roles,
+						rs.getString(DBSchema.VmTable.DESC_SHARED));
 				res.add(vminfo);
 			}
 		} finally {
@@ -221,7 +230,7 @@ public class DBOperations {
 				.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
 				.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
 				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
-				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.GUID)
 				.append("=")
 				.append(String.format("\"%s\"", request.getUserName()));
 
@@ -263,7 +272,7 @@ public class DBOperations {
 									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
 									leftMemoryQuota - requestedMemory))
 							.append(" WHERE ")
-							.append(DBSchema.UserTable.USER_NAME)
+							.append(DBSchema.UserTable.GUID)
 							.append("=")
 							.append(String.format("\"%s\"",
 									request.getUserName()));
@@ -294,7 +303,7 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String queryUser = "SELECT * FROM " + DBSchema.UserTable.TABLE_NAME
-					+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";
+					+ " WHERE " + DBSchema.UserTable.GUID + "=(?)";
 			pst1 = connection.prepareStatement(queryUser);
 			pst1.setString(1, username);
 			rs = pst1.executeQuery();
@@ -322,7 +331,7 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String queryUser = "SELECT * FROM " + DBSchema.UserTable.TABLE_NAME
-					+ " WHERE " + DBSchema.UserTable.USER_NAME + "=(?)";
+					+ " WHERE " + DBSchema.UserTable.GUID + "=(?)";
 			pst1 = connection.prepareStatement(queryUser);
 			pst1.setString(1, userName);
 			rs = pst1.executeQuery();
@@ -331,7 +340,7 @@ public class DBOperations {
 				String insertUser = String.format(
 					"INSERT IGNORE INTO " + DBSchema.UserTable.TABLE_NAME
 							+ "(%s, %s, %s, %s, %s) VALUES" + "(?, ?, ?, ?, ?)",
-					DBSchema.UserTable.USER_NAME, DBSchema.UserTable.USER_EMAIL, 
+					DBSchema.UserTable.GUID, DBSchema.UserTable.USER_EMAIL,
 					DBSchema.UserTable.DISK_LEFT_QUOTA, DBSchema.UserTable.CPU_LEFT_QUOTA, 
 					DBSchema.UserTable.MEMORY_LEFT_QUOTA);
 				pst2 = connection.prepareStatement(insertUser);
@@ -374,7 +383,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
@@ -409,7 +418,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -445,7 +454,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -473,16 +482,19 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
 				+ " FROM " + DBSchema.ImageTable.TABLE_NAME + ","
-				+ DBSchema.VmTable.TABLE_NAME 
+				+ DBSchema.VmTable.TABLE_NAME
+				+ "," + DBSchema.UserVmMapTable.TABLE_NAME
 				+ " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
+				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "="
+				+ DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID
 				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName);
 		return getVmInfoInternal(sql);
 	}
@@ -505,17 +517,19 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD 
 				// + image path & policy path
 				+ " FROM " + DBSchema.VmTable.TABLE_NAME + "," + DBSchema.ImageTable.TABLE_NAME
+				+ "," + DBSchema.UserVmMapTable.TABLE_NAME
 				+ " WHERE "
 				+ DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.IMAGE_NAME + "="
 				+ DBSchema.ImageTable.TABLE_NAME + "." + DBSchema.ImageTable.IMAGE_NAME
-				+ " AND " + DBSchema.VmTable.USERNAME + "=\"%s\""
-				+ " AND " + DBSchema.VmTable.TABLE_NAME + "."
-				+ DBSchema.VmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"%s\""
+				+ " AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "="
+				+ DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID
 				+ " AND " + DBSchema.VmTable.STATE + " NOT LIKE \"%%" + DELETE + "%%\"", userName, vmid);
 
 		logger.debug(sql);
@@ -545,7 +559,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.CONSENT + "," + DBSchema.VmTable.DESC_NATURE + ","
 				+ DBSchema.VmTable.DESC_REQUIREMENT + "," + DBSchema.VmTable.DESC_LINKS + ","
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "," + DBSchema.VmTable.RR_DATA_FILES + ","
-				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.FULL_ACCESS + ","
+				+ DBSchema.VmTable.RR_RESULT_USAGE + "," + DBSchema.VmTable.DESC_SHARED + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_ID + ","
 				+ DBSchema.ImageTable.IMAGE_LOGIN_PASSWORD
 				// + image path & policy path
@@ -570,7 +584,7 @@ public class DBOperations {
 			String vncLoginId, String vncLoginPwd, VMPorts host, String created_at,
 			String workDir, int numCPUs, int memorySize, int diskSpace, String type, String title, Boolean consent,
 			String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage, Boolean full_access)
+			String rr_data_files, String rr_result_usage, Boolean full_access, String desc_shared)
 			throws SQLException {
 		String insertvmsql = String
 				.format("INSERT INTO "
@@ -604,7 +618,7 @@ public class DBOperations {
 								+ ","
 								+ DBSchema.VmTable.DISK_SPACE
 								+ ","
-								+ DBSchema.VmTable.USERNAME
+								+ DBSchema.VmTable.GUID // TODO-UN remove
 								+ ","
 								+ DBSchema.VmTable.TYPE
 								+ ","
@@ -624,7 +638,7 @@ public class DBOperations {
 								+ ","
 								+ DBSchema.VmTable.RR_RESULT_USAGE
 								+ ","
-								+ DBSchema.VmTable.FULL_ACCESS
+								+ DBSchema.VmTable.DESC_SHARED
 								+ ") VALUES"
 								+ "(\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, \"%s\", \"%s\", \"%s\", \"%s\", %d, %d, %d, \"%s\"" +
 								", \"%s\", %s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -641,18 +655,119 @@ public class DBOperations {
 						desc_outside_data != null ? "\"" + StringEscapeUtils.escapeJava(desc_outside_data) + "\"" : desc_outside_data,
 						rr_data_files != null ? "\"" + StringEscapeUtils.escapeJava(rr_data_files) + "\"" : rr_data_files,
 						rr_result_usage != null ? "\"" + StringEscapeUtils.escapeJava(rr_result_usage) + "\"" : rr_result_usage,
-						full_access);
+						desc_shared != null ? "\"" + StringEscapeUtils.escapeJava(desc_shared) + "\"" : desc_shared);
 
 		logger.debug(insertvmsql);
 
+		String insertUserVmMapsql = String
+				.format("INSERT INTO "
+								+ DBSchema.UserVmMapTable.TABLE_NAME
+								+ " ("
+								+ DBSchema.UserVmMapTable.VM_ID
+								+ ","
+								+ DBSchema.UserVmMapTable.GUID
+								+ ","
+								+ DBSchema.UserVmMapTable.ROLE
+								+ ","
+								+ DBSchema.UserVmMapTable.TOU
+								+ ","
+								+ DBSchema.UserVmMapTable.FULL_ACCESS
+								+ ") VALUES"
+								+ "(\"%s\", \"%s\", \"%s\", %s, %s)",
+						vmid, userName, VMRole.OWNER_CONTROLLER.getName(), true, full_access);
+
 		List<String> updates = new ArrayList<String>();
 		updates.add(insertvmsql);
+		updates.add(insertUserVmMapsql);
 
 		String insertActivitySQL = getInsertActivitySQL(vmid, VMMode.NOT_DEFINED.toString(),
 				VMMode.NOT_DEFINED.toString(),VMState.SHUTDOWN.toString(),
 				VMState.SHUTDOWN.toString(), userName);
 		logger.debug(insertActivitySQL);
 		updates.add(insertActivitySQL);
+
+		executeTransaction(updates);
+	}
+
+	public void addVmSharee(String vmid, VmUserRole vmUserRole, String desc_shared) throws SQLException {
+		List<String> updates = new ArrayList<String>();
+		String insertUserVmMapsql = String
+				.format("INSERT INTO "
+								+ DBSchema.UserVmMapTable.TABLE_NAME
+								+ " ("
+								+ DBSchema.UserVmMapTable.VM_ID
+								+ ","
+								+ DBSchema.UserVmMapTable.GUID
+								+ ","
+								+ DBSchema.UserVmMapTable.ROLE
+								+ ","
+								+ DBSchema.UserVmMapTable.TOU
+								+ ","
+								+ DBSchema.UserVmMapTable.FULL_ACCESS
+								+ ") VALUES"
+								+ "(\"%s\", \"%s\", \"%s\", %s, %s)",
+						vmid, vmUserRole.getGuid(), vmUserRole.getRole().getName(),
+						vmUserRole.getTou(), vmUserRole.isFull_access());
+		logger.debug(insertUserVmMapsql);
+		updates.add(insertUserVmMapsql);
+		if (desc_shared != null) {
+			String updateDescShared = String.format("UPDATE "
+							+ DBSchema.VmTable.TABLE_NAME + " SET "
+							+ DBSchema.VmTable.DESC_SHARED + "=CONCAT(IFNULL(" + DBSchema.VmTable.DESC_SHARED + ",''),\"%s\") "
+							+ "WHERE "
+							+ DBSchema.VmTable.VM_ID + "=\"%s\"", desc_shared + "\n", vmid);
+			logger.debug(updateDescShared);
+			updates.add(updateDescShared);
+		}
+		executeTransaction(updates);
+	}
+
+	public void removeVmSharee(String vmid, List<String> guid_list) throws SQLException {
+		List<String> updates = new ArrayList<String>();
+		// remove sharees from UserVmMap table
+		String deleteUserVmMapsql = "DELETE FROM " + DBSchema.UserVmMapTable.TABLE_NAME + " WHERE "
+						+ DBSchema.UserVmMapTable.VM_ID
+						+ "=\"" + vmid + "\" AND "
+						+ DBSchema.UserVmMapTable.GUID + " IN (\""
+						+ StringUtils.join(guid_list, "\",\"")
+						+ "\")";
+		logger.debug(deleteUserVmMapsql);
+		updates.add(deleteUserVmMapsql);
+
+		// remove sharees from users table if there are no foreign key constraints in vms,vmacitivty or uservmmap tables
+		for(String guid : guid_list) {
+			String deleteUser = "DELETE FROM " + DBSchema.UserTable.TABLE_NAME + " WHERE "
+					+ DBSchema.UserVmMapTable.GUID + "=\"" + guid + "\" AND"
+					+ " NOT EXISTS (SELECT " + DBSchema.ActivityTable.GUID + " FROM " + DBSchema.ActivityTable.TABLE_NAME
+					+ " WHERE " + DBSchema.ActivityTable.GUID + "=\"" + guid + "\") AND"
+					+ " NOT EXISTS (SELECT " + DBSchema.VmTable.GUID + " FROM " + DBSchema.VmTable.TABLE_NAME
+					+ " WHERE " + DBSchema.VmTable.GUID + "=\"" + guid + "\") AND"
+					+ " NOT EXISTS (SELECT " + DBSchema.UserVmMapTable.GUID + " FROM " + DBSchema.UserVmMapTable.TABLE_NAME
+					+ " WHERE " + DBSchema.UserVmMapTable.GUID + "=\"" + guid + "\")";
+			logger.debug(deleteUser);
+			updates.add(deleteUser);
+		}
+		executeTransaction(updates);
+	}
+
+	// assign owner_role to owner_guid and sharee_role to sharee_guid
+	public void manageController(String vmid, String owner_guid, VMRole owner_role, String sharee_guid, VMRole sharee_role)
+			throws SQLException {
+		List<String> updates = new ArrayList<String>();
+		String updateownersql = String.format("UPDATE "
+						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+						+ DBSchema.UserVmMapTable.ROLE + "=\"%s\" WHERE "
+						+ DBSchema.UserVmMapTable.GUID + "=\"%s\" AND " + DBSchema.UserVmMapTable.VM_ID + "=\"%s\""
+				, owner_role.getName(), owner_guid, vmid);
+		logger.debug(updateownersql);
+		updates.add(updateownersql);
+		String updateshareesql = String.format("UPDATE "
+						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+						+ DBSchema.UserVmMapTable.ROLE + "=\"%s\" WHERE "
+						+ DBSchema.UserVmMapTable.GUID + "=\"%s\" AND " + DBSchema.UserVmMapTable.VM_ID + "=\"%s\""
+				, sharee_role.getName(), sharee_guid, vmid);
+		logger.debug(updateshareesql);
+		updates.add(updateshareesql);
 
 		executeTransaction(updates);
 	}
@@ -672,7 +787,7 @@ public class DBOperations {
 						+ ", "
 						+ DBSchema.ActivityTable.CURR_STATE
 						+ ", "
-						+ DBSchema.ActivityTable.USERNAME
+						+ DBSchema.ActivityTable.GUID
 						+ ") VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\")",
 				vmid, prevMode, curMode, prevState, curState, operator
 		);
@@ -706,7 +821,7 @@ public class DBOperations {
 				.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
 				.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
 				.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
-				.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+				.append(" WHERE ").append(DBSchema.UserTable.GUID)
 				.append("=").append(String.format("\"%s\"", username));
 
 		StringBuilder updateUserTableSql = new StringBuilder();
@@ -737,7 +852,7 @@ public class DBOperations {
 										+ vmInfo.getNumCPUs(),
 								DBSchema.UserTable.MEMORY_LEFT_QUOTA,
 								leftMemoryQuota + vmInfo.getMemorySizeInMB()))
-						.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+						.append(" WHERE ").append(DBSchema.UserTable.GUID)
 						.append("=").append(String.format("\"%s\"", username));
 			}
 
@@ -784,7 +899,7 @@ public class DBOperations {
 					.append(",").append(DBSchema.UserTable.CPU_LEFT_QUOTA)
 					.append(",").append(DBSchema.UserTable.MEMORY_LEFT_QUOTA)
 					.append(" FROM ").append(DBSchema.UserTable.TABLE_NAME)
-					.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+					.append(" WHERE ").append(DBSchema.UserTable.GUID)
 					.append("=").append(String.format("\"%s\"", username));
 
 			StringBuilder updateUserTableSql = new StringBuilder();
@@ -815,7 +930,7 @@ public class DBOperations {
 											+ cpu,
 									DBSchema.UserTable.MEMORY_LEFT_QUOTA,
 									leftMemoryQuota + memory))
-							.append(" WHERE ").append(DBSchema.UserTable.USER_NAME)
+							.append(" WHERE ").append(DBSchema.UserTable.GUID)
 							.append("=").append(String.format("\"%s\"", username));
 				}
 
@@ -1066,16 +1181,12 @@ public class DBOperations {
 
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
-				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
-				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID;
 		logger.debug(sql);
 
@@ -1091,16 +1202,21 @@ public class DBOperations {
 			rs = pst.executeQuery();
 
 			while (rs.next()) {
+				//get roles of the VM
+				String vmid = rs.getString("vmid");
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
 				ReviewInfoBean result = new ReviewInfoBean(
-						rs.getString("vmid"),
+						vmid,
 						rs.getString("resultid"),
 						rs.getString("notified"),
 						rs.getString("status"),
-						rs.getString("username"),
-						rs.getString("useremail"),
+						null,
+						null,
 						rs.getString("reviewer"),
 						rs.getString("comment"),
-						rs.getString("createtime")
+						rs.getString("createtime"),
+						roles
 				);
 				res.add(result);
 			}
@@ -1123,16 +1239,12 @@ public class DBOperations {
     {
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
-				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
-				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
 				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"YES\"";
 		logger.debug(sql);
@@ -1148,16 +1260,21 @@ public class DBOperations {
             pst = conn.prepareStatement(sql);
             rs = pst.executeQuery();
             while (rs.next()) {
+				//get roles of the VM
+				String vmid = rs.getString("vmid");
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
                 ReviewInfoBean result = new ReviewInfoBean(
-                		rs.getString("vmid"),
+						vmid,
                         rs.getString("resultid"),
                         "",
                         "",
-                        rs.getString("username"),
-						rs.getString("useremail"),
+						null,
+						null,
 						rs.getString("reviewer"),
 						"",
-						rs.getString("createtime")
+						rs.getString("createtime"),
+						roles
                 );
                 res.add(result);
             }
@@ -1181,16 +1298,12 @@ public class DBOperations {
 	{
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + " AS username, " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_EMAIL + " AS useremail, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
-				" FROM ( "+ DBSchema.UserTable.TABLE_NAME +" INNER JOIN "+ DBSchema.VmTable.TABLE_NAME +" ON " +
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME + "=" + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME +
-				" ) INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
+				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
 				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"NO\"";
 		logger.debug(sql);
@@ -1206,16 +1319,21 @@ public class DBOperations {
 			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
 			while (rs.next()) {
+				//get roles of the VM
+				String vmid = rs.getString("vmid");
+				List<VmUserRole> roles = getRolesWithVmid(vmid, true);
+
 				ReviewInfoBean result = new ReviewInfoBean(
-						rs.getString("vmid"),
+						vmid,
 						rs.getString("resultid"),
 						"",
 						"",
-						rs.getString("username"),
-						rs.getString("useremail"),
+						null,
+						null,
 						rs.getString("reviewer"),
 						"",
-						rs.getString("createtime")
+						rs.getString("createtime"),
+						roles
 				);
 				res.add(result);
 			}
@@ -1337,16 +1455,13 @@ public class DBOperations {
 
 		try {
 			connection = DBConnections.getInstance().getConnection();
-			String query = String.format("SELECT %s, %s, %s FROM %s, %s, %s WHERE %s=%s AND %s=%s AND %s=%s",
+			String query = String.format("SELECT %s, %s FROM %s, %s WHERE %s=%s AND %s=%s",
 				// selected fields
-				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME, 
-				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL,
 				DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID,
+				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 				// selected tables
-				DBSchema.UserTable.TABLE_NAME,  DBSchema.ResultTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
+				DBSchema.ResultTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
 				// where clause
-				DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME,
-					DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.USERNAME,
 				DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID,
 					DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.VM_ID,
 				DBSchema.ResultTable.NOTIFIED, "\"NO\"");
@@ -1355,10 +1470,12 @@ public class DBOperations {
 			pst = connection.prepareStatement(query);
 			rs = pst.executeQuery();
 			while (rs.next()) {
-				UserResultBean bean = new UserResultBean(
-					rs.getString(DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_NAME), 
-					rs.getString(DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL), 
-					rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID));
+				//get roles of the vm
+				String vmid = rs.getString(DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID);
+				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
+				String resultId = rs.getString(DBSchema.ResultTable.TABLE_NAME + "." + DBSchema.ResultTable.RESULT_ID);
+
+				UserResultBean bean = new UserResultBean(null, null, resultId, vmid, vmUserRoles);
 				res.add(bean);
 			}
 		} finally {
@@ -1515,14 +1632,14 @@ public class DBOperations {
 			String query = String.format(
 				"SELECT * FROM %s, %s WHERE %s=%s AND %s=\"%s\"",
 				DBSchema.UserTable.TABLE_NAME, DBSchema.VmTable.TABLE_NAME,
-				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
-				DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.USERNAME,
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
+				DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.GUID,
 				DBSchema.VmTable.VM_ID, vmid);
 			pst = connection.prepareStatement(query);
 			
 			ResultSet result = pst.executeQuery();
 			if (result.next()) {
-				return new UserBean(result.getString(DBSchema.UserTable.USER_NAME), 
+				return new UserBean(result.getString(DBSchema.UserTable.GUID),
 					result.getString(DBSchema.UserTable.USER_EMAIL));
 			} else {
 				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
@@ -1534,6 +1651,151 @@ public class DBOperations {
 			if (connection != null)
 				connection.close();
 		}
+	}
+
+	public VmUserRole getUserRoleWithVmid(String username, String vmid) throws SQLException,
+		NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+				"SELECT %s, %s, %s, %s, %s FROM %s, %s WHERE %s=%s AND %s=\"%s\" AND %s=\"%s\"",
+				DBSchema.UserTable.USER_EMAIL, DBSchema.UserVmMapTable.ROLE,
+				DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID,
+				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU,
+				DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS,
+				DBSchema.UserVmMapTable.TABLE_NAME, DBSchema.UserTable.TABLE_NAME,
+				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.GUID,
+				DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
+				DBSchema.UserVmMapTable.VM_ID, vmid,
+				DBSchema.UserVmMapTable.TABLE_NAME+"."+DBSchema.UserVmMapTable.GUID, username);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return new VmUserRole(result.getString(DBSchema.UserTable.USER_EMAIL),
+					VMRole.fromName(result.getString(DBSchema.UserVmMapTable.ROLE)),
+					result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU),
+					result.getString(DBSchema.UserVmMapTable.TABLE_NAME + "." + 	DBSchema.UserVmMapTable.GUID),
+					result.getObject(
+							DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+							? null
+							: result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS)
+				);
+			} else {
+				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public VmUserRole getOwnerOfVM(String vmid) throws SQLException, NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = "SELECT " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + ", " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS + " " +
+					"FROM " +
+					DBSchema.UserTable.TABLE_NAME + ", " + DBSchema.UserVmMapTable.TABLE_NAME + " " +
+					"WHERE " + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + " " +
+					"AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + "=\"" +
+					vmid + "\" " +
+					"AND " + DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE +
+					" LIKE \"%%" + VMRole.OWNER + "%%\"";
+			pst = connection.prepareStatement(query);
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return new VmUserRole(
+						result.getString(DBSchema.UserTable.USER_EMAIL),
+						VMRole.fromName(result.getString(DBSchema.UserVmMapTable.ROLE)),
+						result.getBoolean(DBSchema.UserVmMapTable.TOU),
+						result.getString(DBSchema.UserTable.GUID),
+						result.getObject(
+								DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+								? null
+								: result.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS));
+			} else {
+				throw new NoItemIsFoundInDBException(vmid + " is not associated with any user!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+
+	}
+
+	public List<VmUserRole> getRolesWithVmid(String vmid, boolean getUsername) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+		List<VmUserRole> roles = new ArrayList<VmUserRole>();
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String role_sql = "SELECT " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + ", " +
+					DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.USER_EMAIL + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.ROLE + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.TOU + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS + " " +
+					"FROM " +
+					DBSchema.VmTable.TABLE_NAME + ", " +
+					DBSchema.UserTable.TABLE_NAME + ", " +
+					DBSchema.UserVmMapTable.TABLE_NAME + " " +
+					"WHERE " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.VM_ID + " " +
+					"AND "  + DBSchema.UserTable.TABLE_NAME + "." + DBSchema.UserTable.GUID + "=" +
+					DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.GUID + " " +
+					"AND " + DBSchema.VmTable.TABLE_NAME + "." + DBSchema.VmTable.VM_ID + "=\"" + vmid + "\"";
+			pst = connection.prepareStatement(role_sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				VmUserRole role;
+				if(getUsername) {
+					role = new VmUserRole(
+							rs.getString(DBSchema.UserTable.USER_EMAIL),
+							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
+							rs.getBoolean(DBSchema.UserVmMapTable.TOU),
+							rs.getString(DBSchema.UserTable.GUID),
+							rs.getObject(
+									DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+									? null
+									: rs.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS));
+				} else {
+					role = new VmUserRole(
+							rs.getString(DBSchema.UserTable.USER_EMAIL),
+							VMRole.fromName(rs.getString(DBSchema.UserVmMapTable.ROLE)),
+							rs.getBoolean(DBSchema.UserVmMapTable.TOU),
+							rs.getObject(
+									DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS) == null
+									? null
+									: rs.getBoolean(DBSchema.UserVmMapTable.TABLE_NAME + "." + DBSchema.UserVmMapTable.FULL_ACCESS));
+				}
+				roles.add(role);
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return roles;
 	}
 
 
@@ -1612,7 +1874,7 @@ public class DBOperations {
 			String query = String.format(
 					"SELECT %s FROM %s WHERE %s=\"%s\"",
 					DBSchema.UserTable.PUB_KEY, DBSchema.UserTable.TABLE_NAME,
-					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
 					userName);
 			pst = connection.prepareStatement(query);
 
@@ -1637,13 +1899,44 @@ public class DBOperations {
 		}
 	}
 
+	public String getUserEmail(String userName) throws SQLException, NoItemIsFoundInDBException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"SELECT %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.UserTable.USER_EMAIL, DBSchema.UserTable.TABLE_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
+					userName);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				return result.getString(DBSchema.UserTable.USER_EMAIL);
+			} else {
+				throw new NoItemIsFoundInDBException(userName + " user could not be found!");
+			}
+
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	public void updateUserPubKey(String userName, String sshKey) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
-		String encodedKey = Base64.getEncoder().encodeToString(sshKey.getBytes("utf-8"));
+		String encodedKey = null;
+		if(sshKey != null) {
+			encodedKey = Base64.getEncoder().encodeToString(sshKey.getBytes("utf-8"));
+		}
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
-				+ DBSchema.UserTable.PUB_KEY + "=\"%s\" WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", encodedKey, userName);
+				+ DBSchema.UserTable.PUB_KEY + (sshKey ==  null ? "=%s" : "=\"%s\"")  + " WHERE "
+				+ DBSchema.UserTable.GUID + "=\"%s\"", encodedKey, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
@@ -1659,7 +1952,7 @@ public class DBOperations {
 			String query = String.format(
 					"SELECT %s FROM %s WHERE %s=\"%s\"",
 					DBSchema.UserTable.TOU, DBSchema.UserTable.TABLE_NAME,
-					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.USER_NAME,
+					DBSchema.UserTable.TABLE_NAME+"."+DBSchema.UserTable.GUID,
 					userName);
 			pst = connection.prepareStatement(query);
 
@@ -1678,12 +1971,23 @@ public class DBOperations {
 		}
 	}
 
+	public void updateVmUserTOU(String userName, String vmid, boolean tou) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String updateusersql = String.format("UPDATE "
+				+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+				+ DBSchema.UserVmMapTable.TOU + "=%s WHERE "
+				+ DBSchema.UserVmMapTable.GUID + "=\"%s\" AND " + DBSchema.UserVmMapTable.VM_ID + "=\"%s\""
+				, tou, userName, vmid);
+		updates.add(updateusersql);
+		executeTransaction(updates);
+	}
+
 	public void updateUserTOU(String userName, boolean tou) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.TOU + "=%s WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", tou, userName);
+				+ DBSchema.UserTable.GUID + "=\"%s\"", tou, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
@@ -1693,14 +1997,15 @@ public class DBOperations {
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.USER_EMAIL + "=\"%s\" WHERE "
-				+ DBSchema.UserTable.USER_NAME + "=\"%s\"", email, userName);
+				+ DBSchema.UserTable.GUID + "=\"%s\"", email, userName);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}
 
 	public void updateVm(String vmid, String type, String title, Boolean consent,
 						 String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-						 String rr_data_files, String rr_result_usage, Boolean full_access) throws SQLException, UnsupportedEncodingException {
+						 String rr_data_files, String rr_result_usage, Boolean full_access, String desc_shared)
+			throws SQLException {
 		List<String> updates = new ArrayList<String>();
 		String updatevmsql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
@@ -1713,7 +2018,7 @@ public class DBOperations {
 				+ DBSchema.VmTable.DESC_OUTSIDE_DATA + "=\"%s\", "
 				+ DBSchema.VmTable.RR_DATA_FILES + "=\"%s\", "
 				+ DBSchema.VmTable.RR_RESULT_USAGE + "=\"%s\", "
-				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
+				+ DBSchema.VmTable.DESC_SHARED + "=\"%s\" "
 				+ "WHERE "
 				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
 				type
@@ -1725,22 +2030,39 @@ public class DBOperations {
 				, StringEscapeUtils.escapeJava(desc_outside_data)
 				, StringEscapeUtils.escapeJava(rr_data_files)
 				, StringEscapeUtils.escapeJava(rr_result_usage)
-				, full_access,
-				vmid);
+				, desc_shared != null ? StringEscapeUtils.escapeJava(desc_shared) + "\n" : ""
+				, vmid);
+		String update_uservmmap_sql = String.format("UPDATE "
+						+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+						+ DBSchema.UserVmMapTable.FULL_ACCESS + "=%s "
+						+ "WHERE "
+						+ DBSchema.UserVmMapTable.VM_ID + "=\"%s\"",
+				full_access, vmid);
 		updates.add(updatevmsql);
+		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);
 	}
 
-	public void updateVmType(String vmid, String type, Boolean full_access) throws SQLException, UnsupportedEncodingException {
+	public void updateVmType(String vmid, String type, Boolean full_access, List<String> guid_list) throws SQLException {
 		List<String> updates = new ArrayList<String>();
-		String updatevmsql = String.format("UPDATE "
-				+ DBSchema.VmTable.TABLE_NAME + " SET "
-				+ DBSchema.VmTable.TYPE + "=\"%s\", "
-				+ DBSchema.VmTable.FULL_ACCESS + "=%s "
-				+ "WHERE "
-				+ DBSchema.VmTable.VM_ID + "=\"%s\"",
-				type, full_access, vmid);
-		updates.add(updatevmsql);
+		if(type != null) {
+			String updatevmsql = String.format("UPDATE "
+							+ DBSchema.VmTable.TABLE_NAME + " SET "
+							+ DBSchema.VmTable.TYPE + "=\"%s\" "
+							+ "WHERE "
+							+ DBSchema.VmTable.VM_ID + "=\"%s\"",
+					type, vmid);
+			updates.add(updatevmsql);
+		}
+		String update_uservmmap_sql = "UPDATE "
+				+ DBSchema.UserVmMapTable.TABLE_NAME + " SET "
+				+ DBSchema.UserVmMapTable.FULL_ACCESS + "=" + full_access + " "
+				+ "WHERE ("
+				+ DBSchema.UserVmMapTable.VM_ID + "=\"" + vmid + "\") AND "
+				+ DBSchema.UserVmMapTable.GUID + " IN (\""
+				+ StringUtils.join(guid_list, "\",\"")
+				+ "\")";
+		updates.add(update_uservmmap_sql);
 		executeTransaction(updates);
 	}
 

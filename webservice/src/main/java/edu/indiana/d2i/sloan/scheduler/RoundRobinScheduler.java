@@ -16,15 +16,16 @@
 package edu.indiana.d2i.sloan.scheduler;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResourceAvailableException;
-import edu.indiana.d2i.sloan.vm.PortsPool;
-import edu.indiana.d2i.sloan.vm.VMMode;
-import edu.indiana.d2i.sloan.vm.VMPorts;
-import edu.indiana.d2i.sloan.vm.VMState;
+import edu.indiana.d2i.sloan.vm.*;
 
 public class RoundRobinScheduler extends Scheduler {
 	private int scheduleIndex = 0;
@@ -35,7 +36,7 @@ public class RoundRobinScheduler extends Scheduler {
 
 	@Override
 	protected VmInfoBean doSchedule(CreateVmRequestBean request)
-			throws NoResourceAvailableException, SQLException {
+			throws NoResourceAvailableException, SQLException, NoItemIsFoundInDBException {
 		//PortsPool portsPool = new PortsPool();
 		int start = scheduleIndex;
 
@@ -55,9 +56,14 @@ public class RoundRobinScheduler extends Scheduler {
 						request.getMemory(), request.getVolumeSizeInGB(),
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
-						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
+						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access(),
+						request.getDesc_shared());
 
 				DBOperations.getInstance().addPorts(request.getVmId(), vmhost);
+
+				List<VmUserRole> roles = new ArrayList<VmUserRole>();
+				String email = DBOperations.getInstance().getUserEmail(request.getUserName());
+				roles.add(new VmUserRole(email, VMRole.OWNER_CONTROLLER, true, request.getUserName(), request.isFull_access()));
 
 				return new VmInfoBean(request.getVmId(), vmhost.publicip, created_at, workDir,
 						null, // image path
@@ -72,7 +78,8 @@ public class RoundRobinScheduler extends Scheduler {
 						VMMode.MAINTENANCE /* user requested vm mode when launching, currently default to maintenance */,
 						request.getType(), request.getTitle(), request.isConsent(), request.getDesc_nature(),
 						request.getDesc_requirement(), request.getDesc_links(), request.getDesc_outside_data(),
-						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access());
+						request.getRr_data_files(), request.getRr_result_usage(), request.isFull_access(), roles,
+						request.getDesc_shared());
 			}
 		} while (scheduleIndex != start);
 

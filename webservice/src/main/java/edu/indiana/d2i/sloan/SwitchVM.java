@@ -26,6 +26,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
@@ -88,12 +90,14 @@ public class SwitchVM {
 		}
 
 		try {
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.SWITCH_VM)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.SWITCH_VM + " on VM " + vmid)).build();
+			}
+
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
-			String pubkey = "";
-			if(DBOperations.getInstance().getUserPubKey(userName) != null ) {
-				pubkey = DBOperations.getInstance().getUserPubKey(userName);
-			}
 
 			VmInfoBean vmInfo;
 			vmInfo = DBOperations.getInstance().getVmInfo(userName, vmid);
@@ -138,7 +142,7 @@ public class SwitchVM {
 			vmInfo.setPolicypath(policypath);
 
 			HypervisorProxy.getInstance().addCommand(
-					new SwitchVMCommand(vmInfo, userName, pubkey));
+					new SwitchVMCommand(vmInfo, userName));
 
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

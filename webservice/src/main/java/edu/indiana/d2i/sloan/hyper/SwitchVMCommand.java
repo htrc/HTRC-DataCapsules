@@ -33,17 +33,15 @@ public class SwitchVMCommand extends HypervisorCommand {
 
 	private static Logger logger = Logger.getLogger(SwitchVMCommand.class);
 	private String operator;
-	private final String publicKey;
 
-	public SwitchVMCommand(VmInfoBean vminfo, String operator, String publicKey) throws Exception {
+	public SwitchVMCommand(VmInfoBean vminfo, String operator) throws Exception {
 		super(vminfo);
 		this.operator = operator;
-		this.publicKey = publicKey;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.switchVM(vminfo, publicKey);
+		HypervisorResponse resp = hypervisor.switchVM(vminfo);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
@@ -87,6 +85,7 @@ public class SwitchVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					logger.error("Failed to switch mode of VM '" + vminfo.getVmid() + "!");
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 					return null;

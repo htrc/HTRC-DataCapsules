@@ -31,12 +31,12 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.bean.*;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
+import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.log4j.Logger;
 
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.QueryVmResponseBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
-import edu.indiana.d2i.sloan.bean.VmStatusBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -92,13 +92,21 @@ public class QueryVM {
 			if (vmid == null) {
 				vmInfoList = DBOperations.getInstance().getVmInfo(userName);
 				for (VmInfoBean vminfo : vmInfoList) {
-					status.add(new VmStatusBean(vminfo, pub_key_exists, tou));
+					VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vminfo.getVmid());
+					if (!RolePermissionUtils.isPermittedCommand(userName, vminfo.getVmid(), RolePermissionUtils.API_CMD.QUERY_VM)) {
+						vminfo = new VmInfoBean(vminfo.getVmid(), vminfo.getRoles(), vminfo.isFull_access()
+								, vminfo.getCreated_at());
+					}
+					status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
 				}
 			} else {
-				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(
-						userName, vmid);
+				VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmid);
+				VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmid);
+				if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.QUERY_VM)) {
+					vminfo = new VmInfoBean(vmid, vminfo.getRoles(), vminfo.isFull_access(), vminfo.getCreated_at());
+				}
 				vmInfoList.add(vminfo);
-				status.add(new VmStatusBean(vminfo, pub_key_exists, tou));
+				status.add(new VmStatusBean(vminfo, pub_key_exists, tou, vmUserRole));
 			}
 
 			logger.info("User " + userName + " tries to query VM " + vmInfoList.toString());
@@ -111,8 +119,7 @@ public class QueryVM {
 				}
 			}
 
-			return Response.status(200).entity(new QueryVmResponseBean(status))
-					.build();
+			return Response.status(200).entity(new QueryVmResponseBean(status)).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			String msg = (vmid == null) ? 

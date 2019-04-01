@@ -23,15 +23,13 @@ TIMEOUT=30
 
 
 usage () {
-  echo "Usage: $0 --wdir <Directory for VM> --vmtype <Capsule Type> --pubkey <User's ssh key>"
+  echo "Usage: $0 --wdir <Directory for VM> --vmtype <Capsule Type> "
   echo ""
   echo "Launches a VM instance for the VM in the given directory."
   echo ""
   echo "--wdir  Directory: The directory where this VM's data will be held"
   echo ""
   echo "--vmtype  Capsule Type - DEMO or RESEARCH"
-  echo ""
-  echo "--pubkey  User's ssh public key."
   echo ""
   echo "-h|--help Show help."
 
@@ -41,7 +39,6 @@ usage () {
 # This ensures we are not contaminated by variables from the environment.
 VM_DIR=
 DC_TYPE=
-SSH_KEY=
 
 while :; do
     case $1 in
@@ -77,15 +74,6 @@ while :; do
         --vmtype=)         # Handle the case of an empty --vmtype=
             die 'ERROR: "--vmtype" requires a non-empty option argument.'
             ;;
-        --pubkey)       # Takes an option argument; ensure it has been specified.
-            if [ "$2" ]; then
-                SSH_KEY=$2
-                shift
-            fi
-            ;;
-        --pubkey=?*)
-            SSH_KEY=${1#*=} # Delete everything up to "=" and assign the remainder.
-            ;;
         --)              # End of all options.
             shift
             break
@@ -108,7 +96,7 @@ if [[ -z "$VM_DIR" || -z "$DC_TYPE"  ]]; then
   exit 1
 fi
 
-if [ ! -d $VM_DIR ] ; then
+if [[ ! -d "$VM_DIR" ]] ; then
   echo "Error: Invalid VM directory specified!"
   exit 2
 fi
@@ -369,21 +357,21 @@ if [[ -z "$DISABLE_NEW_RELEASE" ]]; then
 
 fi
 
+# Check whether authorized_keys file available in VM_DIR. If not get the copy from the VM
+if [ ! -e $VM_DIR/authorized_keys ]; then
+      scp -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR:$DC_USER_KEY_FILE $VM_DIR/authorized_keys >> $VM_DIR/copy_authorized_keys_out 2>&1
+fi
+
 #add/update Guacamole client's public key
 $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
 
-#add/update user's public key
-if [ -n "$SSH_KEY" ]; then
-     $SCRIPT_DIR/updateuserkey.sh --wdir $VM_DIR --pubkey "$SSH_KEY"
-fi
+# copy authorized_keys file from VM_DIR to VM
+scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/authorized_keys root@$VM_IP_ADDR:$DC_USER_KEY_FILE >> $VM_DIR/copy_authorized_keys_out 2>&1
 
 # update htrc package
-GMC_PRIVATE_KEY
 logger "$VM_DIR Update htrc package"
 scp -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY -r $GUEST_SCRIPTS dcuser@$VM_IP_ADDR:/tmp/ > $VM_DIR/install_python_packages_out 2>&1
 ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip install --upgrade pip && /opt/anaconda/bin/pip install --upgrade htrc-feature-reader && /opt/anaconda/bin/pip install -U topicexplorer==1.0b222 && /opt/anaconda/bin/pip install --upgrade htrc && /opt/anaconda/bin/python /tmp/guest_scripts/download_nltk_data.py" >> $VM_DIR/install_python_packages_out 2>&1
-
-#ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/anaconda/bin/pip install --upgrade pip && /opt/anaconda/bin/pip install --upgrade htrc-feature-reader && /opt/anaconda/bin/pip install --upgrade topicexplorer && /opt/anaconda/bin/pip install --upgrade htrc && /opt/anaconda/bin/python /tmp/guest_scripts/download_nltk_data.py" >> $VM_DIR/install_python_packages_out 2>&1
 
 ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/bin/rm -r /tmp/guest_scripts" >> $VM_DIR/install_python_packages_out 2>&1
 

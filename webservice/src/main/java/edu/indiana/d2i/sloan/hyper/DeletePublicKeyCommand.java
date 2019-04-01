@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2014 The Trustees of Indiana University
+ * Copyright 2018 The Trustees of Indiana University
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,76 +13,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
+
 package edu.indiana.d2i.sloan.hyper;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.concurrent.Callable;
-
-import org.apache.log4j.Logger;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
+import org.apache.log4j.Logger;
 
-public class CreateVMCommand extends HypervisorCommand {
-	private static Logger logger = Logger.getLogger(CreateVMCommand.class);
-	private String operator;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.concurrent.Callable;
+
+public class DeletePublicKeyCommand extends HypervisorCommand {
+	private static Logger logger = Logger.getLogger(DeletePublicKeyCommand.class);
 	private final String publicKey;
+	private final String username;
+	private final String operator;
 
-	public CreateVMCommand(VmInfoBean vminfo, String operator, String publicKey) throws Exception {
+	public DeletePublicKeyCommand(VmInfoBean vminfo, String username, String operator, String publicKey) throws Exception {
 		super(vminfo);
-		this.operator = operator;
 		this.publicKey = publicKey;
+		this.username = username;
+		this.operator = operator;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.createVM(vminfo, publicKey, operator);
+		HypervisorResponse resp = hypervisor.deletePubKey(vminfo, publicKey, username);
 		logger.info(resp);
 
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(
 					"Failed to excute command:\n%s ", resp));
 		}
-		
+
 		// update state
 		RetriableTask<Void> r = new RetriableTask<Void>(
-			new Callable<Void>() {
-				@Override
-				public Void call() throws Exception {
-					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-						vminfo.getVmstate(), VMState.SHUTDOWN, operator);
-					return null;
-				}
-			},  1000, 3, 
-			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+				new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						logger.info("Public key of user '" + username + "' was deleted in data capsule "
+								+ vminfo.getVmid() + " successfully!");
+						return null;
+					}
+				},  1000, 3,
+				new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
 		r.call();
 		
-		// no need to update mode since web service layer should already set VM
-		// mode to NOT_DEFINED
 	}
 
 	@Override
 	public void cleanupOnFailed() throws Exception {
 		RetriableTask<Void> r = new RetriableTask<Void>(
-			new Callable<Void>() {
-				@Override
-				public Void call() throws Exception {
-					logger.error("Error occurred while creating VM " + vminfo.getVmid());
-					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
-							vminfo.getVmstate(), VMState.ERROR, operator);
-					return null;
-				}
-			},  1000, 3, 
-			new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
+				new Callable<Void>() {
+					@Override
+					public Void call() throws Exception {
+						logger.error("Failed to delete pubkey of user '" + username + "' in vm " + vminfo.getVmid() + "!");
+						VMStateManager.getInstance().transitTo(vminfo.getVmid(),
+								vminfo.getVmstate(), VMState.ERROR, operator);
+						return null;
+					}
+				},  1000, 3,
+				new HashSet<String>(Arrays.asList(java.sql.SQLException.class.getName())));
 		r.call();
 	}
 
 	@Override
 	public String toString() {
-		return "createvm " + vminfo;
+		return "DeleteUserKey " + vminfo;
 	}
 }

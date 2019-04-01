@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2014 The Trustees of Indiana University
+ * Copyright 2019 The Trustees of Indiana University
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,28 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan.vm;
 
-public enum VMState {
-	CREATE_PENDING,
-	LAUNCH_PENDING,
-	RUNNING,
-	SWITCH_TO_MAINTENANCE_PENDING,
-	SWITCH_TO_SECURE_PENDING,
-	SHUTDOWN_PENDING,
-	SHUTDOWN,
-	DELETE_PENDING,
-	ERROR,
-	DELETED,
-	DELETE_ERROR,
-	MIGRATE_PENDING,
-	NOT_DEFINED
+import java.util.Arrays;
+
+public enum VMRole {
+	OWNER("OWNER"),
+	OWNER_CONTROLLER("OWNER-CONTROLLER"),
+	CONTROLLER("CONTROLLER"),
+	SHAREE("SHAREE");
+
+	private final String name;
+
+	VMRole(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public static VMRole fromName(String name) {
+		return Arrays.stream(values())
+				.filter(role -> role.getName().equalsIgnoreCase(name))
+				.findFirst()
+				.orElse(null);
+	}
 }

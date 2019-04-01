@@ -48,7 +48,7 @@ public class DBSchema {
 		public static String DISK_SPACE = "diskspace";
 
 		public static String CREATED_AT = "created_at";
-		public static String USERNAME = "username";
+		public static String GUID = "guid";
 		public static String HOST = "host";
 
 		/*
@@ -62,7 +62,7 @@ public class DBSchema {
 		public static String DESC_OUTSIDE_DATA = "desc_outside_data";
 		public static String RR_DATA_FILES = "rr_data_files";
 		public static String RR_RESULT_USAGE = "rr_result_usage";
-		public static String FULL_ACCESS = "full_access";
+		public static String DESC_SHARED = "desc_shared";
 
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{
@@ -79,7 +79,7 @@ public class DBSchema {
 				put(MEMORY_SIZE, 11);
 				put(DISK_SPACE, 12);
 				put(CREATED_AT, 13);
-				put(USERNAME, 14);
+				put(GUID, 14);
 				put(HOST, 15);
 				put(POLICY_NAME, 16);
 			}
@@ -88,7 +88,7 @@ public class DBSchema {
 
 	public static class UserTable {
 		public static String TABLE_NAME = "users";
-		public static String USER_NAME = "username";
+		public static String GUID = "guid";
 		public static String USER_EMAIL = "useremail";
 		
 		/* directory that hosts user's volume (disk) files */
@@ -152,7 +152,7 @@ public class DBSchema {
 		public static String CURR_MODE = "curr_mode";
 		public static String PREV_STATE = "prev_state";
 		public static String CURR_STATE = "curr_state";
-		public static String USERNAME = "username";
+		public static String GUID = "guid";
 	}
 
 	public static class PortTable {
@@ -161,5 +161,14 @@ public class DBSchema {
 		public static String HOST = "host";
 		public static String SSH_PORT = "sshport";
 		public static String VNC_PORT = "vncport";
+	}
+
+	public static class UserVmMapTable {
+		public static String TABLE_NAME = "uservmmap";
+		public static String VM_ID = "vmid";
+		public static String GUID = "guid";
+		public static String ROLE = "role";
+		public static String TOU = "tou";
+		public static String FULL_ACCESS = "full_access";
 	}
 }

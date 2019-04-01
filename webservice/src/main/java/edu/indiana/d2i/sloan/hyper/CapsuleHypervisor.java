@@ -16,6 +16,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -147,7 +148,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		logger.debug("createvm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -167,6 +168,8 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--loginid", String.valueOf(vminfo.getVNCloginId()))
 					.addArgument("--loginpwd", String.valueOf(vminfo.getVNCloginPwd()))
 					.addArgument("--volsize", String.valueOf(vminfo.getVolumeSizeInGB()) + "G")
+					.addArgument("--guid", userId)
+					.addArgument("--pubkey", "\"" + pubKey + "\"")
 					.build();
 
 			Commands createVMCmd = new Commands(
@@ -188,7 +191,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
 		logger.debug("launch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -203,8 +206,7 @@ class CapsuleHypervisor implements IHypervisor {
 			// maintenance
 			String argList = new CommandUtils.ArgsBuilder()
 					.addArgument("--wdir", vminfo.getWorkDir())
-					.addArgument("--vmtype", vminfo.getType())
-					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
+					.addArgument("--vmtype", vminfo.getType()).build();
 
 			Commands launchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -256,7 +258,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
 		logger.debug("switch vm: " + vminfo);
 		
 		SSHProxy sshProxy = null;
@@ -271,8 +273,7 @@ class CapsuleHypervisor implements IHypervisor {
 					.addArgument("--wdir", vminfo.getWorkDir())
 					.addArgument("--mode",
 							vminfo.getRequestedVMMode().toString().toLowerCase())
-					.addArgument("--vmtype", vminfo.getType())
-					.addArgument("--pubkey", "\"" + pubKey + "\"").build();
+					.addArgument("--vmtype", vminfo.getType()).build();
 
 			Commands switchVMCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
@@ -359,8 +360,8 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
-		logger.debug("update public key of vm: " + vminfo);
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
+		logger.debug("update public key of user " + userId + " in vm: " + vminfo);
 
 		SSHProxy sshProxy = null;
 
@@ -372,6 +373,7 @@ class CapsuleHypervisor implements IHypervisor {
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().
 					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--guid", userId).
 					addArgument("--pubkey", "\"" + pubKey + "\"").build();
 
 			Commands updateKeyCmd = new Commands(
@@ -419,6 +421,42 @@ class CapsuleHypervisor implements IHypervisor {
 			/* execute task */
 			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
 					migrateVMCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
+
+	@Override
+	public HypervisorResponse deletePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
+		logger.debug("delete public key of user " + userId + " in vm: " + vminfo);
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--guid", userId).
+					addArgument("--pubkey", "\"" + pubKey + "\"").build();
+
+			Commands shareVMCmd = new Commands(
+					Collections
+							.<String> singletonList(CommandUtils
+									.composeFullCommand(HYPERVISOR_CMD.DELETE_KEY,
+											argList)),
+					false);
+
+			/* execute task */
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
+					shareVMCmd));
 
 			return HypervisorResponse.commandRes2HyResp(res);
 		} finally {

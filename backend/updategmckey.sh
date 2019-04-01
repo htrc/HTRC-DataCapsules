@@ -84,24 +84,16 @@ fi
 # Load config file
 . $VM_DIR/config
 
-# Check if VM is running
-if [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Not_Running" ]]; then
-  echo "Error: VM is not running!"
-  exit 3
+
+if grep -w "$GMC_PUB_KEY"  $VM_DIR/authorized_keys
+then
+       logger "$VM_DIR - GMC_SSH_KEY is already there."
+else
+       logger "$VM_DIR - Adding GCM SSH public key.."
+       echo $GMC_PUB_KEY >> $VM_DIR/authorized_keys
+       scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/authorized_keys root@$VM_IP_ADDR:$DC_USER_KEY_FILE >> $VM_DIR/copy_authorized_keys_out 2>&1
 fi
 
-# Check if VM is in Maintenance mode
-if [ `cat $VM_DIR/mode` =  "Secure" ]; then
-    echo "Error: Capsule is not in the Maintenance mode. "
-    logger "Cannot add ssh key. Capsule is not in the Maintenance mode. "
-    exit 4
-fi
 
-DC_USER_KEY_FILE=$DC_USER_HOME/.ssh/authorized_keys
-
-logger "$VM_DIR - Adding GCM SSH public key.."
-
-#Copy user's ssh key to dcuser home folder in the capsule
-ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR " echo $GMC_PUB_KEY > $DC_USER_KEY_FILE "
 
 exit 0

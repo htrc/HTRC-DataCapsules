@@ -16,6 +16,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
 import java.util.HashMap;
+import java.util.List;
 
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.vm.VMPorts;
@@ -40,12 +41,12 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 	
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
 		return genFakeResponse(VMState.RUNNING);
 	}
 
@@ -55,7 +56,7 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
 		return genFakeResponse(VMState.RUNNING);
 	}
 
@@ -70,12 +71,17 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 
 	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
+		return genFakeResponse(VMState.SHUTDOWN);
+	}
+
+	@Override
+	public HypervisorResponse deletePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}
 

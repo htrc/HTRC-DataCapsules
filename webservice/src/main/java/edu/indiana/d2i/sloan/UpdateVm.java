@@ -15,13 +15,15 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan;
 
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
+import edu.indiana.d2i.sloan.utils.EmailUtil;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
 import org.apache.log4j.Logger;
@@ -32,12 +34,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Path("/updatevm")
 public class UpdateVm {
 	private static Logger logger = Logger.getLogger(UpdateVm.class);
+	private static final String DELETE = "DELETE";
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -53,66 +59,144 @@ public class UpdateVm {
 			@FormParam("desc_outside_data") String desc_outside_data,
 			@FormParam("rr_data_files") String rr_data_files,
 			@FormParam("rr_result_usage") String rr_result_usage,
+			@FormParam("desc_shared") String desc_shared,
+			@FormParam("guids") String guids,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
-		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
-		if (userEmail == null) userEmail = "";
+		String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 
-		String operator = httpServletRequest.getHeader(Constants.OPERATOR);
-		String operatorEmail = httpServletRequest.getHeader(Constants.OPERATOR_EMAIL);
-		if (operator == null) operator = userName;
-		if (operatorEmail == null) operatorEmail = "";*/
-
-		if (userName == null) {
-			logger.error("Username is not present in http header.");
+		if (userName == null || userEmail == null) {
+			logger.error("Username/E-mail is not present in http header.");
 			return Response
 					.status(400)
 					.entity(new ErrorBean(400,
-							"Username is not present in http header.")).build();
+							"Username/E-mail is not present in http header.")).build();
 		}
 
 		try {
-			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
-			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmId, RolePermissionUtils.API_CMD.UPDATE_VM)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.UPDATE_VM + " on VM " + vmId)).build();
+			}
 
 			logger.info("User " + userName + " tries to update the VM");
 			VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
-			if(!vmInfo.getType().equals(VMType.RESEARCH.getName())) {
-				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Only a " + VMType.RESEARCH.getName() +
-								" capsule can be converted to a " + VMType.RESEARCH_FULL.getName() + " capsule!"))
-						.build();
-			}
-
+			// If Full_access request is processed (granted or rejected)
 			if(type.equals(VMType.RESEARCH_FULL.getName())) {
+
+				// fails if the owner's full_access is null, means full_access is not requested or already rejected
 				if(vmInfo.isFull_access() == null) {
 					return Response.status(Response.Status.BAD_REQUEST)
 							.entity(new ErrorBean(400, "User has not requested full access for " +
-									"this capsule!")).build();
-				} else if(vmInfo.isFull_access() == true) {
+									"this capsule, or the full access request has already been rejected!")).build();
+				}
+
+				// capsule should be RESEARCH if owner's full_access = false and should be RESEARCH_FULL if its true
+				if(!(vmInfo.getType().equals(VMType.RESEARCH.getName())  && !vmInfo.isFull_access())
+					&& !(vmInfo.getType().equals(VMType.RESEARCH_FULL.getName())  && vmInfo.isFull_access())) {
 					return Response.status(Response.Status.BAD_REQUEST)
-							.entity(new ErrorBean(400, "This capsule is already a " +
-									VMType.RESEARCH_FULL.getName() + " capsule!")).build();
+							.entity(new ErrorBean(400, "Invalid capsule conversion when VM type is "
+								+ vmInfo.getType() + " and owner's full access permission is " + vmInfo.isFull_access()))
+							.build();
 				}
 
-				if(full_access == true) {
-					DBOperations.getInstance().updateVmType(vmId, type, full_access);
-				} else {
-					DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null);
+				// don't allow to process full_access if capsule is in delete* or error state
+				if (vmInfo.getVmstate() == VMState.ERROR
+						|| vmInfo.getVmstate().name().contains(DELETE)){
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "Cannot request/grant full access for a capsule which is in "
+									+ VMState.ERROR + " or " + DELETE + "* state!"))
+							.build();
 				}
 
-				logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
-						+ type + ") in database successfully!");
+				List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
+				List<String> guid_list = vmUserRoles.stream().map(role -> role.getGuid()).collect(Collectors.toList());
+				VmUserRole owner = vmUserRoles.stream()
+						.filter(role -> role.getRole().equals(VMRole.OWNER_CONTROLLER) || role.getRole().equals(VMRole.OWNER))
+						.collect(Collectors.toList()).get(0);
+
+				// initial full access request shoudn't have a list and subsequent requests should have a list
+				if((vmInfo.isFull_access() == false && guids != null)
+						|| (vmInfo.isFull_access() == true && guids == null)) {
+					return Response.status(Response.Status.BAD_REQUEST)
+							.entity(new ErrorBean(400, "Initial full access processing requests should not " +
+							"have a list of GUIDs and the subsequent full access processing requests must specify a list " +
+							"of GUIDs!")).build();
+				}
+
+				if(vmInfo.isFull_access() == false) { // if initial full access request is processed
+
+					if(full_access == true) {
+						//update vmtype to RESEARCH-FULL and set full_access=true
+						DBOperations.getInstance().updateVmType(vmId, type, full_access, guid_list);
+						logger.info("Users " + guid_list + " were initially accepted for full access in VM " + vmId);
+					} else {
+						//update vmtype to RESEARCH and set full_access=null
+						DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null, guid_list);
+						logger.info("Users " + guid_list + " were initially rejected for full access in VM " + vmId);
+					}
+				} else { // if subsequent full access request is processed
+
+					List<String> sub_list = Arrays.asList(guids.split(","));
+					if (sub_list.contains(owner.getGuid()) && full_access == false) {
+						// if the list for subsequent full access processing request containing owners guid, and its not
+						// granted, then full access will be denied for all sharees and VM type will be set to RESEARCH
+						DBOperations.getInstance().updateVmType(vmId, VMType.RESEARCH.getName(), null, guid_list);
+						logger.info("Users " + guid_list + " were subsequently rejected for full access in VM " + vmId);
+
+						// send email notification to sharees(except owner) about shared capsule
+						sendNotificationsToSharees(sub_list, userEmail, vmId);
+					} else {
+						guid_list = sub_list;
+						if(full_access == true) {
+							//update full_access=true for the sub list
+							DBOperations.getInstance().updateVmType(vmId, null, full_access, guid_list);
+							logger.info("Users " + guid_list + " were subsequently accepted for full access in VM " + vmId);
+
+							// send email notification to sharees about shared capsule
+							sendNotificationsToSharees(guid_list, userEmail, vmId);
+						} else {
+							//remove sharee from VM
+							DBOperations.getInstance().removeVmSharee(vmId, guid_list);
+							logger.info("Users " + guid_list
+									+ "  were subsequently rejected for full access hence removed from VM " + vmId);
+
+							//send notification to the owner
+							EmailUtil send_email = new EmailUtil();
+							String content = "Following User/(s) added to Research-Full capsule with VM ID " + vmId
+									+ " has/have been rejected :\n";
+							for(String guid : guid_list) {
+								content += "\t" + DBOperations.getInstance().getUserEmail(guid) + "\n";
+							}
+							send_email.sendEMail(userEmail, "User/(s) Rejected from Research-Full Data Capsule", content);
+						}
+					}
+
+					// Send public keys of users to the hypervisor whose :  tou is accepted + has a publik key  AND
+					// 			- full_access is accepted OR
+					// 			- all the users if owner's full access was also rejected this time
+					for (String guid : guid_list) {
+						if (RolePermissionUtils.isPermittedToUpdateKey(
+								guid, vmInfo, RolePermissionUtils.API_CMD.UPDATE_SSH_KEY)) {
+							HypervisorProxy.getInstance().addCommand(
+									new UpdatePublicKeyCommand(vmInfo, userName, userName,
+											DBOperations.getInstance().getUserPubKey(guid)));
+						}
+					}
+				}
+
 				return Response.status(200).build();
 			}
 
-			if(!type.equals(VMType.RESEARCH.getName())) {
-				return Response.status(Response.Status.BAD_REQUEST)
-						.entity(new ErrorBean(400, "Invalid capsule conversion type : " + type))
-						.build();
+			if(!type.equals(VMType.RESEARCH.getName()) || !vmInfo.getType().equals(VMType.RESEARCH.getName())) {
+				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
+						"Invalid capsule conversion type : " + vmInfo.getType() + " to " + type)).build();
 			}
+
+			// Processing full_access request from AG
 			if(vmInfo.isFull_access()!= null && vmInfo.isFull_access() == false) {
 				return Response.status(Response.Status.BAD_REQUEST)
 						.entity(new ErrorBean(400, "You have already requested to convert this " +
@@ -136,12 +220,25 @@ public class UpdateVm {
 						.build();
 			}
 
+			if(full_access != null && full_access == true) {
+				return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
+								"Full access request cannot be made with full_access=true value!")).build();
+			}
+
+			// When requesting full access full_access is set to false for all users
 			DBOperations.getInstance().updateVm(vmId, type, title, consent, desc_nature, desc_requirement, desc_links,
-					desc_outside_data, rr_data_files, rr_result_usage, full_access);
+					desc_outside_data, rr_data_files, rr_result_usage, full_access, desc_shared);
 			logger.info("VM " + vmId + " of user '" + userName + "' was updated (type "
 					+ type + ") in database successfully!");
 
-			return Response.status(200).build();
+			boolean pub_key_exists = DBOperations.getInstance().getUserPubKey(userName) == null ? false : true;
+			boolean tou = DBOperations.getInstance().getUserTOU(userName);
+			VmUserRole vmUserRole = DBOperations.getInstance().getUserRoleWithVmid(userName, vmId);
+			List<VmStatusBean> status = new ArrayList<VmStatusBean>();
+			status.add(new VmStatusBean(vmInfo, pub_key_exists, tou, vmUserRole));
+
+			// send vminfo back with all guids, AG then sends full_access request email containing all users emails
+			return Response.status(200).entity(new QueryVmResponseBean(status)).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
 			return Response
@@ -153,6 +250,23 @@ public class UpdateVm {
 			logger.error(e.getMessage(), e);
 			return Response.status(500)
 					.entity(new ErrorBean(500, e.getMessage())).build();
+		}
+	}
+
+	private void sendNotificationsToSharees(List<String> guids, String owner_email, String vmId)
+			throws NoItemIsFoundInDBException, SQLException {
+		EmailUtil email_util = new EmailUtil();
+		for(String guid : guids) {
+			String shareeEmail = DBOperations.getInstance().getUserEmail(guid);
+			if(shareeEmail.equals(owner_email))
+				continue; // don't send email to owner
+
+			String email_body = "Dear Data Capsule user,\n"
+					+ "HTRC user with email " + owner_email + " has shared their Data Capusle(" + vmId + ") with you." +
+					"\nYou will be able to access this Data Capsule once you accept the TOU agreement.";
+			email_util.sendEMail(shareeEmail, "A HTRC Data Capsule Has Been Shared With You",
+					email_body);
+			logger.info("Email notification on shared capsule sent to " + shareeEmail);
 		}
 	}
 }
