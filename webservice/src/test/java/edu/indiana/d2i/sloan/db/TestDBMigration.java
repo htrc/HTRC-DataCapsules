@@ -34,7 +34,7 @@ public class TestDBMigration {
          */
 
         Map<String, String> username_guid_map = new HashMap<>();
-        String base_dir = "/Users/charmadu/repo/git/git2/HTRC-DataCapsules/webservice/src/test/java/edu/indiana/d2i/sloan/db_verify/";
+        String base_dir = "/Users/charmadu/repo/git/git2/HTRC-DataCapsules/webservice/src/test/java/edu/indiana/d2i/sloan/db_verify/prod/";
 
         Map<String, String> un_users_map = null;
         Map<String, String> un_uservmmap_map = null;
@@ -53,7 +53,7 @@ public class TestDBMigration {
         //username-1,001
         //username-2,002
         //username-3,003
-        String username_guid_csv = base_dir + "username_guid_map.csv";
+        String username_guid_csv = base_dir + "username_guid_map_prod.csv";
 
         String un_users = base_dir + "un_users.csv";
         String un_uservmmap = base_dir + "un_uservmmap.csv";
@@ -92,34 +92,38 @@ public class TestDBMigration {
 //            //System.out.println("\t uservms : " + guid_uservmmap_map.get(guid));
 
             //System.out.println(username + " -> " + guid);
-            if((un_users_map.get(username) == null && guid_users_map.get(guid) == null) || un_users_map.get(username).equals(guid_users_map.get(guid))) {
-                //System.out.println("\t Success : users table");
-            } else {
-                //System.out.println("\t Error : users table");
-                Assert.fail("Error : users table not matched for '" + username + "' -> '" + guid + "' map");
+            try {
+                if((un_users_map.get(username) == null && guid_users_map.get(guid) == null) || un_users_map.get(username).equals(guid_users_map.get(guid))) {
+                    //System.out.println("\t Success : users table");
+                } else {
+                    //System.out.println("\t Error : users table");
+                    Assert.fail("Error : users table not matched for '" + username + "' -> '" + guid + "' map");
+                }
+
+                if((un_uservmmap_map.get(username) == null && guid_uservmmap_map.get(guid) == null) || un_uservmmap_map.get(username).equals(guid_uservmmap_map.get(guid))) {
+                    //System.out.println("\t Success : uservmmap table");
+                } else {
+                    //System.out.println("\t Error : uservmmap table");
+                    Assert.fail("Error : uservmmap table not matched for '" + username + "' -> '" + guid + "' map");
+                }
+
+                if((un_vmactivity_map.get(username) == null && guid_vmactivity_map.get(guid) == null) || un_vmactivity_map.get(username).equals(guid_vmactivity_map.get(guid))) {
+                    //System.out.println("\t Success : vmactivity table");
+                } else {
+                    //System.out.println("\t Error : vmactivity table");
+                    Assert.fail("Error : vmactivity table not matched for '" + username + "' -> '" + guid + "' map");
+                }
+
+                if((un_vms_map.get(username) == null && guid_vms_map.get(guid) == null) || un_vms_map.get(username).equals(guid_vms_map.get(guid))) {
+                    //System.out.println("\t Success : vms table");
+                } else {
+                    //System.out.println("\t Error : vms table");
+                    Assert.fail("Error : vms table not matched for '" + username + "' -> '" + guid + "' map");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            if((un_uservmmap_map.get(username) == null && guid_uservmmap_map.get(guid) == null) || un_uservmmap_map.get(username).equals(guid_uservmmap_map.get(guid))) {
-                //System.out.println("\t Success : uservmmap table");
-            } else {
-                //System.out.println("\t Error : uservmmap table");
-                Assert.fail("Error : uservmmap table not matched for '" + username + "' -> '" + guid + "' map");
-            }
-
-            if((un_vmactivity_map.get(username) == null && guid_vmactivity_map.get(guid) == null) || un_vmactivity_map.get(username).equals(guid_vmactivity_map.get(guid))) {
-                //System.out.println("\t Success : vmactivity table");
-            } else {
-                //System.out.println("\t Error : vmactivity table");
-                Assert.fail("Error : vmactivity table not matched for '" + username + "' -> '" + guid + "' map");
-            }
-
-            if((un_vms_map.get(username) == null && guid_vms_map.get(guid) == null) || un_vms_map.get(username).equals(guid_vms_map.get(guid))) {
-                //System.out.println("\t Success : vms table");
-            } else {
-                //System.out.println("\t Error : vms table");
-                Assert.fail("Error : vms table not matched for '" + username + "' -> '" + guid + "' map");
-            }
-            
             //System.out.println();
         }
 

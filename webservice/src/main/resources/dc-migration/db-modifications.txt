@@ -93,26 +93,26 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`uservmmap` ;
 
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`uservmmap` (
   `vmid` VARCHAR(128) NOT NULL,
-  `guid` varchar(64) NOT NULL,
+  `username` VARCHAR(128) NOT NULL,
   `role` ENUM('OWNER', 'OWNER-CONTROLLER', 'CONTROLLER', 'SHAREE') NULL,
   `tou` tinyint(1) DEFAULT '0',
   `full_access` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`vmid`,`guid`),
+  PRIMARY KEY (`vmid`,`username`),
   INDEX `fk_m_vmid_idx` (`vmid` ASC),
-  INDEX `fk_m_guid_idx` (`guid` ASC),
+  INDEX `fk_m_username_idx` (`username` ASC),
   CONSTRAINT `fk_m_vmid`
     FOREIGN KEY (`vmid`)
     REFERENCES `htrcvirtdb`.`vms` (`vmid`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION,
-  CONSTRAINT `fk_m_guid`
-    FOREIGN KEY (`guid`)
-    REFERENCES `htrcvirtdb`.`users` (`guid`)
+  CONSTRAINT `fk_m_username`
+    FOREIGN KEY (`username`)
+    REFERENCES `htrcvirtdb`.`users` (`username`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
-INSERT INTO uservmmap (vmid, guid, role, tou, full_access) SELECT vmid, guid, 'OWNER-CONTROLLER', true, full_access FROM vms;
+INSERT INTO uservmmap (vmid, username, role, tou, full_access) SELECT vmid, username, 'OWNER-CONTROLLER', true, full_access FROM vms;
 
 
 run db migration script to replace username from guid in all tables:
