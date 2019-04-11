@@ -28,8 +28,6 @@ usage () {
   echo ""
   echo "--vmtype  Capsule Type - DEMO or RESEARCH"
   echo ""
-  echo "--pubkey  User's ssh public key."
-  echo ""
   echo "-h|--help Show help."
 
 }
@@ -189,13 +187,6 @@ if [ $SECURE_MODE = 0 ]; then
   if [ $FW_RES -ne 0 ]; then
     echo "Error: Failed to apply firewall policy; error code ($FW_RES)"
     exit 6
-  fi
-
-
-  # Start release daemon if not already running
-  if [[ ! -e $VM_DIR/release_pid && "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
-    nohup $SCRIPT_DIR/released.sh --wdir $VM_DIR 2>>$VM_DIR/release_log >>$VM_DIR/release_log &
-    echo "$!" > $VM_DIR/release_pid
   fi
 
   # Update Mode File

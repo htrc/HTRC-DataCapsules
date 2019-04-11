@@ -224,10 +224,38 @@ def stop_running_vms():
 
 
 def update_vmtype(vmid, guid, status):
-    headers = {'Content-Type': 'application/x-www-form-urlencoded',
-               'htrc-remote-user': guid}
+    owner_guid = None
+    owner_email = None
+    params = None
+    # Get request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/listvms')
+    response = conn.getresponse()
+    vm_list = []
 
-    params = urllib.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status})
+    if response.status == 200:
+        vms = json.loads(response.read())['vmsInfo']
+
+        for vm in vms:
+            if vm["vmid"] == vmid:
+                roles = vm["roles"]
+                for role in roles:
+                    if role["guid"] == guid:
+                        if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                            owner_guid = guid
+                            owner_email = role["email"]
+                            params = urllib.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status})
+                        else:
+                            params = urllib.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status, 'guids': guid})
+                    else:
+                        if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                            owner_guid = role["guid"]
+                            owner_email = role["email"]
+
+
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': owner_guid, 'htrc-remote-user-email': owner_email}
+
 
     # POST the request
     conn = httplib.HTTPConnection(DC_API, PORT)
@@ -293,6 +321,7 @@ def show_pending_fullaccess():
     conn = httplib.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
+    vm_list = []
 
     if response.status == 200:
         vms = json.loads(response.read())['vmsInfo']
@@ -301,7 +330,15 @@ def show_pending_fullaccess():
             roles = vm["roles"]
             for role in roles:
                 if role["full_access"] is not None and role["full_access"] is False:
-                    print 'VM ID : {} User : {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["email"])
+                    if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                        vm_list.append(vm["vmid"])
+                        print 'VM ID : {} User : {} Role: {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["role"], role["email"])
+
+            for role in roles:
+                if role["full_access"] is not None and role["full_access"] is False and not vm_list.__contains__(vm["vmid"]):
+                    print 'VM ID : {} User : {} Role: {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["role"], role["email"])
+
+
 
 def delete_expired_capsules():
     # Get request
@@ -315,7 +352,7 @@ def delete_expired_capsules():
         for vm in vms:
             if vm["type"] == "DEMO":
                 created_date = datetime.strptime(vm["created_at"],"%Y-%m-%d %H:%M:%S").date()
-                expired_date = created_date + timedelta(days=31)
+                expired_date = created_date + timedelta(days=32)
                 if expired_date < date.today():
                     roles = vm["roles"]
                     for role in roles:
@@ -514,5 +551,4 @@ if __name__ == '__main__':
         migrate_vm(parsed.guid, parsed.vm, parsed.desthost)
 
     if parsed.sub_commands == 'deleteexpiredcapsules':
-        print 'Deleting expired capsules.'
         delete_expired_capsules()

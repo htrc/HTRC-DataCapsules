@@ -230,6 +230,9 @@ else
   # Update Mode File
   echo "Maintenance" > $VM_DIR/mode
 
+  #add/update Guacamole client's public key
+  $SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
+
   # copy authorized_keys file from VM_DIR to VM
   scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/authorized_keys root@$VM_IP_ADDR:$DC_USER_KEY_FILE >> $VM_DIR/copy_authorized_keys_out 2>&1
 
