@@ -392,7 +392,7 @@ fi
 MKPUBKEYDIR_RES=$(mkdir -p $VM_DIR/pub_keys 2>&1)
 
 if [ $? -ne 0 ]; then
-  echo "Error creating pub_keys directory or VM: $MKPUBKEYDIR_RES"
+  echo "Error creating pub_keys directory for VM: $MKPUBKEYDIR_RES"
   fail 3
 fi
 

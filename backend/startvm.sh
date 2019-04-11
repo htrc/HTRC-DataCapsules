@@ -96,7 +96,7 @@ if [[ -z "$VM_DIR" || -z "$DC_TYPE"  ]]; then
   exit 1
 fi
 
-if [[ ! -d "$VM_DIR" ]] ; then
+if [[ ! -d $VM_DIR ]] ; then
   echo "Error: Invalid VM directory specified!"
   exit 2
 fi
@@ -299,7 +299,7 @@ done
 # Add user's ssh key and guacamole client's ssh key
 
 logger "$VM_DIR Remove VM IP $VM_IP_ADDR  from known_hosts file."
-ex -s +"g/$VM_IP_ADDR/d" -cwq /home/htrcvirt/.ssh/known_hosts
+ex -s +"g/$VM_IP_ADDR/d" -cwq $KNOWN_HOSTS
 
 if [[ -z "$NO_PASSWORD" ]]; then
       logger "$VM_DIR Add guest scripts and uploads directories into /tmp in DC"
