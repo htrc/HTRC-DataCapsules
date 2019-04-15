@@ -23,7 +23,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.indiana.d2i.sloan.bean.UserBean;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.*;
 import org.apache.log4j.Logger;
 
@@ -73,6 +75,12 @@ public class DeleteVM {
 		}
 
 		try {
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.DELETE_VM)) {
+				return Response.status(400).entity(new ErrorBean(400,
+						"User " + userName + " cannot perform task "
+								+ RolePermissionUtils.API_CMD.DELETE_VM + " on VM " + vmid)).build();
+			}
+
 			//DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 			//DBOperations.getInstance().insertUserIfNotExists(operator, operatorEmail);
 
@@ -116,7 +124,7 @@ public class DeleteVM {
 								   @Context HttpServletRequest httpServletRequest) {
 
 		// check whether the user has been authorized
-		//String userName = httpServletRequest.getHeader(Constants.USER_NAME);
+		//String userName = httpServletRequest.getHeader(Constants.GUID);
 		String userName = ADMIN;
 		/*String userEmail = httpServletRequest.getHeader(Constants.USER_EMAIL);
 		String operator = httpServletRequest.getHeader(Constants.OPERATOR);

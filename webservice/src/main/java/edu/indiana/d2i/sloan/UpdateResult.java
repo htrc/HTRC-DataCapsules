@@ -3,9 +3,12 @@ package edu.indiana.d2i.sloan;
 import com.sun.org.apache.regexp.internal.RE;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.UserBean;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,6 +18,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * param:
@@ -65,12 +70,21 @@ public class UpdateResult {
                 return Response.status(500).entity(new ErrorBean(500,e.getMessage())).build();
             }
 
-         try {
+            try {
                 //result table is not directly linked to user table
                 //need vm to query for username
                 String vmid = DBOperations.getInstance().getVMIDWithResultid(resultid);
-                UserBean ub = DBOperations.getInstance().getUserWithVmid(vmid);
-                String userEmail = ub.getUserEmail();
+
+                // there are multiple users for a VM
+                //UserBean ub = DBOperations.getInstance().getUserWithVmid(vmid);
+                //String userEmail = ub.getUserEmail();
+
+                //get roles of the vm
+                List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
+                //filter roles who are allowed to view results
+                List<VmUserRole> allowedVmUserRoles = RolePermissionUtils.filterPermittedRoles(vmUserRoles, vmid,
+                        RolePermissionUtils.API_CMD.VIEW_RESULT);
+
                 String reviewer_email = Configuration.getInstance().
                         getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
 
@@ -86,17 +100,19 @@ public class UpdateResult {
                             getString(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX);
                     String download_addr = download_url +  resultid;
 
-                    //construct email content for user
-                    String contentUser = "Dear " + ub.getUserName() + ",\n\n" +
-                            "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
-                            download_addr + "\n\n" +
-                            "Please note this link is active for 24 hours.";
-                    send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
-                    logger.info("Download result email sent to user - download URL : " + download_addr);
+                    //construct email content for users
+                    for (VmUserRole role : allowedVmUserRoles) {
+                        String contentUser = "Dear Data Capsule user,\n\n" +
+                                "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
+                                download_addr + "\n\n" +
+                                "Please note this link is active for 24 hours.";
+                        send_email.sendEMail(role.getEmail(), "HTRC Data Capsule Result Download URL", contentUser);
+                    }
+                    logger.info("Download result email sent to users " + allowedVmUserRoles + " - download URL : " + download_addr);
 
                     //construct email content for reviewer
-                    String contentReviewer = String.format("Result \"%s\" \nhas been released to user \"%s\" \nemail: %s",
-                            resultid, ub.getUserName(), userEmail);
+                    String contentReviewer = String.format("Result \"%s\" has been released to users: %s",
+                            resultid, send_email.userListToString(vmUserRoles, allowedVmUserRoles));
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
 
                 }else{
@@ -108,8 +124,8 @@ public class UpdateResult {
                     //send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", contentUser);
 
                     //construct email content for reviewer
-                    String contentReviewer = String.format("Result \"%s\" has been rejected.\nFrom user \"%s\", email: %s",
-                            resultid, ub.getUserName(), userEmail);
+                    String contentReviewer = String.format("Result \"%s\" has been rejected from users: %s",
+                            resultid, send_email.userListToString(vmUserRoles, allowedVmUserRoles));
                     send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
 

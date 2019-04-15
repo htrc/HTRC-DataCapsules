@@ -80,6 +80,7 @@ public class StopVMCommand extends HypervisorCommand {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
+					logger.error("Error occurred while stopping VM " + vminfo.getVmid());
 					VMStateManager.getInstance().transitTo(vminfo.getVmid(),
 							vminfo.getVmstate(), VMState.ERROR, operator);
 					return null;

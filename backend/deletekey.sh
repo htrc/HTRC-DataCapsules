@@ -78,15 +78,10 @@ while :; do
             if [ "$2" ]; then
                 SSH_KEY=$2
                 shift
-            else
-                die 'ERROR: "--pubkey" requires a non-empty option argument.'
             fi
             ;;
         --pubkey=?*)
             SSH_KEY=${1#*=} # Delete everything up to "=" and assign the remainder.
-            ;;
-        --pubkey=)         # Handle the case of an empty --pubkey=
-            die 'ERROR: "--pubkey" requires a non-empty option argument.'
             ;;
         --)              # End of all options.
             shift
@@ -104,7 +99,7 @@ while :; do
     shift
 done
 
-if [[ -z "$VM_DIR" || -z "$SSH_KEY" || -z "$GUID" ]]; then
+if [[ -z "$VM_DIR" || -z "$GUID" ]]; then
   printf 'WARN: Missing required argument'  >&2
   usage
   exit 1
@@ -118,35 +113,31 @@ fi
 # Load config file
 . $VM_DIR/config
 
-add_pub_key () {
-  logger "$VM_DIR - Adding SSH public key of user $GUID .."
-  echo $SSH_KEY > $VM_DIR/pub_keys/$GUID
-  cat $VM_DIR/pub_keys/$GUID >> $VM_DIR/authorized_keys
+copy_authorized_keys () {
   # Check if VM is running
   if [[ `$SCRIPT_DIR/vmstatus.sh --wdir $VM_DIR` =~ "Status:  Running" ]]; then
      # Check if VM is in Maintenance mode
      if [ `cat $VM_DIR/mode` =  "Maintenance" ]; then
-        logger "$VM_DIR - coping authorized_keys file.."
+        logger "$VM_DIR - copying authorized_keys file.."
         scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/authorized_keys root@$VM_IP_ADDR:$DC_USER_KEY_FILE >> $VM_DIR/copy_authorized_keys_out 2>&1
      fi
   fi
-
 }
 
-mkdir -p $VM_DIR/pub_keys 2>&1
-
 if [[ -f "$VM_DIR/pub_keys/$GUID" ]] ; then
-    if grep -w $SSH_KEY $VM_DIR/pub_keys/$GUID
-    then
-        logger "$VM_DIR - SSH_KEY of user $GUID is already there."
-    else
-        logger "$VM_DIR - Removing existing SSH public key of user $GUID.."
-        grep -v "$(cat $VM_DIR/pub_keys/$GUID)" $VM_DIR/authorized_keys > $VM_DIR/authorized_keys.tmp && cat $VM_DIR/authorized_keys.tmp > $VM_DIR/authorized_keys && rm $VM_DIR/authorized_keys.tmp
-        add_pub_key
-    fi
-else
-    add_pub_key
+    rm $VM_DIR/pub_keys/$GUID
 fi
 
+rm $VM_DIR/authorized_keys
+
+if [[ -d "$VM_DIR/pub_keys" ]] ; then
+  for filename in $VM_DIR/pub_keys/*; do
+    cat $filename >> $VM_DIR/authorized_keys
+  done
+fi
+
+$SCRIPT_DIR/updategmckey.sh --wdir $VM_DIR
+
+copy_authorized_keys
 
 exit 0

@@ -15,12 +15,15 @@
  ******************************************************************************/
 package edu.indiana.d2i.sloan.utils;
 
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.mail.*;
 import javax.mail.internet.*;
 
 import edu.indiana.d2i.sloan.Configuration;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 
 public class EmailUtil {
 	private final String sendername;
@@ -68,5 +71,21 @@ public class EmailUtil {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+	}
+
+	public String userListToString(List<VmUserRole> vmUserRoles, List<VmUserRole> allowedVmUserRoles) {
+		String str = "\n";
+		List<String> allowed_users = allowedVmUserRoles.stream().map(role -> role.getGuid()).collect(Collectors.toList());
+		for(VmUserRole vmUserRole : vmUserRoles) {
+			str += "\temail : " + vmUserRole.getEmail() + ",\t" +
+					"role : " + vmUserRole.getRole() + ",\t" +
+					"TOU accepted : " + vmUserRole.getTou() + ",\t" +
+					"Full-access granted : " +
+					(vmUserRole.isFull_access() == null ? "not requested" : vmUserRole.isFull_access()) +
+					(!allowed_users.contains(vmUserRole.getGuid()) ?
+							" [not yet have access to results]" : "") +
+					"\n";
+		}
+		return str;
 	}
 }

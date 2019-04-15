@@ -21,10 +21,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 
+@Ignore
 public class TestRetriableTask {
 	
 	@Test(expected = RuntimeException.class)

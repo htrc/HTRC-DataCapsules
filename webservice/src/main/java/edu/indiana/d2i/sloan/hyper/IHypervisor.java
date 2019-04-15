@@ -18,20 +18,24 @@ package edu.indiana.d2i.sloan.hyper;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 
-interface IHypervisor {
-	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception;
+import java.util.List;
 
-	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception;
+interface IHypervisor {
+	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey, String userId) throws Exception;
+
+	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception;
 
 	public HypervisorResponse queryVM(VmInfoBean vminfo) throws Exception;
 
-	public HypervisorResponse switchVM(VmInfoBean vminfo, String pubKey) throws Exception;
+	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception;
 
 	public HypervisorResponse stopVM(VmInfoBean vminfo) throws Exception;
 
 	public HypervisorResponse delete(VmInfoBean vminfo) throws Exception;
 
-	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception;
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception;
 
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception;
+
+	public HypervisorResponse deletePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception;
 }

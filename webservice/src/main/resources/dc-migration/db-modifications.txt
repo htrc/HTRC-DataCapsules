@@ -12,7 +12,7 @@ ALTER TABLE users ADD pub_key VARCHAR(1024) CHARACTER SET utf8 DEFAULT NULL;
 Add additional parameters to VM
 -------------------------------
 
-modify user table and vms table
+modify user table and vms table:
 
 ALTER TABLE users ADD tou boolean default false;
 ALTER TABLE vms ADD type ENUM('DEMO', 'RESEARCH', 'RESEARCH-FULL') DEFAULT 'RESEARCH';
@@ -32,7 +32,7 @@ ALTER TABLE vms ADD full_access boolean default NULL;
 Cleanup users table
 -------------------
 
-remove users who don't have capsules
+remove users who don't have capsules:
 
 DELETE from users where username not in (select distinct username from vmactivity) and username not in(select distinct username from vms);
 
@@ -42,14 +42,14 @@ DELETE from users where username not in (select distinct username from vmactivit
 DC migration
 ------------
 
-add DELETE_ERROR and MIGRATE_PENDING states to vms and vmactivity tables
+add DELETE_ERROR and MIGRATE_PENDING states to vms and vmactivity tables:
 
 ALTER TABLE vms CHANGE vmstate vmstate enum('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR','DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') DEFAULT NULL;
 ALTER TABLE vmactivity CHANGE prev_state prev_state enum('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR','DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') NOT NULL;
 ALTER TABLE vmactivity CHANGE curr_state curr_state enum('CREATE_PENDING','LAUNCH_PENDING','RUNNING','SWITCH_TO_MAINTENANCE_PENDING','SWITCH_TO_SECURE_PENDING','SHUTDOWN_PENDING','SHUTDOWN','DELETE_PENDING','ERROR','DELETED', 'DELETE_ERROR', 'MIGRATE_PENDING') NOT NULL;
 
 
-create 'ports' table and populate table with reserved ports
+create 'ports' table and populate table with reserved ports:
 
 DROP TABLE IF EXISTS `htrcvirtdb`.`ports` ;
 
@@ -69,9 +69,60 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`ports` (
     REFERENCES `htrcvirtdb`.`vmhosts` (`hostname`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO ports (vmid, host, sshport, vncport) SELECT vmid, host, sshport, vncport FROM vms where vmstate!='DELETED';
 
 
+fix the issue with create_at time in 'vms' table:
+
+SELECT @@sql_mode;
+SET sql_mode = '';
+update vms set created_at="2016-10-10 01:01:01" where created_at="0000-00-00 00:00:00" and vmstate="SHUTDOWN";
+SET sql_mode = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION';
+
+
 ===================================================================================
+
+DC sharing
+----------
+
+create table 'uservmmap' and populate with current users with vms:
+
+DROP TABLE IF EXISTS `htrcvirtdb`.`uservmmap` ;
+
+CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`uservmmap` (
+  `vmid` VARCHAR(128) NOT NULL,
+  `username` VARCHAR(128) NOT NULL,
+  `role` ENUM('OWNER', 'OWNER-CONTROLLER', 'CONTROLLER', 'SHAREE') NULL,
+  `tou` tinyint(1) DEFAULT '0',
+  `full_access` tinyint(1) DEFAULT NULL,
+  PRIMARY KEY (`vmid`,`username`),
+  INDEX `fk_m_vmid_idx` (`vmid` ASC),
+  INDEX `fk_m_username_idx` (`username` ASC),
+  CONSTRAINT `fk_m_vmid`
+    FOREIGN KEY (`vmid`)
+    REFERENCES `htrcvirtdb`.`vms` (`vmid`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_m_username`
+    FOREIGN KEY (`username`)
+    REFERENCES `htrcvirtdb`.`users` (`username`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO uservmmap (vmid, username, role, tou, full_access) SELECT vmid, username, 'OWNER-CONTROLLER', true, full_access FROM vms;
+
+
+run db migration script to replace username from guid in all tables:
+/home/charmadu/dc-migration/username_guid_map.csv is the file that containes username->guid data
+
+sh db-migration-un_to_guid.sh <db_user> <db_password> <host> htrcvirtdb '/home/charmadu/dc-migration/username_guid_map.csv'
+
+
+drop full_access column and add desc_shared column:
+
+ALTER TABLE vms DROP COLUMN full_access;
+
+ALTER TABLE vms ADD desc_shared VARCHAR(6144) CHARACTER SET utf8 DEFAULT NULL;

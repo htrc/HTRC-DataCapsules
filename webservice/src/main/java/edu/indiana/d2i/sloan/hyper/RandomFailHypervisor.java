@@ -16,6 +16,7 @@
 package edu.indiana.d2i.sloan.hyper;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -90,12 +91,12 @@ public class RandomFailHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse createVM(VmInfoBean vminfo) throws Exception {
+	public HypervisorResponse createVM(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return simulateRandProcess();
 	}
 
 	@Override
-	public HypervisorResponse launchVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse launchVM(VmInfoBean vminfo) throws Exception {
 		return simulateRandProcess();
 	}
 
@@ -105,7 +106,7 @@ public class RandomFailHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse switchVM(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse switchVM(VmInfoBean vminfo) throws Exception {
 		return simulateRandProcess();
 	}
 
@@ -120,12 +121,17 @@ public class RandomFailHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey) throws Exception {
+	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return simulateRandProcess();
 	}
 
 	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
+		return simulateRandProcess();
+	}
+
+	@Override
+	public HypervisorResponse deletePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception {
 		return simulateRandProcess();
 	}
 }

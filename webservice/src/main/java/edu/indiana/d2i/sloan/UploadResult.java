@@ -16,7 +16,9 @@
 package edu.indiana.d2i.sloan;
 
 import java.io.InputStream;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -27,6 +29,9 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
+import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.log4j.Logger;
 
 import com.sun.jersey.multipart.FormDataParam;
@@ -62,8 +67,14 @@ public class UploadResult {
 			// check upload file type ??			
 			
 			// check if vmid is associated with a user in uservm table
-			UserBean userbean = DBOperations.getInstance().getUserWithVmid(vmid);	
-			logger.info("Prepare to upload result for " + vmid + ", " + userbean);
+			//UserBean userbean = DBOperations.getInstance().getUserWithVmid(vmid); -- now there're multiple users
+
+			//get roles of the vm
+			List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(vmid, true);
+			//filter roles who are allowed to view results
+			List<VmUserRole> allowedVmUserRoles = RolePermissionUtils.filterPermittedRoles(vmUserRoles, vmid,
+					RolePermissionUtils.API_CMD.VIEW_RESULT);
+			logger.info("Prepare to upload result for " + vmid + ", " + allowedVmUserRoles);
 			
 			// write to DB
 			String randomid = UUID.randomUUID().toString();
@@ -71,10 +82,10 @@ public class UploadResult {
 			
 			// add to post-process
 			if (!Configuration.getInstance().getBoolean(
-				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) {
+				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) { // results reviewed by a reviewer
 				UploadPostprocess.instance.addPostprocessingItem(new UserResultBean(
-					userbean.getUserName(), userbean.getUserEmail(), randomid));
-			}	else {
+						null, null, randomid, vmid, allowedVmUserRoles));
+			} else { // results not reviewed by a reviewer
 				// send email to the reviewer
 				String emails = Configuration.getInstance().getString(
 					Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
@@ -85,12 +96,14 @@ public class UploadResult {
 					for (String email : addrs) {
 						EmailUtil emailUtil = new EmailUtil();
 						emailUtil.sendEMail(email, "HTRC Data Capsules Result Review Request", 
-							"Dear Reviewer, \nThere is a new result pending for your review. Its id is " + randomid);
+							"Dear Reviewer, \nThere is a new result pending for your review. Its id is " +
+									randomid + ".\nFollowing are the collaborators of this capsule with ID " +
+									vmid + ":" + emailUtil.userListToString(vmUserRoles, allowedVmUserRoles));
 					}
 				}
 			}
 			
-			logger.info("Upload result for " + vmid + ", " + userbean + " successfully.");
+			logger.info("Upload result for " + vmid + ", " + allowedVmUserRoles + " successfully.");
 			
 			return Response.status(200).build();
 		} catch (Exception e) {
@@ -99,4 +112,6 @@ public class UploadResult {
 					.entity(new ErrorBean(500, e.getMessage())).build();
 		}		
 	}
+
+
 }

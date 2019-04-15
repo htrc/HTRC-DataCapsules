@@ -18,6 +18,8 @@ package edu.indiana.d2i.sloan.bean;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
 
+import java.util.List;
+
 public class VmInfoBean {
 	private String vmid, publicip, created_at, workDir, imagepath, policypath, vncloginId,
 			vncloginPwd, imagename, policyname, vmloginid, vmloginpwd;
@@ -28,7 +30,8 @@ public class VmInfoBean {
 	private Boolean consent;
 	private Boolean full_access;
 	private String type, title, desc_nature, desc_requirement, desc_links,
-			desc_outside_data, rr_data_files, rr_result_usage;
+			desc_outside_data, rr_data_files, rr_result_usage, desc_shared;
+	private List<VmUserRole> roles;
 
 	public void setImagePath(String imagePath) {
 		this.imagepath = imagePath;
@@ -46,6 +49,41 @@ public class VmInfoBean {
 		this.policypath = policypath;
 	}
 
+	public VmInfoBean(String vmid, List<VmUserRole> roles, Boolean full_access, String created_at) {
+		this.vmid = vmid;
+		this.roles = roles;
+		this.publicip = "";
+		this.created_at = created_at;
+		this.workDir = "";
+		this.imagepath = "";
+		this.policypath = "";
+		this.sshport = -1;
+		this.vncport = -1;
+		this.numCPUs = -1;
+		this.memorySize = -1;
+		this.volumeSize = -1;
+		this.vmmode = VMMode.NOT_DEFINED;
+		this.vmstate = VMState.NOT_DEFINED;
+		this.vncloginId = "";
+		this.vncloginPwd = "";
+		this.imagename = "";
+		this.policyname = "";
+		this.requestedVMMode = VMMode.NOT_DEFINED;
+		this.vmloginid = "";
+		this.vmloginpwd = "";
+		this.consent = null;
+		this.full_access = full_access;
+		this.type = "";
+		this.title = "";
+		this.desc_nature = "";
+		this.desc_requirement = "";
+		this.desc_links = "";
+		this.desc_outside_data = "";
+		this.rr_data_files = "";
+		this.rr_result_usage = "";
+		this.desc_shared = "";
+	}
+
 	public VmInfoBean(String vmid, String publicip, String created_at, String workDir,
 			String imagepath, String policypath, int sshport, int vncport,
 			int numCPUs, int memorySize, int diskSpace, VMMode vmmode,
@@ -53,7 +91,8 @@ public class VmInfoBean {
 			String vmloginid, String vmloginpwd,
 			String imagename, String policyname, VMMode requestedVMMode, String type, String title,
 					  Boolean consent, String desc_nature, String desc_requirement, String desc_links, String desc_outside_data,
-			String rr_data_files, String rr_result_usage, Boolean full_access) {
+			String rr_data_files, String rr_result_usage, Boolean full_access, List<VmUserRole> roles, String desc_shared) {
+
 		this.vmid = vmid;
 		this.publicip = publicip;
 		this.created_at = created_at;
@@ -84,6 +123,8 @@ public class VmInfoBean {
 		this.desc_outside_data = desc_outside_data;
 		this.rr_data_files = rr_data_files;
 		this.rr_result_usage = rr_result_usage;
+		this.desc_shared = desc_shared;
+		this.roles = roles;
 	}
 
 	public String getVmid() {
@@ -239,15 +280,27 @@ public class VmInfoBean {
 		this.rr_result_usage = rr_result_usage;
 	}
 
+	public String getDesc_shared() {
+		return desc_shared;
+	}
+
+	public void setDesc_shared(String desc_shared) {
+		this.desc_shared = desc_shared;
+	}
+
+	public List<VmUserRole> getRoles() {
+		return this.roles;
+	}
+
 	@Override
 	public String toString() {
 		return String.format("[vmid=%s, publicip=%s, workDir=%s, imagename=%s, " +
 			"imagepath=%s, sshport=%d, vncport=%d, vmloginId=%s, vmloginPwd=%s, " +
 			"numCPUs=%d, memorySize=%d, volumeSize=%d, policypath=%s, vmmode=%s," +
-			"vmstate=%s, requestmode=%s, type=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
+			"vmstate=%s, requestmode=%s, type=%s, roles=%s]",  vmid, publicip, workDir, imagename, imagepath, sshport,
 			vncport, vncloginId, vncloginPwd, numCPUs, memorySize, volumeSize, policypath,
 			(vmmode != null) ? vmmode.toString(): null, 
 			(vmstate != null) ? vmstate.toString(): null, 
-			(requestedVMMode != null) ? requestedVMMode.toString(): null, type);
+			(requestedVMMode != null) ? requestedVMMode.toString(): null, type, roles.toString());
 	}
 }

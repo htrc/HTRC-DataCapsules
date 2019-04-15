@@ -95,6 +95,10 @@ public class CreateVM {
 		try {
 			DBOperations.getInstance().insertUserIfNotExists(userName, userEmail);
 
+			String pubkey = "";
+			if(DBOperations.getInstance().getUserPubKey(userName) != null ) {
+				pubkey = DBOperations.getInstance().getUserPubKey(userName);
+			}
 			// check if ports are available
 
 			// check if image name is valid
@@ -116,7 +120,7 @@ public class CreateVM {
 			CreateVmRequestBean request = new CreateVmRequestBean(userName,
 					imageName, vmid, loginusername, loginpassword, memory,
 					vcpu, volumeSizeInGB, workDir, type, title, consent, desc_nature, desc_requirement,  desc_links,
-					desc_outside_data, rr_data_files, rr_result_usage, full_access);
+					desc_outside_data, rr_data_files, rr_result_usage, full_access, null);
 			logger.info("User " + userName + " tries to create vm " + request);
 			
 			// check quota
@@ -133,7 +137,7 @@ public class CreateVM {
 
 			// nonblocking call to hypervisor
 			vminfo.setImagePath(imagePath);
-			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo, userName));
+			HypervisorProxy.getInstance().addCommand(new CreateVMCommand(vminfo, userName, pubkey));
 
 			return Response.status(200).entity(new CreateVmResponseBean(vmid)).build();
 		} catch (Exception e) {
