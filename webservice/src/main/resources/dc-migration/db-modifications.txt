@@ -110,7 +110,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`uservmmap` (
     REFERENCES `htrcvirtdb`.`users` (`username`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
-ENGINE = InnoDB;
+ENGINE = InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO uservmmap (vmid, username, role, tou, full_access) SELECT vmid, username, 'OWNER-CONTROLLER', true, full_access FROM vms;
 
