@@ -1,14 +1,15 @@
 package edu.indiana.d2i.sloan;
 
 import com.sun.org.apache.regexp.internal.RE;
-import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.UserBean;
-import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.NoResultFileFoundException;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
+import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -144,5 +148,42 @@ public class UpdateResult {
             }
 
     }
+
+    /*
+        This utility method is used to migrate all the result files saved in DB to a file system location
+     */
+    @PUT
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateResult(
+            @FormParam("dir") String dir,
+            @Context HttpHeaders httpHeaders,
+            @Context HttpServletRequest httpServletRequest) {
+
+        if(dir == null) {
+            dir = Configuration.getInstance().getString(
+                    Configuration.PropertyName.RESULT_FILES_DIR, "/tmp");
+        }
+
+        try {
+            List<ReviewInfoBean> reviewInfo = DBOperations.getInstance().getReviewData();
+            for(ReviewInfoBean reviewInfoBean : reviewInfo) {
+                InputStream input = DBOperations.getInstance().getResultInputStream(reviewInfoBean.getResultid());
+                if(input == null) {
+                    logger.warn("Result file for result ID " + reviewInfoBean.getResultid() + " is NULL. " +
+                            "Therefore not saved in file system!");
+                    continue;
+                }
+                ResultUtils.saveResultFileToDir(reviewInfoBean.getResultid(), input, dir);
+            }
+        } catch (Exception e) {
+            logger.error("Error occurred while migrating results to file system!", e);
+            return Response.status(500).entity(new ErrorBean(500,
+                            "Error occurred while migrating results to file system!")).build();
+        }
+
+        return Response.status(200).entity("All results successfully migrated to " + dir + " directory!").build();
+    }
+
 
 }

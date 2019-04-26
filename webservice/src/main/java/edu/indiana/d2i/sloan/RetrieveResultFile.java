@@ -19,6 +19,8 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.NoResultFileFoundException;
+import edu.indiana.d2i.sloan.utils.ResultUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -59,12 +61,12 @@ public class RetrieveResultFile {
 			ResultBean result = DBOperations.getInstance().getResult(randomid);
 			logger.info("Result with " + randomid + " is being downloaded.");
 
-			return Response.ok(IOUtils.toByteArray(result.getInputstream()))
+			return Response.ok(IOUtils.toByteArray(ResultUtils.getResultFile(randomid)))
 					.type("application/zip")
 					.header("Content-Disposition", "attachment; filename=\"" + filename + ".zip\"")
 					.build();
 
-		} catch (NoItemIsFoundInDBException e) {
+		} catch (NoItemIsFoundInDBException | NoResultFileFoundException e) {
 			logger.error("No Result with id " + randomid + " is found!", e);
 			return Response.status(404).entity("No Result with id " + randomid + " is found!").build();
 		} catch (Exception e) {

@@ -19,6 +19,7 @@ import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import edu.indiana.d2i.sloan.utils.ResultUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
@@ -60,7 +61,7 @@ public class DownloadResult {
 		}
 
 		if (filename==null || filename.length()==0){
-			filename = String.format("result-", randomid, ".txt");
+			filename = String.format("result-%s", randomid, ".txt");
 		}
 
 		try {
@@ -81,7 +82,7 @@ public class DownloadResult {
 				throw new ResultExpireException(randomid + " has been expired!");
 
 			logger.info("Result with " + randomid + " is being downloaded.");
-			return Response.ok(IOUtils.toByteArray(result.getInputstream()))
+			return Response.ok(IOUtils.toByteArray(ResultUtils.getResultFile(randomid)))
 					.type("application/zip")
 					.header("Content-Disposition", "attachment; filename=\"" + filename + ".zip\"")
 					.build();

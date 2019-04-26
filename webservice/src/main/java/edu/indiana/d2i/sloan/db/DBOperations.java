@@ -1094,7 +1094,41 @@ public class DBOperations {
 				java.util.Date startDate = rs.getString(DBSchema.ResultTable.NOTIFIED_TIME) != null
 						? DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
 						: null;
-				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), startDate);
+				//return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), startDate);
+				return new ResultBean(startDate);
+			} else {
+				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	/*
+		This utility method is used one time to retrieve result file from DB and save in file system. After migration
+		"datafield" is not a valid column in 'results' table
+	 */
+	public InputStream getResultInputStream(String randomid) throws
+		SQLException, NoItemIsFoundInDBException, ParseException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
+				" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+
+			if (rs.next()) {
+				java.util.Date startDate = rs.getString(DBSchema.ResultTable.NOTIFIED_TIME) != null
+						? DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
+						: null;
+				return rs.getBinaryStream("datafield");
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
 			}
@@ -1142,7 +1176,8 @@ public class DBOperations {
 
 
 	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
-		String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + DBSchema.ResultTable.CREATE_TIME+
+		//String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + "," + DBSchema.ResultTable.CREATE_TIME+
+		String sql = "SELECT "+ DBSchema.ResultTable.CREATE_TIME +
 				" FROM "+DBSchema.ResultTable.TABLE_NAME +  " WHERE " + DBSchema.ResultTable.RESULT_ID + " =\""+resultid+"\";";
 		logger.debug(sql);
 		Connection conn = null;
@@ -1159,10 +1194,10 @@ public class DBOperations {
 			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
 			if(rs.next()){
-				blob = rs.getBlob("datafield");
-				InputStream in = blob.getBinaryStream();
+				/*blob = rs.getBlob("datafield");
+				InputStream in = blob.getBinaryStream();*/
 				Date dt = rs.getDate("createtime");
-				return (new ResultBean(in, dt));
+				return (new ResultBean(dt));
 			}else{
 				throw new NoItemIsFoundInDBException("Result of " + resultid + " can't be found in db");
 			}
@@ -1419,7 +1454,7 @@ public class DBOperations {
 
 	}
 
-	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
+	public void insertResult(String vmid, String randomid) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -1427,16 +1462,17 @@ public class DBOperations {
 			java.util.Date dt = new java.util.Date();
 			String currentTime = DATE_FORMATOR.format(dt);
 			String insertResult = String.format(
-				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)", 
+				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s) VALUES" + "(?, ?, ?)",
 				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RESULT_ID, 
-				DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.CREATE_TIME);
-			
+				DBSchema.ResultTable.CREATE_TIME);
+				//DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.CREATE_TIME);
+
 			connection = DBConnections.getInstance().getConnection();
 			pst = connection.prepareStatement(insertResult);
 			pst.setString(1, vmid);
 			pst.setString(2, randomid);
-			pst.setBinaryStream(3, input);
-			pst.setString(4, currentTime);
+			//pst.setBinaryStream(3, input);
+			pst.setString(3, currentTime);
 			
 			pst.executeUpdate();
 		} finally {
