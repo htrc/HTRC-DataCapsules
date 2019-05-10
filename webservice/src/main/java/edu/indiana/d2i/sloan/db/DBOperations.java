@@ -18,6 +18,7 @@ package edu.indiana.d2i.sloan.db;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.ResultExpireException;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMRole;
@@ -1107,7 +1108,7 @@ public class DBOperations {
 		}
 	}
 
-	public List<ResultInfoBean> getVMResults(String vmid) throws SQLException{
+	public List<ResultInfoBean> getVMResults(String vmid) throws SQLException, ParseException {
 		List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -1127,7 +1128,8 @@ public class DBOperations {
 						rs.getString(DBSchema.ResultTable.NOTIFIED_TIME),
 						rs.getString(DBSchema.ResultTable.REVIEWER),
 						rs.getString(DBSchema.ResultTable.STATUS),
-						rs.getString(DBSchema.ResultTable.COMMENT)
+						rs.getString(DBSchema.ResultTable.COMMENT),
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
 				);
 				res.add(resultInfoBean);
 			}
@@ -1189,14 +1191,15 @@ public class DBOperations {
 			rs = pst.executeQuery();
 
 			if (rs.next()) {
-				return new ResultInfoBean(rs.getString("vmid"),
-						rs.getString("resultid"),
-						rs.getString("createtime"),
-						rs.getString("notified"),
-						rs.getString("notifiedtime"),
-						rs.getString("reviewer"),
-						rs.getString("status"),
-						rs.getString("comment")
+				return new ResultInfoBean(rs.getString(DBSchema.ResultTable.VM_ID),
+						rs.getString(DBSchema.ResultTable.RESULT_ID),
+						rs.getString(DBSchema.ResultTable.CREATE_TIME),
+						rs.getString(DBSchema.ResultTable.NOTIFIED),
+						rs.getString(DBSchema.ResultTable.NOTIFIED_TIME),
+						rs.getString(DBSchema.ResultTable.REVIEWER),
+						rs.getString(DBSchema.ResultTable.STATUS),
+						rs.getString(DBSchema.ResultTable.COMMENT),
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
 				);
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
@@ -2325,5 +2328,21 @@ public class DBOperations {
 				connection.close();
 		}
 		return res;
+	}
+
+	private Boolean isResultExpired(String notifiedTime) throws ParseException {
+		java.util.Date notified_time = notifiedTime != null ? DATE_FORMATOR.parse(notifiedTime) : null;
+		if(notified_time == null)
+			return null;
+
+		long currentT = new java.util.Date().getTime();
+		long startT = notified_time.getTime();
+		long span = Configuration.getInstance().getLong(
+				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
+		if (span > 0 && ((currentT-startT)/1000) > span) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
