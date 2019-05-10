@@ -1129,7 +1129,7 @@ public class DBOperations {
 						rs.getString(DBSchema.ResultTable.REVIEWER),
 						rs.getString(DBSchema.ResultTable.STATUS),
 						rs.getString(DBSchema.ResultTable.COMMENT),
-						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS))
 				);
 				res.add(resultInfoBean);
 			}
@@ -1199,7 +1199,7 @@ public class DBOperations {
 						rs.getString(DBSchema.ResultTable.REVIEWER),
 						rs.getString(DBSchema.ResultTable.STATUS),
 						rs.getString(DBSchema.ResultTable.COMMENT),
-						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS))
 				);
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
@@ -2330,9 +2330,9 @@ public class DBOperations {
 		return res;
 	}
 
-	private Boolean isResultExpired(String notifiedTime) throws ParseException {
+	private Boolean isResultExpired(String notifiedTime, String status) throws ParseException {
 		java.util.Date notified_time = notifiedTime != null ? DATE_FORMATOR.parse(notifiedTime) : null;
-		if(notified_time == null)
+		if(notified_time == null || status.equals("Rejected"))
 			return null;
 
 		long currentT = new java.util.Date().getTime();
