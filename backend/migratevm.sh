@@ -15,7 +15,7 @@
 # limitations under the License.
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
-. $CAPSULE_CONFIG_FILE
+. $SCRIPT_DIR/capsules.cfg
 
 usage () {
 
