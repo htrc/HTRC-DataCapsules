@@ -164,6 +164,7 @@ public class UpdateResult {
             dir = Configuration.getInstance().getString(
                     Configuration.PropertyName.RESULT_FILES_DIR, "/tmp");
         }
+        logger.info("Trying to migrate all result files to " + dir + " directory!");
 
         try {
             List<ReviewInfoBean> reviewInfo = DBOperations.getInstance().getReviewData();
@@ -175,6 +176,7 @@ public class UpdateResult {
                     continue;
                 }
                 ResultUtils.saveResultFileToDir(reviewInfoBean.getResultid(), input, dir);
+                logger.info("Result file with ID " + reviewInfoBean.getResultid() + " was written to file system.");
             }
         } catch (Exception e) {
             logger.error("Error occurred while migrating results to file system!", e);
@@ -182,6 +184,7 @@ public class UpdateResult {
                             "Error occurred while migrating results to file system!")).build();
         }
 
+        logger.info("All results successfully migrated to " + dir + " directory!");
         return Response.status(200).entity("All results successfully migrated to " + dir + " directory!").build();
     }
 
