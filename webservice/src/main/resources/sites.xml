@@ -116,6 +116,10 @@
 		<name>result.expire.sec</name>
 		<value>43200</value>
 	</property>
+	<property>
+		<name>result.files.dir</name>
+		<value>RESULT_FILES_SAVE_LOCATION</value>
+	</property>
 
 	<!-- reviewer email addresses -->
 	<property><name>result.review.human</name><value>true</value></property>

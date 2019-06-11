@@ -18,7 +18,7 @@ package edu.indiana.d2i.sloan;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.bean.ResultInfoBean;
-import edu.indiana.d2i.sloan.bean.VmInfoBean;
+import edu.indiana.d2i.sloan.bean.ResultInfoResponseBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.ResultExpireException;
@@ -36,6 +36,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * param:
@@ -45,15 +47,14 @@ import javax.ws.rs.core.Response;
  *   return: data field of the given resultid
  */
 
-@Path("/download")
-public class DownloadResult {
-	private static Logger logger = Logger.getLogger(DownloadResult.class);
+@Path("/getvmresults")
+public class GetVMResults {
+	private static Logger logger = Logger.getLogger(GetVMResults.class);
 
 	@GET
-	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	@Produces(MediaType.APPLICATION_JSON)
 	public Response downloadResult(
-			@QueryParam("randomid") String randomid,
-			@QueryParam("filename") String filename,
+			@QueryParam("vmid") String vmid,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest)
 	{
@@ -66,54 +67,25 @@ public class DownloadResult {
 							"Username is not present in http header.")).build();
 		}
 
-		if (randomid == null) {
-			logger.error("Invalid download URL! randomid is null");
-			return Response.status(400).entity( "Invalid download URL!").build();
-		}
-
-		if (filename==null || filename.length()==0){
-			filename = String.format("result-%s", randomid, ".txt");
+		if (vmid == null) {
+			logger.error("VM ID is not present in http header.");
+			return Response.status(400).entity( "VM ID is not present in http header!").build();
 		}
 
 		try {
-			ResultInfoBean resultInfo = DBOperations.getInstance().getResultInfo(randomid);
-
 			//check if this user has permission to view results
-			if (!RolePermissionUtils.isPermittedCommand(userName, resultInfo.getVmid(), RolePermissionUtils.API_CMD.VIEW_RESULT)) {
-				String errorMsg = "User " + userName + " is not permitted to download result " + randomid + " in VM "
-						+ resultInfo.getVmid() + "!";
+			if (!RolePermissionUtils.isPermittedCommand(userName, vmid, RolePermissionUtils.API_CMD.VIEW_RESULT)) {
+				String errorMsg = "User " + userName + " is not permitted to view results in VM " + vmid + "!";
 				logger.warn(errorMsg);
-				throw new NoItemIsFoundInDBException(errorMsg);
+				return Response.status(400).entity(new ErrorBean(400, errorMsg)).build();
 			}
 
-			//check if result is released
-			String currStatus = resultInfo.getStatus();
-			if (currStatus.equals("Pending") || currStatus.equals("Rejected")) {
-				return Response.status(400)
-						.entity( "Cannot download results! Result with id " + randomid + " is " + currStatus).build();
-			}
-
-			// check if result expires
-			ResultBean result = DBOperations.getInstance().getResult(randomid);
-			long currentT = new java.util.Date().getTime();
-			long startT = result.getStartdate().getTime();
-			long span = Configuration.getInstance().getLong(
-					Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
-			if (span > 0 && ((currentT-startT)/1000) > span)
-				throw new ResultExpireException(randomid + " has been expired!");
-
-			logger.info("Result with " + randomid + " is being downloaded.");
-			return Response.ok(IOUtils.toByteArray(ResultUtils.getResultFile(randomid)))
-					.type("application/zip")
-					.header("Content-Disposition", "attachment; filename=\"" + filename + ".zip\"")
-					.build();
+			List<ResultInfoBean> res = DBOperations.getInstance().getVMResults(vmid);
+			return Response.status(200).entity(new ResultInfoResponseBean(res)).build();
 
 		} catch (NoItemIsFoundInDBException e) {
-			logger.error("No Result with id " + randomid + " is found for the user " + userName + " !", e);
-			return Response.status(404).entity("No Result with id " + randomid + " is found for the user!").build();
-		} catch (ResultExpireException e) {
-			logger.error(e.getMessage(), e);
-			return Response.status(400).entity("Result with id " + randomid + " has been expired!").build();
+			logger.error("Cannot find VM " + vmid + " with username " + userName, e);
+			return Response.status(404).entity("Cannot find VM " + vmid + " with username " + userName).build();
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return Response.status(500).entity("Internal error - " + e.getMessage()).build();

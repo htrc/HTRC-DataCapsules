@@ -125,7 +125,6 @@ DROP TABLE IF EXISTS `htrcvirtdb`.`results` ;
 CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`results` (
   `vmid` VARCHAR(128) NOT NULL,
   `resultid` VARCHAR(128) NOT NULL,
-  `datafield` LONGBLOB NULL,
   `createtime` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
   `notified` ENUM('YES', 'NO') NOT NULL DEFAULT 'NO',
   `notifiedtime` TIMESTAMP NULL,

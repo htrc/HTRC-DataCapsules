@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
+import edu.indiana.d2i.sloan.utils.ResultUtils;
 import org.apache.log4j.Logger;
 import org.junit.*;
 
@@ -412,7 +413,8 @@ public class TestDBOperations {
 		for (int i = 0; i < 3; i++) {
 			String randomid = UUID.randomUUID().toString();
 			FileInputStream input = new FileInputStream("./tmpfile");
-			DBOperations.getInstance().insertResult(vmid, randomid, input);
+			ResultUtils.saveResultFile(randomid, input);
+			DBOperations.getInstance().insertResult(vmid, randomid);
 			randomids.add(randomid);
 		}
 		
@@ -431,7 +433,7 @@ public class TestDBOperations {
 		
 		for (String randomid : randomids) {
 			ResultBean result = DBOperations.getInstance().getResult(randomid);
-			InputStream input = result.getInputstream();
+			InputStream input = ResultUtils.getResultFile(randomid);
 			byte[] b = new byte[1024];
 			while (input.read(b) != -1) {
 				Assert.assertArrayEquals(buf, b);

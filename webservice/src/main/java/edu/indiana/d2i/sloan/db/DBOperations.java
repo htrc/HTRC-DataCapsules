@@ -18,6 +18,7 @@ package edu.indiana.d2i.sloan.db;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.ResultExpireException;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMRole;
@@ -1094,7 +1095,77 @@ public class DBOperations {
 				java.util.Date startDate = rs.getString(DBSchema.ResultTable.NOTIFIED_TIME) != null
 						? DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
 						: null;
-				return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), startDate);
+				//return new ResultBean(rs.getBinaryStream(DBSchema.ResultTable.DATA_FIELD), startDate);
+				return new ResultBean(startDate);
+			} else {
+				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
+	public List<ResultInfoBean> getVMResults(String vmid) throws SQLException, ParseException {
+		List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
+					" WHERE " + DBSchema.ResultTable.VM_ID + "=\"" + vmid + "\"";
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				ResultInfoBean resultInfoBean = new ResultInfoBean(rs.getString(DBSchema.ResultTable.VM_ID),
+						rs.getString(DBSchema.ResultTable.RESULT_ID),
+						rs.getString(DBSchema.ResultTable.CREATE_TIME),
+						rs.getString(DBSchema.ResultTable.NOTIFIED),
+						rs.getString(DBSchema.ResultTable.NOTIFIED_TIME),
+						rs.getString(DBSchema.ResultTable.REVIEWER),
+						rs.getString(DBSchema.ResultTable.STATUS),
+						rs.getString(DBSchema.ResultTable.COMMENT),
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS))
+				);
+				res.add(resultInfoBean);
+			}
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+		return res;
+	}
+
+	/*
+		This utility method is used one time to retrieve result file from DB and save in file system. After migration
+		"datafield" is not a valid column in 'results' table
+	 */
+	public InputStream getResultInputStream(String randomid) throws
+		SQLException, NoItemIsFoundInDBException, ParseException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+		ResultSet rs = null;
+
+		try {
+			String sql = "SELECT * FROM " + DBSchema.ResultTable.TABLE_NAME +
+				" WHERE " + DBSchema.ResultTable.RESULT_ID + "=\"" + randomid + "\"";
+			connection = DBConnections.getInstance().getConnection();
+			pst = connection.prepareStatement(sql);
+			rs = pst.executeQuery();
+
+			if (rs.next()) {
+				java.util.Date startDate = rs.getString(DBSchema.ResultTable.NOTIFIED_TIME) != null
+						? DATE_FORMATOR.parse(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME))
+						: null;
+				return rs.getBinaryStream("datafield");
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
 			}
@@ -1120,14 +1191,15 @@ public class DBOperations {
 			rs = pst.executeQuery();
 
 			if (rs.next()) {
-				return new ResultInfoBean(rs.getString("vmid"),
-						rs.getString("resultid"),
-						rs.getString("createtime"),
-						rs.getString("notified"),
-						rs.getString("notifiedtime"),
-						rs.getString("reviewer"),
-						rs.getString("status"),
-						rs.getString("comment")
+				return new ResultInfoBean(rs.getString(DBSchema.ResultTable.VM_ID),
+						rs.getString(DBSchema.ResultTable.RESULT_ID),
+						rs.getString(DBSchema.ResultTable.CREATE_TIME),
+						rs.getString(DBSchema.ResultTable.NOTIFIED),
+						rs.getString(DBSchema.ResultTable.NOTIFIED_TIME),
+						rs.getString(DBSchema.ResultTable.REVIEWER),
+						rs.getString(DBSchema.ResultTable.STATUS),
+						rs.getString(DBSchema.ResultTable.COMMENT),
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS))
 				);
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
@@ -1142,7 +1214,8 @@ public class DBOperations {
 
 
 	public ResultBean viewRleaseFile(String resultid) throws SQLException, NoItemIsFoundInDBException {
-		String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + DBSchema.ResultTable.CREATE_TIME+
+		//String sql = "SELECT "+ DBSchema.ResultTable.DATA_FIELD + "," + DBSchema.ResultTable.CREATE_TIME+
+		String sql = "SELECT "+ DBSchema.ResultTable.CREATE_TIME +
 				" FROM "+DBSchema.ResultTable.TABLE_NAME +  " WHERE " + DBSchema.ResultTable.RESULT_ID + " =\""+resultid+"\";";
 		logger.debug(sql);
 		Connection conn = null;
@@ -1159,10 +1232,10 @@ public class DBOperations {
 			pst = conn.prepareStatement(sql);
 			rs = pst.executeQuery();
 			if(rs.next()){
-				blob = rs.getBlob("datafield");
-				InputStream in = blob.getBinaryStream();
+				/*blob = rs.getBlob("datafield");
+				InputStream in = blob.getBinaryStream();*/
 				Date dt = rs.getDate("createtime");
-				return (new ResultBean(in, dt));
+				return (new ResultBean(dt));
 			}else{
 				throw new NoItemIsFoundInDBException("Result of " + resultid + " can't be found in db");
 			}
@@ -1419,7 +1492,7 @@ public class DBOperations {
 
 	}
 
-	public void insertResult(String vmid, String randomid, InputStream input) throws SQLException {
+	public void insertResult(String vmid, String randomid) throws SQLException {
 		Connection connection = null;
 		PreparedStatement pst = null;
 
@@ -1427,16 +1500,17 @@ public class DBOperations {
 			java.util.Date dt = new java.util.Date();
 			String currentTime = DATE_FORMATOR.format(dt);
 			String insertResult = String.format(
-				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)", 
+				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s) VALUES" + "(?, ?, ?)",
 				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RESULT_ID, 
-				DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.CREATE_TIME);
-			
+				DBSchema.ResultTable.CREATE_TIME);
+				//DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.CREATE_TIME);
+
 			connection = DBConnections.getInstance().getConnection();
 			pst = connection.prepareStatement(insertResult);
 			pst.setString(1, vmid);
 			pst.setString(2, randomid);
-			pst.setBinaryStream(3, input);
-			pst.setString(4, currentTime);
+			//pst.setBinaryStream(3, input);
+			pst.setString(3, currentTime);
 			
 			pst.executeUpdate();
 		} finally {
@@ -2254,5 +2328,21 @@ public class DBOperations {
 				connection.close();
 		}
 		return res;
+	}
+
+	private Boolean isResultExpired(String notifiedTime, String status) throws ParseException {
+		java.util.Date notified_time = notifiedTime != null ? DATE_FORMATOR.parse(notifiedTime) : null;
+		if(notified_time == null || status.equals("Rejected"))
+			return null;
+
+		long currentT = new java.util.Date().getTime();
+		long startT = notified_time.getTime();
+		long span = Configuration.getInstance().getLong(
+				Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
+		if (span > 0 && ((currentT-startT)/1000) > span) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

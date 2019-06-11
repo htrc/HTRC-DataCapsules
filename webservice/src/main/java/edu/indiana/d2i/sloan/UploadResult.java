@@ -16,6 +16,8 @@
 package edu.indiana.d2i.sloan;
 
 import java.io.InputStream;
+import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,6 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import edu.indiana.d2i.sloan.bean.VmUserRole;
+import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.log4j.Logger;
@@ -65,7 +69,7 @@ public class UploadResult {
 		
 		try {
 			// check upload file type ??			
-			
+
 			// check if vmid is associated with a user in uservm table
 			//UserBean userbean = DBOperations.getInstance().getUserWithVmid(vmid); -- now there're multiple users
 
@@ -75,11 +79,19 @@ public class UploadResult {
 			List<VmUserRole> allowedVmUserRoles = RolePermissionUtils.filterPermittedRoles(vmUserRoles, vmid,
 					RolePermissionUtils.API_CMD.VIEW_RESULT);
 			logger.info("Prepare to upload result for " + vmid + ", " + allowedVmUserRoles);
-			
+
+			// generate unique result ID
+			String randomid = null;
+			do {
+				randomid = UUID.randomUUID().toString();
+			} while(!uniqueResultId(randomid));
+
+			// save file in File System
+			ResultUtils.saveResultFile(randomid, input);
 			// write to DB
-			String randomid = UUID.randomUUID().toString();
-			DBOperations.getInstance().insertResult(vmid, randomid, input);			
-			
+			//DBOperations.getInstance().insertResult(vmid, randomid, input);
+			DBOperations.getInstance().insertResult(vmid, randomid);
+
 			// add to post-process
 			if (!Configuration.getInstance().getBoolean(
 				Configuration.PropertyName.RESULT_HUMAN_REVIEW, false)) { // results reviewed by a reviewer
@@ -113,5 +125,13 @@ public class UploadResult {
 		}		
 	}
 
+	private boolean uniqueResultId(String resultId) throws SQLException, ParseException {
+		try {
+			DBOperations.getInstance().getResult(resultId);
+			return false;
+		} catch (NoItemIsFoundInDBException e) {
+			return true;
+		}
+	}
 
 }
