@@ -57,6 +57,8 @@
 		<url-pattern>/addsharees</url-pattern>
 		<url-pattern>/deletesharees</url-pattern>
 		<url-pattern>/managecontroller</url-pattern>
+		<url-pattern>/download</url-pattern>
+		<url-pattern>/getvmresults</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>

@@ -126,3 +126,23 @@ drop full_access column and add desc_shared column:
 ALTER TABLE vms DROP COLUMN full_access;
 
 ALTER TABLE vms ADD desc_shared VARCHAR(6144) CHARACTER SET utf8 DEFAULT NULL;
+
+
+===================================================================================
+
+Result migration
+----------------
+
+// count of following should be the same to make sure resultid is unique
+select distinct resultid from results;
+select count(*) from results;
+
+// migrate result files from DB to file system location
+// if dir_path is not provided, the files will be saved in the location specified in sites.xml(result.files.dir) file
+curl -v -d 'dir=<dir_path>'  -X PUT http://<SLOAN_ENDPOINT>/updateresult
+
+// remove "" column in resutls teable
+ALTER TABLE results DROP COLUMN datafield;
+
+
+===================================================================================

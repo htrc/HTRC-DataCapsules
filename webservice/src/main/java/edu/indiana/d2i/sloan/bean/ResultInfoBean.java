@@ -11,10 +11,11 @@ package edu.indiana.d2i.sloan.bean;
 
 public class ResultInfoBean {
     private String vmid, resultId, createtime, notified, notifiedtime, reviewer, status, comment;
+    private Boolean expired;
 
     public ResultInfoBean(String vmid, String resultId,
                           String createtime, String notified, String notifiedtime,
-                          String reviewer, String status, String comment)
+                          String reviewer, String status, String comment, Boolean expired)
     {
         this.vmid = vmid;
         //this.datafield = datafield;
@@ -25,6 +26,7 @@ public class ResultInfoBean {
         this.reviewer = reviewer;
         this.status = status;
         this.comment = comment;
+        this.expired = expired;
     }
 
     public String getVmid() {
@@ -56,6 +58,8 @@ public class ResultInfoBean {
     public String getStatus(){return status;}
 
     public String getComment(){return comment;}
+
+    public Boolean isExpired(){return expired;}
 
     //public String getUseremail() { return useremail; }
 }

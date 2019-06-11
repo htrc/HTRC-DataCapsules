@@ -127,7 +127,7 @@ public class DBSchema {
 		public static String TABLE_NAME = "results";
 		public static String VM_ID = "vmid";
 		public static String RESULT_ID = "resultid";
-		public static String DATA_FIELD = "datafield";
+		//public static String DATA_FIELD = "datafield";
 		public static String NOTIFIED = "notified";
 		public static String CREATE_TIME= "createtime";
 		public static String NOTIFIED_TIME= "notifiedtime";

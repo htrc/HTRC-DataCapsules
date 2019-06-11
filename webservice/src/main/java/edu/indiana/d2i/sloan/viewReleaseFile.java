@@ -3,6 +3,8 @@ import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
+import edu.indiana.d2i.sloan.exception.NoResultFileFoundException;
+import edu.indiana.d2i.sloan.utils.ResultUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,29 +39,29 @@ public class viewReleaseFile {
     @Produces(MediaType.APPLICATION_JSON)
     public Response viewReleasedFile(@QueryParam("resultid") String resultid,
                                     @Context HttpHeaders httpHeaders,
-                                    @Context HttpServletRequest httpServletRequest) throws SQLException, NoItemIsFoundInDBException, ParseException, IOException {
+                                    @Context HttpServletRequest httpServletRequest) throws SQLException,
+            NoItemIsFoundInDBException, ParseException, IOException, NoResultFileFoundException {
 
-        if(resultid == null) {
+        if (resultid == null) {
             return Response.status(204).entity(new ErrorBean(204, "Resultid is null!")).build();
         }
 
         try {
             ResultBean res = DBOperations.getInstance().viewRleaseFile(resultid);
-
-            InputStream in = res.getInputstream();
+            InputStream in = ResultUtils.getResultFile(resultid);
             BufferedReader br = null;
             StringBuilder sb = new StringBuilder();
             String line;
             br = new BufferedReader(new InputStreamReader(in));
-            while((line = br.readLine())!=null){
+            while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
             return Response.status(200).entity(sb.toString()).build();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                logger.error(e.getMessage(), e);
-                return Response.status(500)
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error(e.getMessage(), e);
+            return Response.status(500)
                     .entity(new ErrorBean(500, e.getMessage())).build();
-            }
+        }
     }
 }
