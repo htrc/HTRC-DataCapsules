@@ -1585,7 +1585,7 @@ public class DBOperations {
 	}
 
 
-	public void updateResult(String resultid, String status) throws SQLException{
+	public void updateResult(String resultid, String status, String comment, String reviewer) throws SQLException{
 		Connection connection = null;
 		PreparedStatement pst = null;
 		java.util.Date dateobj = new java.util.Date();
@@ -1595,69 +1595,12 @@ public class DBOperations {
 		try {
 			connection = DBConnections.getInstance().getConnection();
 			String updateResult = String.format(
-					"UPDATE %s SET %s=%s, %s=\"%s\", %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					"UPDATE %s SET %s=%s, %s=\"%s\", %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
 					DBSchema.ResultTable.NOTIFIED, "\"YES\"",
 					DBSchema.ResultTable.STATUS, status,
 					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
-					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
-			logger.debug(updateResult);
-
-			pst = connection.prepareStatement(updateResult);
-			pst.executeUpdate();
-		} finally {
-			if (pst != null)
-				pst.close();
-			if (connection != null)
-				connection.close();
-		}
-
-	}
-
-
-	public void updateResultAsReleased(String resultid, String comment, String reviewer) throws SQLException{
-		Connection connection = null;
-		PreparedStatement pst = null;
-		java.util.Date dateobj = new java.util.Date();
-		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String currentTime = df.format(dateobj);
-
-		try {
-			connection = DBConnections.getInstance().getConnection();
-			String updateResult = String.format(
-					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
-					DBSchema.ResultTable.NOTIFIED, "\"YES\"",
-					DBSchema.ResultTable.STATUS,"\"Released\"",
-					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
-					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
-					DBSchema.ResultTable.REVIEWER, "\"" + reviewer + "\"",
-					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
-			logger.debug(updateResult);
-
-			pst = connection.prepareStatement(updateResult);
-			pst.executeUpdate();
-		} finally {
-			if (pst != null)
-				pst.close();
-			if (connection != null)
-				connection.close();
-		}
-
-	}
-	public void updateResultAsRejected(String resultid, String comment, String reviewer) throws SQLException{
-		Connection connection = null;
-		PreparedStatement pst = null;
-		java.util.Date dateobj = new java.util.Date();
-		java.text.SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		String currentTime = df.format(dateobj);
-
-		try {
-			connection = DBConnections.getInstance().getConnection();
-			String updateResult = String.format(
-					"UPDATE %s SET %s=%s, %s=%s, %s=%s, %s=%s, %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
-					DBSchema.ResultTable.NOTIFIED, "\"YES\"", DBSchema.ResultTable.STATUS,"\"Rejected\"",
-					DBSchema.ResultTable.COMMENT, "\""+comment+"\"",
-					DBSchema.ResultTable.NOTIFIED_TIME, "\"" + currentTime + "\"",
-					DBSchema.ResultTable.REVIEWER, "\"" + reviewer + "\"",
+					DBSchema.ResultTable.COMMENT, (comment != null ? "\"" + StringEscapeUtils.escapeJava(comment) + "\"" : comment),
+					DBSchema.ResultTable.REVIEWER, (reviewer != null ? "\"" + StringEscapeUtils.escapeJava(reviewer) + "\"" : reviewer),
 					DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
 			logger.debug(updateResult);
 
