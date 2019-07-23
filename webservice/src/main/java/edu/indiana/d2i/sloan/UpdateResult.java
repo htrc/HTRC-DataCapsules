@@ -44,6 +44,8 @@ public class UpdateResult {
     public Response updateResult(
             @FormParam("resultid") String resultid,
             @FormParam("status") String status,
+            @FormParam("comment") String comment,
+            @FormParam("reviewer") String reviewer,
             @Context HttpHeaders httpHeaders,
             @Context HttpServletRequest httpServletRequest) {
 
@@ -92,7 +94,7 @@ public class UpdateResult {
                 String reviewer_email = Configuration.getInstance().
                         getString(Configuration.PropertyName.RESULT_HUMAN_REVIEW_EMAIL);
 
-                DBOperations.getInstance().updateResult(resultid, status);
+                DBOperations.getInstance().updateResult(resultid, status, comment, reviewer);
                 logger.info("Updated results table - ResultID : " + resultid + " status : " + status);
 
                 //Do not send email if rejected
