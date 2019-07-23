@@ -16,15 +16,11 @@
 package edu.indiana.d2i.sloan;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
-import edu.indiana.d2i.sloan.bean.ResultBean;
 import edu.indiana.d2i.sloan.bean.ResultInfoBean;
-import edu.indiana.d2i.sloan.bean.ResultInfoResponseBean;
+import edu.indiana.d2i.sloan.bean.VMResultsResponseBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import edu.indiana.d2i.sloan.exception.ResultExpireException;
-import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +32,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -81,7 +76,7 @@ public class GetVMResults {
 			}
 
 			List<ResultInfoBean> res = DBOperations.getInstance().getVMResults(vmid);
-			return Response.status(200).entity(new ResultInfoResponseBean(res)).build();
+			return Response.status(200).entity(new VMResultsResponseBean(res)).build();
 
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error("Cannot find VM " + vmid + " with username " + userName, e);
