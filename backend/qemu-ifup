@@ -51,15 +51,15 @@ do_dd() {
 
 do_iptables_restore() {
 
-#  (
-#  flock -w 30 200
+  (
+  flock -w 30 200
 
     if ! iptables-restore -n "$@" 2>&1; then
         cat "$@"
         exit 2
     fi
 
-#  ) 200>$SCRIPT_DIR/lock.iptables
+  ) 200>$SCRIPT_DIR/lock.iptables
 
 }
 

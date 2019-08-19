@@ -1,9 +1,9 @@
 package edu.indiana.d2i.sloan;
 
-
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.ResultInfoBean;
 import edu.indiana.d2i.sloan.bean.ResultInfoResponseBean;
+import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import org.apache.log4j.Logger;
@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * param: resultid
  *
- * return: all details include binary content of specific result entry
+ * return: all details exclude binary content of specific result entry
  */
 
 @Path("/getresultinfo")
@@ -44,10 +44,9 @@ public class GetResultInfo{
         }
 
         try {
-
-            List<ResultInfoBean> res = new ArrayList<ResultInfoBean>();
-            res.add(DBOperations.getInstance().getResultInfo(resultid));
-            return Response.status(200).entity(new ResultInfoResponseBean(res)).build();
+            ResultInfoBean resultInfoBean = DBOperations.getInstance().getResultInfo(resultid);
+            List<VmUserRole> vmUserRoles = DBOperations.getInstance().getRolesWithVmid(resultInfoBean.getVmid(), true);
+            return Response.status(200).entity(new ResultInfoResponseBean(resultInfoBean, vmUserRoles)).build();
 
         } catch (SQLException e) {
             e.printStackTrace();

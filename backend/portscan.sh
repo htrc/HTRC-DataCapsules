@@ -96,7 +96,7 @@ if [ `cat $VM_DIR/mode` =  "Maintenance" ]; then
     exit 4
 fi
 
-NMAP_RES=`nmap $VM_IP_ADDR -PN -p- | egrep 'open'`
+NMAP_RES=`nmap $VM_IP_ADDR -Pn --top-ports 1000 | egrep 'open'`
 
 if [[ $NMAP_RES ]]; then
     logger "ERROR: $VM_DIR is in Secure Mode and following ports are open. $NMAP_RES"
