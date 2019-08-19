@@ -120,6 +120,10 @@
 		<name>result.files.dir</name>
 		<value>RESULT_FILES_SAVE_LOCATION</value>
 	</property>
+	<property>
+		<name>result.backup.file.dir</name>
+		<value>RESULT_BACKUP_FILES_SAVE_LOCATION</value>
+	</property>
 
 	<!-- reviewer email addresses -->
 	<property><name>result.review.human</name><value>true</value></property>

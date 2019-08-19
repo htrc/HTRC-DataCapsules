@@ -16,9 +16,9 @@ public class ResultInfoResponseBean {
         this.roles = roles;
     }
 
-    public ResultInfoBean getResult() {
+   /* public ResultInfoBean getResult() {
         return result;
-    }
+    }*/
 
 
     public List<VmUserRole> getRoles() {
@@ -51,6 +51,10 @@ public class ResultInfoResponseBean {
 
     public String getVmid() {
         return this.result.getVmid();
+    }
+
+    public String getState() {
+        return this.result.getState().name();
     }
 
     @Override

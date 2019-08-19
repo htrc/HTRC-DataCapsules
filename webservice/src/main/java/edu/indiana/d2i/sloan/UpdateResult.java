@@ -106,12 +106,16 @@ public class UpdateResult {
                             getString(Configuration.PropertyName.RESULT_DOWNLOAD_URL_PREFIX);
                     String download_addr = download_url +  resultid;
 
+                    long result_expiration_seconds = Configuration.getInstance().getLong(
+                            Configuration.PropertyName.RESULT_EXPIRE_IN_SECOND);
+                    int result_expiration_days = (int) (result_expiration_seconds/86400);
+
                     //construct email content for users
                     for (VmUserRole role : allowedVmUserRoles) {
                         String contentUser = "Dear Data Capsule user,\n\n" +
                                 "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
                                 download_addr + "\n\n" +
-                                "Please note this link is active for 24 hours.";
+                                "Please note this link is active for " + result_expiration_days + " day(s).";
                         send_email.sendEMail(role.getEmail(), "HTRC Data Capsule Result Download URL", contentUser);
                     }
                     logger.info("Download result email sent to users " + allowedVmUserRoles + " - download URL : " + download_addr);

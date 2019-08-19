@@ -27,10 +27,14 @@ import java.nio.file.*;
 
 public class ResultUtils {
     private static Logger logger = Logger.getLogger(ResultUtils.class);
-    private static String RESULT_DIR_LOCATION = Configuration.getInstance().getString(
-            Configuration.PropertyName.RESULT_FILES_DIR, "/tmp") + "/%s";
-    private static String RESULT_FILE_LOCATION = Configuration.getInstance().getString(
-            Configuration.PropertyName.RESULT_FILES_DIR, "/tmp") + "/%s/results.zip";
+    private static String result_file_dir = Configuration.getInstance().getString(
+            Configuration.PropertyName.RESULT_FILES_DIR, "/tmp");
+    private static String backup_file_dir = Configuration.getInstance().getString(
+            Configuration.PropertyName.RESULT_BACKUP_FILES_DIR, "/tmp/result-backup");
+    private static String RESULT_DIR_LOCATION = result_file_dir + "/%s";
+    private static String RESULT_FILE_LOCATION = result_file_dir + "/%s/results.zip";
+    private static String BACKUP_DIR_LOCATION = backup_file_dir + "/%s";
+    private static String BACKUP_FILE_LOCATION = backup_file_dir + "/%s/results.zip";
 
     public static void saveResultFile(String result_id, InputStream inputStream) throws IOException {
         Path dirPath = Paths.get(String.format(RESULT_DIR_LOCATION, result_id));
@@ -55,5 +59,16 @@ public class ResultUtils {
             throw new NoResultFileFoundException("No result file found for result ID " + result_id);
         }
         return Files.newInputStream(filePath);
+    }
+
+    public static void backupResultFile(String result_id) throws IOException {
+        Path destDirPath = Paths.get(String.format(BACKUP_DIR_LOCATION, result_id));
+        Path destFilePath = Paths.get(String.format(BACKUP_FILE_LOCATION, result_id));
+        Path srcDirPath = Paths.get(String.format(RESULT_DIR_LOCATION, result_id));
+        Path srcFilePath = Paths.get(String.format(RESULT_FILE_LOCATION, result_id));
+        if(!Files.exists(destDirPath)) Files.createDirectory(destDirPath);
+        Files.move(srcFilePath,destFilePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.delete(srcDirPath);
+        logger.info("Result file with ID " + result_id + " was backed up from " + result_file_dir + " to " + backup_file_dir + " directory!");
     }
 }

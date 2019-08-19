@@ -19,6 +19,7 @@ import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.ResultExpireException;
+import edu.indiana.d2i.sloan.result.ResultState;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMRole;
@@ -1129,7 +1130,8 @@ public class DBOperations {
 						rs.getString(DBSchema.ResultTable.REVIEWER),
 						rs.getString(DBSchema.ResultTable.STATUS),
 						rs.getString(DBSchema.ResultTable.COMMENT),
-						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS))
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS)),
+						ResultState.valueOf(rs.getString(DBSchema.ResultTable.STATE))
 				);
 				res.add(resultInfoBean);
 			}
@@ -1199,7 +1201,8 @@ public class DBOperations {
 						rs.getString(DBSchema.ResultTable.REVIEWER),
 						rs.getString(DBSchema.ResultTable.STATUS),
 						rs.getString(DBSchema.ResultTable.COMMENT),
-						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS))
+						isResultExpired(rs.getString(DBSchema.ResultTable.NOTIFIED_TIME), rs.getString(DBSchema.ResultTable.STATUS)),
+						ResultState.valueOf(rs.getString(DBSchema.ResultTable.STATE))
 				);
 			} else {
 				throw new NoItemIsFoundInDBException("Result of " + randomid + " can't be found in db!");
@@ -1258,7 +1261,8 @@ public class DBOperations {
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
-				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATE+" AS state"+
 				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID;
 		logger.debug(sql);
@@ -1289,7 +1293,8 @@ public class DBOperations {
 						rs.getString("reviewer"),
 						rs.getString("comment"),
 						rs.getString("createtime"),
-						roles
+						roles,
+						ResultState.valueOf(rs.getString(DBSchema.ResultTable.STATE))
 				);
 				res.add(result);
 			}
@@ -1316,7 +1321,8 @@ public class DBOperations {
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
-				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATE+" AS state"+
 				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
 				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"YES\"";
@@ -1347,7 +1353,8 @@ public class DBOperations {
 						rs.getString("reviewer"),
 						"",
 						rs.getString("createtime"),
-						roles
+						roles,
+						ResultState.valueOf(rs.getString(DBSchema.ResultTable.STATE))
                 );
                 res.add(result);
             }
@@ -1375,7 +1382,8 @@ public class DBOperations {
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
-				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime"+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.CREATE_TIME+" AS createtime, "+
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATE+" AS state"+
 				" FROM "+ DBSchema.VmTable.TABLE_NAME + " INNER JOIN "+ DBSchema.ResultTable.TABLE_NAME +
 				" ON " + DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID + "=" + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID +
 				" WHERE " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + "=\"NO\"";
@@ -1406,7 +1414,8 @@ public class DBOperations {
 						rs.getString("reviewer"),
 						"",
 						rs.getString("createtime"),
-						roles
+						roles,
+						ResultState.valueOf(rs.getString("state"))
 				);
 				res.add(result);
 			}
@@ -1500,9 +1509,9 @@ public class DBOperations {
 			java.util.Date dt = new java.util.Date();
 			String currentTime = DATE_FORMATOR.format(dt);
 			String insertResult = String.format(
-				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s) VALUES" + "(?, ?, ?)",
+				"INSERT INTO " + DBSchema.ResultTable.TABLE_NAME + " (%s, %s, %s, %s) VALUES" + "(?, ?, ?, ?)",
 				DBSchema.ResultTable.VM_ID, DBSchema.ResultTable.RESULT_ID, 
-				DBSchema.ResultTable.CREATE_TIME);
+				DBSchema.ResultTable.CREATE_TIME, DBSchema.ResultTable.STATE);
 				//DBSchema.ResultTable.DATA_FIELD, DBSchema.ResultTable.CREATE_TIME);
 
 			connection = DBConnections.getInstance().getConnection();
@@ -1511,7 +1520,8 @@ public class DBOperations {
 			pst.setString(2, randomid);
 			//pst.setBinaryStream(3, input);
 			pst.setString(3, currentTime);
-			
+			pst.setString(4, ResultState.CREATED.toString());
+
 			pst.executeUpdate();
 		} finally {
 			if (pst != null)
@@ -1584,6 +1594,26 @@ public class DBOperations {
 		}
 	}
 
+	public void updateResultAsDeleted(String resultid) throws SQLException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String updateResult = String.format(
+					"UPDATE %s SET %s=%s WHERE %s=%s", DBSchema.ResultTable.TABLE_NAME,
+					DBSchema.ResultTable.STATE, "\"" + ResultState.DELETED + "\"", DBSchema.ResultTable.RESULT_ID, "\""+ resultid + "\"");
+			logger.debug(updateResult);
+
+			pst = connection.prepareStatement(updateResult);
+			pst.executeUpdate();
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
 
 	public void updateResult(String resultid, String status, String comment, String reviewer) throws SQLException{
 		Connection connection = null;
