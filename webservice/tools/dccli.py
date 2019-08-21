@@ -361,6 +361,18 @@ def delete_expired_capsules():
                             delete_vm(vm["vmid"] , role["guid"])
                             time.sleep(5)
 
+def delete_result(result_id):
+    params = urllib.urlencode({'resultid': result_id})
+
+    # POST the request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("DELETE", '/sloan-ws/deleteresult', params)
+    response = conn.getresponse()
+
+    data = response.read()
+
+    print data
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='sub_commands')
@@ -444,6 +456,9 @@ if __name__ == '__main__':
     migrate.add_argument('desthost')
 
     deleteexpiredcapsules = subparsers.add_parser('deleteexpiredcapsules', description='Delete expired capsules.')
+
+    deleteresult = subparsers.add_parser('deleteresult', description='Delete a rejected or released result.')
+    deleteresult.add_argument('rid')
 
 
     parsed = parser.parse_args()
@@ -552,3 +567,9 @@ if __name__ == '__main__':
 
     if parsed.sub_commands == 'deleteexpiredcapsules':
         delete_expired_capsules()
+
+    if parsed.sub_commands == 'deleteresult':
+        confirmation = query_yes_no('Are you sure you want to delete result ID ' + parsed.rid + '?')
+        if confirmation:
+            print 'Deleting result ID ' + parsed.rid + '....'
+            delete_result(parsed.rid)
