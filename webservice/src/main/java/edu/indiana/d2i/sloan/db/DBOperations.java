@@ -1258,6 +1258,7 @@ public class DBOperations {
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED_TIME + " AS notifiedtime, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
@@ -1293,6 +1294,7 @@ public class DBOperations {
 						rs.getString("reviewer"),
 						rs.getString("comment"),
 						rs.getString("createtime"),
+						rs.getString("notifiedtime"),
 						roles,
 						ResultState.valueOf(rs.getString(DBSchema.ResultTable.STATE))
 				);
@@ -1318,6 +1320,7 @@ public class DBOperations {
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED_TIME + " AS notifiedtime, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
@@ -1346,13 +1349,14 @@ public class DBOperations {
                 ReviewInfoBean result = new ReviewInfoBean(
 						vmid,
                         rs.getString("resultid"),
-                        "",
-                        "",
+						rs.getString("notified"),
+						rs.getString("status"),
 						null,
 						null,
 						rs.getString("reviewer"),
-						"",
+						rs.getString("comment"),
 						rs.getString("createtime"),
+						rs.getString("notifiedtime"),
 						roles,
 						ResultState.valueOf(rs.getString(DBSchema.ResultTable.STATE))
                 );
@@ -1379,6 +1383,7 @@ public class DBOperations {
 		String sql = "SELECT " + DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.RESULT_ID + " AS resultid," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.VM_ID + " AS vmid, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED + " AS notified, " +
+				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.NOTIFIED_TIME + " AS notifiedtime, " +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.STATUS + " AS status," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.REVIEWER + " AS reviewer," +
 				DBSchema.ResultTable.TABLE_NAME+"."+DBSchema.ResultTable.COMMENT +" AS comment, "+
@@ -1407,13 +1412,14 @@ public class DBOperations {
 				ReviewInfoBean result = new ReviewInfoBean(
 						vmid,
 						rs.getString("resultid"),
-						"",
-						"",
+						rs.getString("notified"),
+						rs.getString("status"),
 						null,
 						null,
 						rs.getString("reviewer"),
-						"",
+						rs.getString("comment"),
 						rs.getString("createtime"),
+						rs.getString("notifiedtime"),
 						roles,
 						ResultState.valueOf(rs.getString("state"))
 				);
