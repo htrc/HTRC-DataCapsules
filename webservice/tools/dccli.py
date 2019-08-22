@@ -373,6 +373,41 @@ def delete_result(result_id):
 
     print data
 
+def delete_expired_results():
+    # GET request
+    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/showreleased')
+    response = conn.getresponse()
+
+    if response.status == 200:
+        results = json.loads(response.read())['reviewInfo']
+
+        for result in results:
+            # Rejected results will be deleted after 2 weeks from the notified date
+            if result["status"] == "Rejected":
+                notified_date = datetime.strptime(result["notifiedtime"].split('.')[0],"%Y-%m-%d %H:%M:%S").date()
+                expired_date = notified_date + timedelta(days=14)
+                if expired_date < date.today():
+                    roles = result["roles"]
+                    for role in roles:
+                        if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                            print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                            #delete_result(result["resultid"])
+                            time.sleep(15)
+
+            # Released results will be deleted after 18 months from the notified date
+            if result["status"] == "Released":
+                notified_date = datetime.strptime(result["notifiedtime"].split('.')[0],"%Y-%m-%d %H:%M:%S").date()
+                expired_date = notified_date + timedelta(days=548)
+                if expired_date < date.today():
+                    roles = result["roles"]
+                    for role in roles:
+                        if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                            print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                            #delete_result(result["resultid"])
+                            time.sleep(15)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='sub_commands')
@@ -459,6 +494,8 @@ if __name__ == '__main__':
 
     deleteresult = subparsers.add_parser('deleteresult', description='Delete a rejected or released result.')
     deleteresult.add_argument('rid')
+
+    deleteexpiredresults = subparsers.add_parser('deleteexpiredresults', description='Delete expired results.')
 
 
     parsed = parser.parse_args()
@@ -573,3 +610,6 @@ if __name__ == '__main__':
         if confirmation:
             print 'Deleting result ID ' + parsed.rid + '....'
             delete_result(parsed.rid)
+
+    if parsed.sub_commands == 'deleteexpiredresults':
+        delete_expired_results()
