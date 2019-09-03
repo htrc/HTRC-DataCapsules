@@ -383,31 +383,32 @@ def delete_expired_results():
         results = json.loads(response.read())['reviewInfo']
 
         for result in results:
-            if result["notifiedtime"]:
-                notified_date = datetime.strptime(result["notifiedtime"].split('.')[0],"%Y-%m-%d %H:%M:%S").date()
-                # Rejected results will be deleted after 2 weeks from the notified date
-                if result["status"] == "Rejected":
-                    expired_date = notified_date + timedelta(days=14)
-                    if expired_date < date.today():
-                        roles = result["roles"]
-                        for role in roles:
-                            if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
-                                print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
-                                #delete_result(result["resultid"])
-                                time.sleep(15)
+            if result["state"] != "DELETED":
+                if result["notifiedtime"]:
+                    notified_date = datetime.strptime(result["notifiedtime"].split('.')[0],"%Y-%m-%d %H:%M:%S").date()
+                    # Rejected results will be deleted after 2 weeks from the notified date
+                    if result["status"] == "Rejected":
+                        expired_date = notified_date + timedelta(days=14)
+                        if expired_date < date.today():
+                            roles = result["roles"]
+                            for role in roles:
+                                if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                                    print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                                    delete_result(result["resultid"])
+                                    time.sleep(15)
 
-                # Released results will be deleted after 18 months from the notified date
-                if result["status"] == "Released":
-                    expired_date = notified_date + timedelta(days=548)
-                    if expired_date < date.today():
-                        roles = result["roles"]
-                        for role in roles:
-                            if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
-                                print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
-                                #delete_result(result["resultid"])
-                                time.sleep(15)
-            else:
-                print 'Notified time is null resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                    # Released results will be deleted after 18 months from the notified date
+                    if result["status"] == "Released":
+                        expired_date = notified_date + timedelta(days=548)
+                        if expired_date < date.today():
+                            roles = result["roles"]
+                            for role in roles:
+                                if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                                    print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                                    delete_result(result["resultid"])
+                                    time.sleep(15)
+                else:
+                    print 'Notified time is null resultID: {} result status: {} notified on: {} capsuleID: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"])
 
 
 
