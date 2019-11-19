@@ -56,11 +56,11 @@ if [[ "$ACTION" = "add" ]]; then
   fi
 
   zip -r /media/release_spool/results.zip "$@"
-  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
-  if [ $size -ge 104857600 ]; then
-    echo "The size of the result released is " $size " bytes which is large. You may expect delay in getting the result back."
-    echo "If you want to start over your result release, please delete the results.zip under /media/release_spool"
-  fi
+#  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
+#  if [ $size -ge 104857600 ]; then
+#    echo "The size of the result released is " $size " bytes which is large. You may expect delay in getting the result back."
+#    echo "If you want to start over your result release, please delete the results.zip under /media/release_spool"
+#  fi
 
   exit 0
 
@@ -82,12 +82,12 @@ if [[ "$ACTION" = "done" ]]; then
     fi
    fi
 
-#  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
-#  if [ $size -ge 104857600 ]; then
-#    echo "Result file size exceeds 100 MB! It cannot be released and will be delete! Please start over your release."
-#    rm -f /media/release_spool/results.zip
-#    exit 1
-#  fi
+  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
+  if [ $size -ge 104857600 ]; then
+    echo "Warning: this results file exceeds the 100 MB maximum. (It is $size bytes). It cannot be released and will be deleted from the release_spool. Please revise your request and resubmit."
+    rm -f /media/release_spool/results.zip
+    exit 1
+  fi
 
   echo "results.zip" >> /dev/ttyS0
 

@@ -134,6 +134,7 @@ public class DBSchema {
 		public static String REVIEWER="reviewer";
 		public static String STATUS = "status";
 		public static String COMMENT = "comment";
+		public static String STATE = "state";
 	}
 
 	public static class HostTable {

@@ -1,5 +1,7 @@
 package edu.indiana.d2i.sloan.bean;
 
+import edu.indiana.d2i.sloan.result.ResultState;
+
 import java.util.List;
 
 /**
@@ -14,10 +16,13 @@ public class ReviewInfoBean {
     private String notified, status, reviewer;
     private String comment;
     private String createtime;
+    private String notifiedtime;
     private List<VmUserRole> roles;
+    private ResultState state;
 
     public ReviewInfoBean(String vmid, String resultid, String notified, String status, String username,
-                          String useremail, String reviewer, String comment, String createtime, List<VmUserRole> roles)
+                          String useremail, String reviewer, String comment, String createtime, String notifiedtime,
+                          List<VmUserRole> roles, ResultState state)
     {
         this.vmid = vmid;
         this.resultid = resultid;
@@ -28,7 +33,9 @@ public class ReviewInfoBean {
         this.status = status;
         this.comment = comment;
         this.createtime = createtime;
+        this.notifiedtime = notifiedtime;
         this.roles = roles;
+        this.state = state;
     }
 
     public String getVmid(){
@@ -59,7 +66,13 @@ public class ReviewInfoBean {
 
     public String getCreatetime() { return createtime; }
 
+    public String getNotifiedtime() { return notifiedtime; }
+
     public List<VmUserRole> getRoles() {
         return this.roles;
+    }
+
+    public ResultState getState() {
+        return state;
     }
 }

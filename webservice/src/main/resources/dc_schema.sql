@@ -130,6 +130,7 @@ CREATE TABLE IF NOT EXISTS `htrcvirtdb`.`results` (
   `notifiedtime` TIMESTAMP NULL,
   `reviewer` VARCHAR(128) DEFAULT NULL,
   `status` ENUM('Released', 'Rejected', 'Pending') DEFAULT 'Pending',
+  `state` ENUM('CREATED', 'DELETED') DEFAULT 'CREATED',
   `comment` MEDIUMTEXT NULL,
   PRIMARY KEY (`vmid`, `resultid`),
   CONSTRAINT `fk_vms`

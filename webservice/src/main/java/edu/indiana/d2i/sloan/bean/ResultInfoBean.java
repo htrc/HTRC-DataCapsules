@@ -1,5 +1,7 @@
 package edu.indiana.d2i.sloan.bean;
 
+import edu.indiana.d2i.sloan.result.ResultState;
+
 /**
  *
  * List info for a given resultid
@@ -12,10 +14,11 @@ package edu.indiana.d2i.sloan.bean;
 public class ResultInfoBean {
     private String vmid, resultId, createtime, notified, notifiedtime, reviewer, status, comment;
     private Boolean expired;
+    private ResultState state;
 
     public ResultInfoBean(String vmid, String resultId,
                           String createtime, String notified, String notifiedtime,
-                          String reviewer, String status, String comment, Boolean expired)
+                          String reviewer, String status, String comment, Boolean expired, ResultState state)
     {
         this.vmid = vmid;
         //this.datafield = datafield;
@@ -27,6 +30,7 @@ public class ResultInfoBean {
         this.status = status;
         this.comment = comment;
         this.expired = expired;
+        this.state = state;
     }
 
     public String getVmid() {
@@ -61,6 +65,9 @@ public class ResultInfoBean {
 
     public Boolean isExpired(){return expired;}
 
+    public ResultState getState() {
+        return state;
+    }
     //public String getUseremail() { return useremail; }
 }
 
