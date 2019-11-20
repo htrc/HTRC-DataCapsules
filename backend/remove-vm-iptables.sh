@@ -44,7 +44,7 @@ fi
 flock -w 120 200
 
 # Finding the tap device the VM is attached
-VM_TAP_DEV=`iptables -n -L FORWARD --line-numbers | grep $VM_IP | head -n 1 | grep -oP 'tap\d+'`
+VM_TAP_DEV=`iptables -n -L FORWARD --line-numbers | grep "${VM_IP}_" | head -n 1 | grep -oP 'tap\d+'`
 
 echo "VM with IP $VM_IP uses tap device $VM_TAP_DEV"
 
