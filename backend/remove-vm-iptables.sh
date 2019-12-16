@@ -53,7 +53,7 @@ logger "$VM_DIR - iptables executable $IPTBLS_EXECUTABLE"
 
 function deleteiptablesrules {
     logger "$3 - Deleting $1 rules.."
-    GREP_OUT=`iptables -n -L $1 --line-numbers | grep $2`
+    GREP_OUT=`iptables -n -L $1 --line-numbers | grep -w $2`
     if [ $? -eq 1 ]; then
         logger "No $1 chain related rules for VM with IP: $3"
     else
