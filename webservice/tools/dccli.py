@@ -1,11 +1,11 @@
 import os
 import sys
 import json
-import urllib
-import urllib2
+import urllib.request, urllib.parse, urllib.error
+import urllib.request, urllib.error, urllib.parse
 import argparse
 import string
-import httplib
+import http.client
 import time
 from datetime import datetime, date, timedelta
 
@@ -35,7 +35,7 @@ def query_yes_no(question, default="yes"):
 
     while True:
         sys.stdout.write(question + prompt)
-        choice = raw_input().lower()
+        choice = input().lower()
         if default is not None and choice == '':
             return valid[default]
         elif choice in valid:
@@ -49,64 +49,64 @@ def delete_vm(vmid, guid):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': guid}
 
-    params = urllib.urlencode({'vmid': vmid})
+    params = urllib.parse.urlencode({'vmid': vmid})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/deletevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def stop_vm(vmid, guid):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': guid}
 
-    params = urllib.urlencode({'vmid': vmid})
+    params = urllib.parse.urlencode({'vmid': vmid})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/stopvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def start_vm(vmid, guid):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': guid}
 
-    params = urllib.urlencode({'vmid': vmid})
+    params = urllib.parse.urlencode({'vmid': vmid})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/launchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def switch_vm(vmid, guid, mode):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': guid}
 
-    params = urllib.urlencode({'vmid': vmid, 'mode': mode})
+    params = urllib.parse.urlencode({'vmid': vmid, 'mode': mode})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/switchvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def create_vm(guid, useremail, imagename, loginusername, loginpassword, memory, vcpu, type, concent, full_access,
@@ -115,89 +115,89 @@ def create_vm(guid, useremail, imagename, loginusername, loginpassword, memory, 
                'htrc-remote-user': guid,
                'htrc-remote-user-email': useremail}
 
-    params = urllib.urlencode(
+    params = urllib.parse.urlencode(
         {'imagename': imagename, 'loginusername': loginusername, 'loginpassword': loginpassword, 'memory': memory,
          'vcpu': vcpu, 'type': type, 'concent': concent, 'full_access': full_access, 'title': title,
          'desc_nature': desc_nature, 'desc_requirement': desc_requirement, 'desc_links': desc_links,
          'desc_outside_data': desc_outside_data, 'rr_data_files': rr_data_files, 'rr_result_usage': rr_result_usage})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/createvm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def show_release():
     headers = {'Content-Type': 'application/json'}
 
     # GET the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/showreleased')
     response = conn.getresponse()
 
     data = response.read()
     parsed = json.loads(data)
-    print json.dumps(parsed, indent=4, sort_keys=True)
+    print(json.dumps(parsed, indent=4, sort_keys=True))
 
 
 def show_unrelease():
     headers = {'Content-Type': 'application/json'}
 
     # GET the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/showunreleased')
     response = conn.getresponse()
 
     data = response.read()
     parsed = json.loads(data)
-    print json.dumps(parsed, indent=4, sort_keys=True)
+    print(json.dumps(parsed, indent=4, sort_keys=True))
 
 
 def retrieve_file(result_id, out_file):
     # GET the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/retrieveresultfile?randomid=' + result_id)
     response = conn.getresponse()
 
     if (response.status != 200):
-        print response.read()
+        print(response.read())
     else:
         data = response.read()
         f = open(out_file, 'w')
         f.write(data)
         f.close()
-        print 'Result written to ' + out_file + ' file...'
+        print('Result written to ' + out_file + ' file...')
 
 
 def download_file(result_id, out_file):
     # GET the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/download?randomid=' + result_id)
     response = conn.getresponse()
 
     if (response.status != 200):
-        print response.read()
+        print(response.read())
     else:
         data = response.read()
         f = open(out_file, 'w')
         f.write(data)
         f.close()
-        print 'Result downloaded to ' + out_file + ' file...'
+        print('Result downloaded to ' + out_file + ' file...')
 
 
 def update_result(result_id, status):
-    params = urllib.urlencode({'resultid': result_id, 'status': status})
+    params = urllib.parse.urlencode({'resultid': result_id, 'status': status})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/updateresult', params)
     response = conn.getresponse()
 
-    print response.read()
+    print(response.read())
 
 
 def stop_running_vms():
@@ -205,7 +205,7 @@ def stop_running_vms():
                'Accept': 'application/json'}
 
     # Get request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
 
@@ -217,7 +217,7 @@ def stop_running_vms():
                 roles = vm["roles"]
                 for role in roles:
                     if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER" or role["role"] == "CONTROLLER":
-                        print 'Stopping VM: {}'.format(vm["vmid"])
+                        print('Stopping VM: {}'.format(vm["vmid"]))
                         stop_vm(vm["vmid"], role["guid"])
                         time.sleep(5)
 
@@ -228,7 +228,7 @@ def update_vmtype(vmid, guid, status):
     owner_email = None
     params = None
     # Get request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
     vm_list = []
@@ -244,9 +244,9 @@ def update_vmtype(vmid, guid, status):
                         if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
                             owner_guid = guid
                             owner_email = role["email"]
-                            params = urllib.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status})
+                            params = urllib.parse.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status})
                         else:
-                            params = urllib.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status, 'guids': guid})
+                            params = urllib.parse.urlencode({'vmId': vmid, 'type': 'RESEARCH-FULL', 'full_access': status, 'guids': guid})
                     else:
                         if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
                             owner_guid = role["guid"]
@@ -258,34 +258,34 @@ def update_vmtype(vmid, guid, status):
 
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/updatevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def migrate_vm(guid, vm, dst_host):
     headers = {'Content-Type': 'application/x-www-form-urlencoded',
                'htrc-remote-user': guid}
 
-    params = urllib.urlencode({'vmid': vm, 'host': dst_host})
+    params = urllib.parse.urlencode({'vmid': vm, 'host': dst_host})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/migratevm', params, headers)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 
 def migrate_all(src_host, dst_host):
     # Get request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
 
@@ -297,7 +297,7 @@ def migrate_all(src_host, dst_host):
                 roles = vm["roles"]
                 for role in roles:
                     if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
-                        print 'Migrating VM: {}'.format(vm["vmid"])
+                        print('Migrating VM: {}'.format(vm["vmid"]))
                         migrate_vm(role["guid"], vm["vmid"], dst_host)
                         time.sleep(5)
 
@@ -307,18 +307,18 @@ def show_capsules(guid):
                'htrc-remote-user': guid}
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("POST", '/sloan-ws/show', "", headers)
     response = conn.getresponse()
 
     data = response.read()
     parsed = json.loads(data)
-    print json.dumps(parsed, indent=4, sort_keys=True)
+    print(json.dumps(parsed, indent=4, sort_keys=True))
 
 
 def show_pending_fullaccess():
     # Get request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
     vm_list = []
@@ -332,17 +332,17 @@ def show_pending_fullaccess():
                 if role["full_access"] is not None and role["full_access"] is False:
                     if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
                         vm_list.append(vm["vmid"])
-                        print 'VM ID : {} User : {} Role: {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["role"], role["email"])
+                        print('VM ID : {} User : {} Role: {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["role"], role["email"]))
 
             for role in roles:
                 if role["full_access"] is not None and role["full_access"] is False and not vm_list.__contains__(vm["vmid"]):
-                    print 'VM ID : {} User : {} Role: {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["role"], role["email"])
+                    print('VM ID : {} User : {} Role: {} Email: {} has pending request for full data access.'.format(vm["vmid"], role["guid"], role["role"], role["email"]))
 
 
 
 def delete_expired_capsules():
     # Get request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/listvms')
     response = conn.getresponse()
 
@@ -357,25 +357,25 @@ def delete_expired_capsules():
                     roles = vm["roles"]
                     for role in roles:
                         if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
-                            print 'Deleting Expired Capsule : {} owned by : {} Email: {}'.format(vm["vmid"] , role["guid"], role["email"])
+                            print('Deleting Expired Capsule : {} owned by : {} Email: {}'.format(vm["vmid"] , role["guid"], role["email"]))
                             delete_vm(vm["vmid"] , role["guid"])
                             time.sleep(5)
 
 def delete_result(result_id):
-    params = urllib.urlencode({'resultid': result_id})
+    params = urllib.parse.urlencode({'resultid': result_id})
 
     # POST the request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("DELETE", '/sloan-ws/deleteresult', params)
     response = conn.getresponse()
 
     data = response.read()
 
-    print data
+    print(data)
 
 def delete_expired_results():
     # GET request
-    conn = httplib.HTTPConnection(DC_API, PORT)
+    conn = http.client.HTTPConnection(DC_API, PORT)
     conn.request("GET", '/sloan-ws/showreleased')
     response = conn.getresponse()
 
@@ -393,7 +393,7 @@ def delete_expired_results():
                             roles = result["roles"]
                             for role in roles:
                                 if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
-                                    print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                                    print('Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"]))
                                     delete_result(result["resultid"])
                                     time.sleep(15)
 
@@ -404,11 +404,11 @@ def delete_expired_results():
                             roles = result["roles"]
                             for role in roles:
                                 if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
-                                    print 'Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"])
+                                    print('Deleting Expired resultID: {} result status: {} notified on: {} capsuleID: {} owned by: {} Email: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"], role["guid"], role["email"]))
                                     delete_result(result["resultid"])
                                     time.sleep(15)
                 else:
-                    print 'Notified time is null resultID: {} result status: {} notified on: {} capsuleID: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"])
+                    print('Notified time is null resultID: {} result status: {} notified on: {} capsuleID: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"]))
 
 
 
@@ -509,102 +509,102 @@ if __name__ == '__main__':
         confirmation = query_yes_no(
             'Are you sure you want to delete the VM ' + parsed.vm + '? This operation is not recoverable.')
         if confirmation:
-            print 'Deleting  VM ' + parsed.vm + '....'
+            print('Deleting  VM ' + parsed.vm + '....')
             delete_vm(parsed.vm, parsed.guid)
 
     if parsed.sub_commands == 'stop':
         confirmation = query_yes_no('Are you sure you want to stop the VM ' + parsed.vm + '?')
         if confirmation:
-            print 'Stopping  VM ' + parsed.vm + '....'
+            print('Stopping  VM ' + parsed.vm + '....')
             stop_vm(parsed.vm, parsed.guid)
 
     if parsed.sub_commands == 'start':
         confirmation = query_yes_no('Are you sure you want to start the VM ' + parsed.vm + '?')
         if confirmation:
-            print 'Starting  VM ' + parsed.vm + '....'
+            print('Starting  VM ' + parsed.vm + '....')
             start_vm(parsed.vm, parsed.guid)
 
     if parsed.sub_commands == 'switch':
         confirmation = query_yes_no(
             'Are you sure you want to switch the VM ' + parsed.vm + ' to ' + parsed.mode + ' mode?')
         if confirmation:
-            print 'Switching  VM ' + parsed.vm + ' to ' + parsed.mode + '....'
+            print('Switching  VM ' + parsed.vm + ' to ' + parsed.mode + '....')
             switch_vm(parsed.vm, parsed.guid, parsed.mode)
 
     if parsed.sub_commands == 'create':
         confirmation = query_yes_no(
             'Are you sure you want to create a VM with image: ' + parsed.imagename + ', memory: ' + parsed.memory + ', vcpu: ' + parsed.vcpu + ' ?')
         if confirmation:
-            print 'Creating  VM with image:' + parsed.imagename + ', VNC User name:' + parsed.vncusername + ', VNC Password:' + parsed.vncpassword + ', memory: ' + parsed.memory + ', vcpu: ' + parsed.vcpu + '...'
+            print('Creating  VM with image:' + parsed.imagename + ', VNC User name:' + parsed.vncusername + ', VNC Password:' + parsed.vncpassword + ', memory: ' + parsed.memory + ', vcpu: ' + parsed.vcpu + '...')
             create_vm(parsed.guid, parsed.vmuseremail, parsed.imagename, parsed.vncusername, parsed.vncpassword,
                       parsed.memory, parsed.vcpu, parsed.type, parsed.concent, parsed.full_access, parsed.title, parsed.desc_nature,
                       parsed.desc_requirement, parsed.desc_links, parsed.desc_outside_data, parsed.rr_data_files, parsed.rr_result_usage)
 
     if parsed.sub_commands == 'showrelease':
-        print 'Released Results:'
+        print('Released Results:')
         show_release()
 
     if parsed.sub_commands == 'showunrelease':
-        print 'Un-Released Results:'
+        print('Un-Released Results:')
         show_unrelease()
 
     if parsed.sub_commands == 'retrievefile':
         confirmation = query_yes_no('Are you sure you want to retrieve file with id ' + parsed.rid)
         if confirmation:
-            print 'Retrieving file for result ' + parsed.rid + '....'
+            print('Retrieving file for result ' + parsed.rid + '....')
             retrieve_file(parsed.rid, parsed.filename)
 
     if parsed.sub_commands == 'downloadfile':
 
         confirmation = query_yes_no('Are you sure you want to download file with id ' + parsed.rid)
         if confirmation:
-            print 'Download file for result ' + parsed.rid + '....'
+            print('Download file for result ' + parsed.rid + '....')
             download_file(parsed.rid, parsed.filename)
 
     if parsed.sub_commands == 'releaseresult':
 
         confirmation = query_yes_no('Are you sure you want to release the result with id ' + parsed.rid)
         if confirmation:
-            print 'Release result ' + parsed.rid + '....'
+            print('Release result ' + parsed.rid + '....')
             update_result(parsed.rid, 'Released')
 
     if parsed.sub_commands == 'rejectresult':
 
         confirmation = query_yes_no('Are you sure you want to reject the result with id ' + parsed.rid)
         if confirmation:
-            print 'Reject result ' + parsed.rid + '....'
+            print('Reject result ' + parsed.rid + '....')
             update_result(parsed.rid, 'Rejected')
 
     if parsed.sub_commands == 'stoprunning':
-        print 'Stopping all the running VMs'
+        print('Stopping all the running VMs')
         stop_running_vms()
 
     if parsed.sub_commands == 'approvefullaccess':
         confirmation = query_yes_no('Are you sure you want to give approval for full access to VM ' + parsed.vm + '?')
         if confirmation:
-            print 'Giving full access for  VM ' + parsed.vm + '....'
+            print('Giving full access for  VM ' + parsed.vm + '....')
             update_vmtype(parsed.vm, parsed.guid, 'true')
 
     if parsed.sub_commands == 'rejectfullaccess':
         confirmation = query_yes_no('Are you sure you want to reject full access to VM ' + parsed.vm + '?')
         if confirmation:
-            print 'Rejecting full access for  VM ' + parsed.vm + '....'
+            print('Rejecting full access for  VM ' + parsed.vm + '....')
             update_vmtype(parsed.vm, parsed.guid, 'false')
 
     if parsed.sub_commands == 'showcapsules':
-        print 'Showing capsules information for GUID ' + parsed.guid + '....'
+        print('Showing capsules information for GUID ' + parsed.guid + '....')
         show_capsules(parsed.guid)
 
     if parsed.sub_commands == 'showpendingfullaccess':
-        print 'Showing capsules list which has pending requests for full data access.'
+        print('Showing capsules list which has pending requests for full data access.')
         show_pending_fullaccess()
 
     if parsed.sub_commands == 'migrateall':
-        print 'Migrating all the capsules in {} to {}'.format(parsed.srchost, parsed.desthost)
+        print('Migrating all the capsules in {} to {}'.format(parsed.srchost, parsed.desthost))
         migrate_all(parsed.srchost, parsed.desthost)
 
     if parsed.sub_commands == 'migrate':
-        print 'Migrating VM {} to {}'.format(parsed.vm, parsed.desthost)
+        print('Migrating VM {} to {}'.format(parsed.vm, parsed.desthost))
         migrate_vm(parsed.guid, parsed.vm, parsed.desthost)
 
     if parsed.sub_commands == 'deleteexpiredcapsules':
@@ -613,7 +613,7 @@ if __name__ == '__main__':
     if parsed.sub_commands == 'deleteresult':
         confirmation = query_yes_no('Are you sure you want to delete result ID ' + parsed.rid + '?')
         if confirmation:
-            print 'Deleting result ID ' + parsed.rid + '....'
+            print('Deleting result ID ' + parsed.rid + '....')
             delete_result(parsed.rid)
 
     if parsed.sub_commands == 'deleteexpiredresults':
