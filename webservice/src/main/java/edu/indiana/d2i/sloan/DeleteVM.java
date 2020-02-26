@@ -27,8 +27,8 @@ import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.*;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
@@ -40,7 +40,7 @@ import java.util.List;
 
 @Path("/deletevm")
 public class DeleteVM {
-	private static Logger logger = Logger.getLogger(DeleteVM.class);
+	private static Logger logger = LoggerFactory.getLogger(DeleteVM.class);
 	private static final String ADMIN = "admin";
 
 	@POST

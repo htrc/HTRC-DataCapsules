@@ -10,8 +10,8 @@ import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 @Path("/updateresult")
 public class UpdateResult {
-    private static Logger logger = Logger.getLogger(UpdateResult.class);
+    private static Logger logger = LoggerFactory.getLogger(UpdateResult.class);
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

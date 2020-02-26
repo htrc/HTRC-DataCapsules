@@ -17,13 +17,13 @@ package edu.indiana.d2i.sloan.scheduler;
 
 import java.lang.reflect.Constructor;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.Constants;
 
 public class SchedulerFactory {
-	private static Logger logger = Logger.getLogger(SchedulerFactory.class);
+	private static Logger logger = LoggerFactory.getLogger(SchedulerFactory.class);
 
 	private static Scheduler scheduler = null;
 

@@ -28,8 +28,8 @@ import javax.ws.rs.core.Response;
 
 import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
@@ -42,7 +42,7 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 @Path("/switchvm")
 public class SwitchVM {
-	private static Logger logger = Logger.getLogger(SwitchVM.class);
+	private static Logger logger = LoggerFactory.getLogger(SwitchVM.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

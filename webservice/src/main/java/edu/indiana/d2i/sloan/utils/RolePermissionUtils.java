@@ -6,8 +6,8 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RolePermissionUtils {
-    private static Logger logger = Logger.getLogger(RolePermissionUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(RolePermissionUtils.class);
     private static final String DELETE = "DELETE";
 
     public enum API_CMD {

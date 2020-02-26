@@ -11,8 +11,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -27,7 +27,7 @@ import java.util.*;
 
 @Path("/group_operation")
 public class GroupOperation {
-    private static Logger logger = Logger.getLogger(GroupOperation.class);
+    private static Logger logger = LoggerFactory.getLogger(GroupOperation.class);
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -107,7 +107,7 @@ public class GroupOperation {
                 httpPost.setHeader(Constants.USER_NAME, username);
                 response = httpClient.execute(httpPost);
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    logger.debug(response.getStatusLine());
+                    logger.debug(response.getStatusLine().toString());
                     failedVMIDs.add(vmid);
                 }
             } catch (Exception e) {

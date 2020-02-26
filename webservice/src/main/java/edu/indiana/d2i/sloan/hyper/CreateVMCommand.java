@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
@@ -28,7 +28,7 @@ import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class CreateVMCommand extends HypervisorCommand {
-	private static Logger logger = Logger.getLogger(CreateVMCommand.class);
+	private static Logger logger = LoggerFactory.getLogger(CreateVMCommand.class);
 	private String operator;
 	private final String publicKey;
 
@@ -41,7 +41,7 @@ public class CreateVMCommand extends HypervisorCommand {
 	@Override
 	public void execute() throws Exception {
 		HypervisorResponse resp = hypervisor.createVM(vminfo, publicKey, operator);
-		logger.info(resp);
+		logger.info(resp.toString());
 
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(

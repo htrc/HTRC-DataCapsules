@@ -2,8 +2,8 @@ package edu.indiana.d2i.sloan;
 
 import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.DBOperations;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,7 +24,7 @@ import java.util.List;
 @Path("/showunreleased")
 public class ShowUnreleased {
 
-    private static Logger logger = Logger.getLogger(ShowUnreleased.class);
+    private static Logger logger = LoggerFactory.getLogger(ShowUnreleased.class);
 
 
     @GET

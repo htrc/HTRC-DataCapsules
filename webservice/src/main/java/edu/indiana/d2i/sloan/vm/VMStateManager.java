@@ -17,13 +17,13 @@ package edu.indiana.d2i.sloan.vm;
 
 import java.sql.SQLException;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 
 public class VMStateManager {
-	private static Logger logger = Logger.getLogger(VMStateManager.class);
+	private static Logger logger = LoggerFactory.getLogger(VMStateManager.class);
 	private static VMStateManager instance = new VMStateManager();
 	private VMStateManager() {
 

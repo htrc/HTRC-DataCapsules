@@ -17,7 +17,8 @@ package edu.indiana.d2i.sloan;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -27,7 +28,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/updateuseremail")
 public class UpdateUserEmail {
-	private static Logger logger = Logger.getLogger(UpdateUserEmail.class);
+	private static Logger logger = LoggerFactory.getLogger(UpdateUserEmail.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

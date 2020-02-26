@@ -26,8 +26,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.ImageInfoBean;
 import edu.indiana.d2i.sloan.bean.ListImageResponseBean;
@@ -35,7 +35,7 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 
 @Path("/listimage")
 public class ListImage {
-	private static Logger logger = Logger.getLogger(ListImage.class);
+	private static Logger logger = LoggerFactory.getLogger(ListImage.class);
 
 //	@POST
 	

@@ -21,11 +21,11 @@ import java.util.Map;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.HierarchicalConfiguration;
 import org.apache.commons.configuration.XMLConfiguration;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 public final class Configuration {
 	private static Configuration instance = null;
-	private static Logger logger = Logger.getLogger(Configuration.class);
+	private static Logger logger = LoggerFactory.getLogger(Configuration.class);
 	
 	private void loadConfigurations(String xmlPath) {
 		try {

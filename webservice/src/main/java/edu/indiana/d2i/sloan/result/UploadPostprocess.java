@@ -20,8 +20,8 @@ import java.util.concurrent.Callable;
 
 import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.UserResultBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
@@ -29,7 +29,7 @@ import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 
 public class UploadPostprocess {
-	private static Logger logger = Logger.getLogger(UploadPostprocess.class);
+	private static Logger logger = LoggerFactory.getLogger(UploadPostprocess.class);
 	public final static UploadPostprocess instance = new UploadPostprocess();
 	
 	private final Queue<UserResultBean> resultsQueue = new LinkedList<UserResultBean>();

@@ -33,8 +33,8 @@ import javax.ws.rs.core.Response;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.vm.PortsPool;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.ErrorBean;
 import edu.indiana.d2i.sloan.bean.CreateVmRequestBean;
 import edu.indiana.d2i.sloan.bean.CreateVmResponseBean;
@@ -46,7 +46,7 @@ import edu.indiana.d2i.sloan.scheduler.SchedulerFactory;
 
 @Path("/createvm")
 public class CreateVM {
-	private static Logger logger = Logger.getLogger(CreateVM.class);
+	private static Logger logger = LoggerFactory.getLogger(CreateVM.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

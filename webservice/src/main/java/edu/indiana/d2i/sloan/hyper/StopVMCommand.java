@@ -19,8 +19,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
@@ -30,7 +30,7 @@ import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 public class StopVMCommand extends HypervisorCommand {
-	private static Logger logger = Logger.getLogger(StopVMCommand.class);
+	private static Logger logger = LoggerFactory.getLogger(StopVMCommand.class);
 	private String operator;
 
 	public StopVMCommand(VmInfoBean vminfo, String operator) throws Exception {
@@ -41,7 +41,7 @@ public class StopVMCommand extends HypervisorCommand {
 	@Override
 	public void execute() throws Exception {
 		HypervisorResponse resp = hypervisor.stopVM(vminfo);
-		logger.info(resp);
+		logger.info(resp.toString());
 
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(

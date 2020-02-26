@@ -25,8 +25,8 @@ import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.MigrateVMCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.*;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -37,7 +37,7 @@ import java.util.List;
 
 @Path("/migratevm")
 public class MigrateVM {
-	private static Logger logger = Logger.getLogger(MigrateVM.class);
+	private static Logger logger = LoggerFactory.getLogger(MigrateVM.class);
 	private static final String ADMIN = "admin";
 
 	@POST

@@ -18,12 +18,12 @@ package edu.indiana.d2i.sloan.hyper;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.Configuration;
 
 class HypervisorFactory {
-	private static Logger logger = Logger.getLogger(HypervisorFactory.class);
+	private static Logger logger = LoggerFactory.getLogger(HypervisorFactory.class);
 
 	private static Constructor<?> constructor;
 

@@ -21,14 +21,14 @@ import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
 
 public class DeletePublicKeyCommand extends HypervisorCommand {
-	private static Logger logger = Logger.getLogger(DeletePublicKeyCommand.class);
+	private static Logger logger = LoggerFactory.getLogger(DeletePublicKeyCommand.class);
 	private final String publicKey;
 	private final String username;
 	private final String operator;
@@ -43,7 +43,7 @@ public class DeletePublicKeyCommand extends HypervisorCommand {
 	@Override
 	public void execute() throws Exception {
 		HypervisorResponse resp = hypervisor.deletePubKey(vminfo, publicKey, username);
-		logger.info(resp);
+		logger.info(resp.toString());
 
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(

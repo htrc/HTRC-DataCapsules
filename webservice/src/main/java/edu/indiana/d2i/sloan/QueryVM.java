@@ -35,8 +35,8 @@ import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMState;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
@@ -45,7 +45,7 @@ import edu.indiana.d2i.sloan.vm.VMStateManager;
 
 @Path("/show")
 public class QueryVM {
-	private static Logger logger = Logger.getLogger(QueryVM.class);
+	private static Logger logger = LoggerFactory.getLogger(QueryVM.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

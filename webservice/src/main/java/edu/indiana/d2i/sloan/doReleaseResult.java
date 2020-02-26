@@ -42,8 +42,8 @@ import edu.indiana.d2i.sloan.db.DBConnections;
 import edu.indiana.d2i.sloan.db.DBSchema;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.vm.VMMode;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.DeleteVMCommand;
@@ -80,7 +80,7 @@ import java.io.IOException;
 @Path("/ReleaseResult")
 public class doReleaseResult {
 
-    private static Logger logger = Logger.getLogger(CreateVM.class);
+    private static Logger logger = LoggerFactory.getLogger(CreateVM.class);
     private DBConnections DBConnections;
 
 

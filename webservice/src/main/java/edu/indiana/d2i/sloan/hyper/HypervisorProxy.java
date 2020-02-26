@@ -20,12 +20,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.Configuration;
 
 public final class HypervisorProxy {
-	private static Logger logger = Logger.getLogger(HypervisorProxy.class);
+	private static Logger logger = LoggerFactory.getLogger(HypervisorProxy.class);
 	private static HypervisorProxy instance = null;
 
 	private ExecutorService executorService = null;

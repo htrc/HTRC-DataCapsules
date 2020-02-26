@@ -24,15 +24,15 @@ import edu.indiana.d2i.sloan.vm.PortsPool;
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMStateManager;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.ScriptCmdErrorException;
 import edu.indiana.d2i.sloan.utils.RetriableTask;
 
 public class DeleteVMCommand extends HypervisorCommand {
-	private static Logger logger = Logger.getLogger(DeleteVMCommand.class);
+	private static Logger logger = LoggerFactory.getLogger(DeleteVMCommand.class);
 	private final String username;
 	private final String operator;
 
@@ -50,7 +50,7 @@ public class DeleteVMCommand extends HypervisorCommand {
 		Does not update VmMode in the vms table
 		 */
 		HypervisorResponse resp = hypervisor.delete(vminfo);
-		logger.info(resp);
+		logger.info(resp.toString());
 		if (resp.getResponseCode() != 0) {
 			throw new ScriptCmdErrorException(String.format(
 					"Failed to excute command:\n%s ", resp));
