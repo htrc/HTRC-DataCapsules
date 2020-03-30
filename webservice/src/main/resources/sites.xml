@@ -66,6 +66,10 @@
 		<value>DB_HOST_SCRIPT_DIR/updatekey.sh</value>
 	</property>
 	<property>
+		<name>cmd.update.custos.creds</name>
+		<value>DB_HOST_SCRIPT_DIR/updatecustoscreds.sh</value>
+	</property>
+	<property>
 		<name>cmd.migrate.vm</name>
 		<value>DB_HOST_SCRIPT_DIR/migratevm.sh</value>
 	</property>

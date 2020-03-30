@@ -394,6 +394,40 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
+	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_un, String custos_pw) throws Exception {
+		logger.debug("update custos credentials of VM " + vminfo);
+
+		SSHProxy sshProxy = null;
+
+		try {
+			/* establish ssh connection */
+			sshProxy = establishSShCon(vminfo.getPublicip(),
+					SSHProxy.SSH_DEFAULT_PORT);
+
+			/* compose script command */
+			String argList = new CommandUtils.ArgsBuilder().
+					addArgument("--wdir", vminfo.getWorkDir()).
+					addArgument("--custos_un", custos_un).
+					addArgument("--custos_pw", custos_pw).build();
+
+			Commands updateCustosCredsCmd = new Commands(
+					Collections.<String> singletonList(CommandUtils
+							.composeFullCommand(HYPERVISOR_CMD.UPDATE_KEY,
+									argList)), false);
+
+			/* execute task */
+			CmdsExecResult res = executeRetriableTask(new CapsuleTask(sshProxy,
+					updateCustosCredsCmd));
+
+			return HypervisorResponse.commandRes2HyResp(res);
+		} finally {
+			/* close ssh connection */
+			if (sshProxy != null)
+				sshProxy.close();
+		}
+	}
+
+	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
 		logger.debug("migrate vm: " + vminfo);
 

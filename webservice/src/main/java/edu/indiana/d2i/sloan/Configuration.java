@@ -100,6 +100,7 @@ public final class Configuration {
 		public static final String CMD_STOP_VM = "cmd.stop.vm";
 		public static final String CMD_DELETE_VM = "cmd.delete.vm";
 		public static final String CMD_UPDATE_KEY = "cmd.update.key";
+		public static final String CMD_UPDATE_CUSTOS_CREDS = "cmd.update.custos.creds";
 		public static final String MIGRATE_VM = "cmd.migrate.vm";
 		public static final String CMD_DELETE_KEY = "cmd.delete.key";
 

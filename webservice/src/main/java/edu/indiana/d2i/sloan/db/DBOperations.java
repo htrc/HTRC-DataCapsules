@@ -1952,6 +1952,43 @@ public class DBOperations {
 		}
 	}
 
+	public String[] getCustosCredentials(String vmid) throws SQLException,
+			NoItemIsFoundInDBException, UnsupportedEncodingException {
+		Connection connection = null;
+		PreparedStatement pst = null;
+
+		try {
+			connection = DBConnections.getInstance().getConnection();
+			String query = String.format(
+					"SELECT %s, %s FROM %s WHERE %s=\"%s\"",
+					DBSchema.VmTable.CUSTOS_UN, DBSchema.VmTable.CUSTOS_PW, DBSchema.VmTable.TABLE_NAME,
+					DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID,
+					vmid);
+			pst = connection.prepareStatement(query);
+
+			ResultSet result = pst.executeQuery();
+			if (result.next()) {
+				String encodedPW = result.getNString(DBSchema.VmTable.CUSTOS_PW);
+				if(encodedPW != null ) {
+					byte[] asBytes = Base64.getDecoder().decode(encodedPW);
+					String[] credentials = new String[2];
+					credentials[0] = result.getNString(DBSchema.VmTable.CUSTOS_UN);
+					credentials[1] = new String(asBytes, "utf-8");
+					return credentials;
+				} else {
+					return null;
+				}
+			} else {
+				throw new NoItemIsFoundInDBException(vmid + " VM could not be found!");
+			}
+		} finally {
+			if (pst != null)
+				pst.close();
+			if (connection != null)
+				connection.close();
+		}
+	}
+
 	public String getUserEmail(String userName) throws SQLException, NoItemIsFoundInDBException {
 		Connection connection = null;
 		PreparedStatement pst = null;
@@ -1990,6 +2027,21 @@ public class DBOperations {
 				+ DBSchema.UserTable.TABLE_NAME + " SET "
 				+ DBSchema.UserTable.PUB_KEY + (sshKey ==  null ? "=%s" : "=\"%s\"")  + " WHERE "
 				+ DBSchema.UserTable.GUID + "=\"%s\"", encodedKey, userName);
+		updates.add(updateusersql);
+		executeTransaction(updates);
+	}
+
+	public void updateCustosCredentials(String vmid, String custos_un, String custos_pw) throws SQLException, UnsupportedEncodingException {
+		List<String> updates = new ArrayList<String>();
+		String encodedPw = null;
+		if(custos_pw != null) {
+			encodedPw = Base64.getEncoder().encodeToString(custos_pw.getBytes("utf-8"));
+		}
+		String updateusersql = String.format("UPDATE "
+				+ DBSchema.VmTable.TABLE_NAME + " SET "
+				+ DBSchema.VmTable.CUSTOS_UN + (custos_un ==  null ? "=%s" : "=\"%s\"") + " "
+				+ DBSchema.VmTable.CUSTOS_PW + (custos_pw ==  null ? "=%s" : "=\"%s\"") + " "
+				+  "WHERE " + DBSchema.VmTable.VM_ID + "=\"%s\"", custos_un, encodedPw, vmid);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}

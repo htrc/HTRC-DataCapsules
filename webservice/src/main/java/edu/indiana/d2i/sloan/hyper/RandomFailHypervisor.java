@@ -126,6 +126,11 @@ public class RandomFailHypervisor implements IHypervisor {
 	}
 
 	@Override
+	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_un, String custos_pw) throws Exception {
+		return simulateRandProcess();
+	}
+
+	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
 		return simulateRandProcess();
 	}

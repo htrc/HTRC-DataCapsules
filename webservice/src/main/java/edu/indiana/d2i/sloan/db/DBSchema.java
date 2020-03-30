@@ -64,6 +64,10 @@ public class DBSchema {
 		public static String RR_RESULT_USAGE = "rr_result_usage";
 		public static String DESC_SHARED = "desc_shared";
 
+		//Custos agent credentials
+		public static String CUSTOS_UN = "custos_un";
+		public static String CUSTOS_PW = "custos_pw";
+
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{
 				put(VM_ID, 1);
