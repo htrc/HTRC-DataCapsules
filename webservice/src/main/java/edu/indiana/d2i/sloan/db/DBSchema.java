@@ -65,8 +65,8 @@ public class DBSchema {
 		public static String DESC_SHARED = "desc_shared";
 
 		//Custos agent credentials
-		public static String CUSTOS_UN = "custos_un";
-		public static String CUSTOS_PW = "custos_pw";
+		public static String CUSTOS_CLIENT_ID = "custos_client_id";
+		public static String CUSTOS_CLIENT_SECRET = "custos_client_secret";
 
 		public static Map<String, Integer> columnIndex = new HashMap<String, Integer>() {
 			{

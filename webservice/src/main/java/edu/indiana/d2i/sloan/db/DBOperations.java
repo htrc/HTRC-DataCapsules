@@ -1961,18 +1961,18 @@ public class DBOperations {
 			connection = DBConnections.getInstance().getConnection();
 			String query = String.format(
 					"SELECT %s, %s FROM %s WHERE %s=\"%s\"",
-					DBSchema.VmTable.CUSTOS_UN, DBSchema.VmTable.CUSTOS_PW, DBSchema.VmTable.TABLE_NAME,
+					DBSchema.VmTable.CUSTOS_CLIENT_ID, DBSchema.VmTable.CUSTOS_CLIENT_SECRET, DBSchema.VmTable.TABLE_NAME,
 					DBSchema.VmTable.TABLE_NAME+"."+DBSchema.VmTable.VM_ID,
 					vmid);
 			pst = connection.prepareStatement(query);
 
 			ResultSet result = pst.executeQuery();
 			if (result.next()) {
-				String encodedPW = result.getNString(DBSchema.VmTable.CUSTOS_PW);
+				String encodedPW = result.getNString(DBSchema.VmTable.CUSTOS_CLIENT_SECRET);
 				if(encodedPW != null ) {
 					byte[] asBytes = Base64.getDecoder().decode(encodedPW);
 					String[] credentials = new String[2];
-					credentials[0] = result.getNString(DBSchema.VmTable.CUSTOS_UN);
+					credentials[0] = result.getNString(DBSchema.VmTable.CUSTOS_CLIENT_ID);
 					credentials[1] = new String(asBytes, "utf-8");
 					return credentials;
 				} else {
@@ -2031,17 +2031,17 @@ public class DBOperations {
 		executeTransaction(updates);
 	}
 
-	public void updateCustosCredentials(String vmid, String custos_un, String custos_pw) throws SQLException, UnsupportedEncodingException {
+	public void updateCustosCredentials(String vmid, String custos_client_id, String custos_client_secret) throws SQLException, UnsupportedEncodingException {
 		List<String> updates = new ArrayList<String>();
-		String encodedPw = null;
-		if(custos_pw != null) {
-			encodedPw = Base64.getEncoder().encodeToString(custos_pw.getBytes("utf-8"));
+		String encodedSecret = null;
+		if(custos_client_secret != null) {
+			encodedSecret = Base64.getEncoder().encodeToString(custos_client_secret.getBytes("utf-8"));
 		}
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
-				+ DBSchema.VmTable.CUSTOS_UN + (custos_un ==  null ? "=%s" : "=\"%s\"") + " "
-				+ DBSchema.VmTable.CUSTOS_PW + (custos_pw ==  null ? "=%s" : "=\"%s\"") + " "
-				+  "WHERE " + DBSchema.VmTable.VM_ID + "=\"%s\"", custos_un, encodedPw, vmid);
+				+ DBSchema.VmTable.CUSTOS_CLIENT_ID + (custos_client_id ==  null ? "=%s" : "=\"%s\"") + " "
+				+ DBSchema.VmTable.CUSTOS_CLIENT_SECRET + (custos_client_secret ==  null ? "=%s" : "=\"%s\"") + " "
+				+  "WHERE " + DBSchema.VmTable.VM_ID + "=\"%s\"", custos_client_id, encodedSecret, vmid);
 		updates.add(updateusersql);
 		executeTransaction(updates);
 	}

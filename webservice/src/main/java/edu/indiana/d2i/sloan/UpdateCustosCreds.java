@@ -35,16 +35,12 @@ import javax.ws.rs.core.Response;
 @Path("/updatecustoscreds")
 public class UpdateCustosCreds {
 	private static Logger logger = LoggerFactory.getLogger(UpdateCustosCreds.class);
-	private static final String DELETE = "DELETE";
 
-	/*
-		Update SSH key of the user in the database and update all VMs(update the ssh key) that the user has access to
-	*/
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response updateCustosCredentials(@FormParam("vmid") String vmid,
-			@FormParam("custos_un") String custos_un, @FormParam("custos_pw") String custos_pw,
+			@FormParam("custos_client_id") String custos_client_id, @FormParam("custos_client_secret") String custos_client_secret,
 			@Context HttpHeaders httpHeaders,
 			@Context HttpServletRequest httpServletRequest) {		
 		String userName = httpServletRequest.getHeader(Constants.USER_NAME);
@@ -66,12 +62,12 @@ public class UpdateCustosCreds {
 		try {
 			logger.info("User " + userName + " tries to update custos credentials in VM " + vmid);
 			VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmid); // check if user had VM with vmid
-			DBOperations.getInstance().updateCustosCredentials(vmid, custos_un, custos_pw);
+			DBOperations.getInstance().updateCustosCredentials(vmid, custos_client_id, custos_client_secret);
 			logger.info("Custos credentials of VM '" + vmid + "' was updated in database successfully!");
 			if (RolePermissionUtils.isPermittedToUpdateKey(
 					userName, vminfo, RolePermissionUtils.API_CMD.UPDATE_CUSTOS_CREDS)) {
 				HypervisorProxy.getInstance().addCommand(
-						new UpdateCustosCredsCommand(vminfo, userName, custos_un, custos_pw));
+						new UpdateCustosCredsCommand(vminfo, userName, custos_client_id, custos_client_secret));
 			}
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {

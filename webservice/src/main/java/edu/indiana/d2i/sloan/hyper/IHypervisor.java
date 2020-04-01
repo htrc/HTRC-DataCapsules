@@ -35,7 +35,7 @@ interface IHypervisor {
 
 	public HypervisorResponse updatePubKey(VmInfoBean vminfo, String pubKey, String userId) throws Exception;
 
-	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_un, String custos_pw) throws Exception;
+	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_client_id, String custos_client_secret) throws Exception;
 
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception;
 

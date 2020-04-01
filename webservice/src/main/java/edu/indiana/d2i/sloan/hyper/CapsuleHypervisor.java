@@ -394,7 +394,7 @@ class CapsuleHypervisor implements IHypervisor {
 	}
 
 	@Override
-	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_un, String custos_pw) throws Exception {
+	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_client_id, String custos_client_secret) throws Exception {
 		logger.debug("update custos credentials of VM " + vminfo);
 
 		SSHProxy sshProxy = null;
@@ -407,12 +407,12 @@ class CapsuleHypervisor implements IHypervisor {
 			/* compose script command */
 			String argList = new CommandUtils.ArgsBuilder().
 					addArgument("--wdir", vminfo.getWorkDir()).
-					addArgument("--custos_un", custos_un).
-					addArgument("--custos_pw", custos_pw).build();
+					addArgument("--clientid", custos_client_id).
+					addArgument("--clientsecret", custos_client_secret).build();
 
 			Commands updateCustosCredsCmd = new Commands(
 					Collections.<String> singletonList(CommandUtils
-							.composeFullCommand(HYPERVISOR_CMD.UPDATE_KEY,
+							.composeFullCommand(HYPERVISOR_CMD.UPDATE_CUSTOS_CREDS,
 									argList)), false);
 
 			/* execute task */

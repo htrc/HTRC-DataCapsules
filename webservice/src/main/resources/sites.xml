@@ -67,7 +67,7 @@
 	</property>
 	<property>
 		<name>cmd.update.custos.creds</name>
-		<value>DB_HOST_SCRIPT_DIR/updatecustoscreds.sh</value>
+		<value>DB_HOST_SCRIPT_DIR/addcredentials.sh</value>
 	</property>
 	<property>
 		<name>cmd.migrate.vm</name>

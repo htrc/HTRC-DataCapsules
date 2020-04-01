@@ -31,19 +31,19 @@ import java.util.concurrent.Callable;
 public class UpdateCustosCredsCommand extends HypervisorCommand {
 	private static Logger logger = LoggerFactory.getLogger(UpdateCustosCredsCommand.class);
 	private final String username;
-	private final String custos_un;
-	private final String custos_pw;
+	private final String custos_client_id;
+	private final String custos_client_secret;
 
-	public UpdateCustosCredsCommand(VmInfoBean vminfo, String username, String custos_un, String custos_pw) throws Exception {
+	public UpdateCustosCredsCommand(VmInfoBean vminfo, String username, String custos_client_id, String custos_client_secret) throws Exception {
 		super(vminfo);
 		this.username = username;
-		this.custos_un = custos_un;
-		this.custos_pw = custos_pw;
+		this.custos_client_id = custos_client_id;
+		this.custos_client_secret = custos_client_secret;
 	}
 
 	@Override
 	public void execute() throws Exception {
-		HypervisorResponse resp = hypervisor.updateCustosCreds(vminfo, custos_un, custos_pw);
+		HypervisorResponse resp = hypervisor.updateCustosCreds(vminfo, custos_client_id, custos_client_secret);
 		logger.info(resp.toString());
 
 		if (resp.getResponseCode() != 0) {
