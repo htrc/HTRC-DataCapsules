@@ -65,6 +65,7 @@ public class RolePermissionUtils {
                         || api_cmd == API_CMD.SWITCH_VM
                         || api_cmd == API_CMD.MIGRATE_VM
                         || api_cmd == API_CMD.UPDATE_SSH_KEY
+                        || api_cmd == API_CMD.UPDATE_CUSTOS_CREDS
                         || api_cmd == API_CMD.VIEW_RESULT) {
                     isPermitted = true;
                 }

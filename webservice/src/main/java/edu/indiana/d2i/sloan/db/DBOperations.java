@@ -2039,7 +2039,7 @@ public class DBOperations {
 		}
 		String updateusersql = String.format("UPDATE "
 				+ DBSchema.VmTable.TABLE_NAME + " SET "
-				+ DBSchema.VmTable.CUSTOS_CLIENT_ID + (custos_client_id ==  null ? "=%s" : "=\"%s\"") + " "
+				+ DBSchema.VmTable.CUSTOS_CLIENT_ID + (custos_client_id ==  null ? "=%s" : "=\"%s\"") + " , "
 				+ DBSchema.VmTable.CUSTOS_CLIENT_SECRET + (custos_client_secret ==  null ? "=%s" : "=\"%s\"") + " "
 				+  "WHERE " + DBSchema.VmTable.VM_ID + "=\"%s\"", custos_client_id, encodedSecret, vmid);
 		updates.add(updateusersql);
