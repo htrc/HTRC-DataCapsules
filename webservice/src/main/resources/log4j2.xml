@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+    <Appenders>
+        <File name="auditlog" fileName="${sys:catalina.base}/logs/sloan-ws-audit.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+            <ThresholdFilter level="debug"/>
+        </File>
+        <File name="dalog" fileName="${sys:catalina.base}/logs/sloan-ws.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+            <ThresholdFilter level="debug"/>
+        </File>
+        <!--<Console name="stdout" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"/>
+        </Console>-->
+    </Appenders>
+
+    <Loggers>
+        <Logger name="audit" level="INFO">
+            <AppenderRef ref="auditlog"/>
+        </Logger>
+        <Logger name="edu.indiana.d2i.htrc.oauth2" level="INFO">
+            <AppenderRef ref="dalog"/>
+        </Logger>
+        <Logger name="edu.indiana.d2i.sloan" level="INFO">
+            <AppenderRef ref="dalog"/>
+        </Logger>
+        <Logger name="edu.indiana.d2i.sloan.db.DBOperations" level="ERROR">
+            <AppenderRef ref="dalog"/>
+        </Logger>
+        <Logger name="edu.indiana.d2i.sloan.hyper.QueryVMCommand" level="ERROR">
+            <AppenderRef ref="dalog"/>
+        </Logger>
+        <Logger name="edu.indiana.d2i.sloan.QueryVM" level="ERROR">
+            <AppenderRef ref="dalog"/>
+        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="stdout"/>
+        </Root>
+    </Loggers>
+
+</Configuration>

@@ -23,7 +23,8 @@ import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -44,7 +45,7 @@ import static edu.indiana.d2i.sloan.Constants.MAX_NO_OF_SHAREES;
 
 @Path("/addsharees")
 public class AddVmSharees {
-	private static Logger logger = Logger.getLogger(AddVmSharees.class);
+	private static Logger logger = LoggerFactory.getLogger(AddVmSharees.class);
 	private static final String DELETE = "DELETE";
 
 	@POST

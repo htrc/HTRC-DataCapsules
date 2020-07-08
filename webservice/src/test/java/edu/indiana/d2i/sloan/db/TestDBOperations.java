@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.UUID;
 
 import edu.indiana.d2i.sloan.utils.ResultUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.*;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -43,7 +44,7 @@ import edu.indiana.d2i.sloan.vm.VMState;
 
 @Ignore
 public class TestDBOperations {
-	private static Logger logger = Logger.getLogger(TestDBOperations.class);
+	private static Logger logger = LoggerFactory.getLogger(TestDBOperations.class);
 	protected final java.text.SimpleDateFormat DATE_FORMATOR =
 			new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private int[] portsUsed = null;

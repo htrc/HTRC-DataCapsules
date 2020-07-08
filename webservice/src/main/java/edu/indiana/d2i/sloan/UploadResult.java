@@ -36,8 +36,8 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sun.jersey.multipart.FormDataParam;
 
 import edu.indiana.d2i.sloan.bean.ErrorBean;
@@ -53,7 +53,7 @@ import edu.indiana.d2i.sloan.utils.EmailUtil;
  */
 @Path("/upload")
 public class UploadResult {
-	private static Logger logger = Logger.getLogger(UploadResult.class);
+	private static Logger logger = LoggerFactory.getLogger(UploadResult.class);
 	
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

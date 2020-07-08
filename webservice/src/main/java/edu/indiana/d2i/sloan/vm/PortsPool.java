@@ -20,14 +20,14 @@ import java.util.*;
 
 import edu.indiana.d2i.sloan.bean.PortBean;
 import edu.indiana.d2i.sloan.exception.InvalidHostNameException;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.VmInfoBean;
 import edu.indiana.d2i.sloan.db.DBOperations;
 
 public class PortsPool {
-	private static Logger logger = Logger.getLogger(PortsPool.class);
+	private static Logger logger = LoggerFactory.getLogger(PortsPool.class);
 	
 	private ArrayList<String> vmHosts;
 	private final int PORT_RANGE_MIN, PORT_RANGE_MAX;

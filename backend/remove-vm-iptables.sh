@@ -44,7 +44,7 @@ fi
 flock -w 120 200
 
 # Finding the tap device the VM is attached
-VM_TAP_DEV=`iptables -n -L FORWARD --line-numbers | grep $VM_IP | head -n 1 | grep -oP 'tap\d+'`
+VM_TAP_DEV=`iptables -n -L FORWARD --line-numbers | grep "${VM_IP}_" | head -n 1 | grep -oP 'tap\d+'`
 
 echo "VM with IP $VM_IP uses tap device $VM_TAP_DEV"
 
@@ -53,7 +53,7 @@ logger "$VM_DIR - iptables executable $IPTBLS_EXECUTABLE"
 
 function deleteiptablesrules {
     logger "$3 - Deleting $1 rules.."
-    GREP_OUT=`iptables -n -L $1 --line-numbers | grep $2`
+    GREP_OUT=`iptables -n -L $1 --line-numbers | grep -w $2`
     if [ $? -eq 1 ]; then
         logger "No $1 chain related rules for VM with IP: $3"
     else

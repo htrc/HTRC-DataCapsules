@@ -24,12 +24,11 @@ import javax.annotation.PreDestroy;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SloanWSApplication extends Application {
-	private static Logger logger = Logger.getLogger(SloanWSApplication.class);
+	private static Logger logger = LoggerFactory.getLogger(SloanWSApplication.class);
 
 	@Context
 	private ServletConfig servletConfig;
@@ -52,7 +51,7 @@ public class SloanWSApplication extends Application {
 	@PostConstruct
 	private void init() {
 		Configuration.getInstance(); // load configurations at first
-		configureLogger(servletConfig);
+		//configureLogger(servletConfig);
 	}
 
 	@PreDestroy
@@ -61,10 +60,10 @@ public class SloanWSApplication extends Application {
 	}
 
 	private void configureLogger(ServletConfig servletConfig) {
-		String log4jPropertiesPath = Configuration.getInstance().getString("log4j.properties.path");
-		if(log4jPropertiesPath != null && new File(log4jPropertiesPath).exists()){
-			PropertyConfigurator.configure(log4jPropertiesPath);
-			logger.info("logger configured as " + log4jPropertiesPath);
-		}
+//		String log4jPropertiesPath = Configuration.getInstance().getString("log4j.properties.path");
+//		if(log4jPropertiesPath != null && new File(log4jPropertiesPath).exists()){
+//			PropertyConfigurator.configure(log4jPropertiesPath);
+//			logger.info("logger configured as " + log4jPropertiesPath);
+//		}
 	}
 }

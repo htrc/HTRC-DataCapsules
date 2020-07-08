@@ -18,10 +18,10 @@ package edu.indiana.d2i.sloan.utils;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 public class RetriableTask<T> implements Callable<T> {
-	private static Logger logger = Logger.getLogger(RetriableTask.class);
+	private static Logger logger = LoggerFactory.getLogger(RetriableTask.class);
 	
 	private final Callable<T> task;
 	private long waitInMs = 1000;

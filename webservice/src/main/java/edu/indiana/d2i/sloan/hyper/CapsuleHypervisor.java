@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 import edu.indiana.d2i.sloan.vm.VMPorts;
 import edu.indiana.d2i.sloan.vm.VMState;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.jcraft.jsch.JSchException;
 
 import edu.indiana.d2i.sloan.Configuration;
@@ -40,7 +40,7 @@ import edu.indiana.d2i.sloan.utils.SSHProxy.CmdsExecResult;
 import edu.indiana.d2i.sloan.utils.SSHProxy.Commands;
 
 class CapsuleHypervisor implements IHypervisor {
-	private static Logger logger = Logger.getLogger(CapsuleHypervisor.class);
+	private static Logger logger = LoggerFactory.getLogger(CapsuleHypervisor.class);
 	protected static long timeoutInMillis;
 	private static String sshUsername;
 	private static String sshPasswd;

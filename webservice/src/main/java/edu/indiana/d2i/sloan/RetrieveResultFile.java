@@ -22,8 +22,8 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResultFileFoundException;
 import edu.indiana.d2i.sloan.utils.ResultUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/retrieveresultfile")
 public class RetrieveResultFile {
-	private static Logger logger = Logger.getLogger(RetrieveResultFile.class);
+	private static Logger logger = LoggerFactory.getLogger(RetrieveResultFile.class);
 
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)

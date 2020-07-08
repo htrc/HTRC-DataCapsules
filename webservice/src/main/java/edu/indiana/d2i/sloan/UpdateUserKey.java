@@ -24,8 +24,8 @@ import edu.indiana.d2i.sloan.hyper.QueryVMCommand;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.*;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -37,7 +37,7 @@ import java.util.List;
 
 @Path("/updateuserkey")
 public class UpdateUserKey {
-	private static Logger logger = Logger.getLogger(UpdateUserKey.class);
+	private static Logger logger = LoggerFactory.getLogger(UpdateUserKey.class);
 	private static final String DELETE = "DELETE";
 
 	/*

@@ -30,6 +30,8 @@ import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -38,7 +40,7 @@ import com.jcraft.jsch.Session;
  * 
  */
 public class SSHProxy {
-	private static final Log logger = LogFactory.getLog(SSHProxy.class);
+	private static final Logger logger = LoggerFactory.getLogger(SSHProxy.class);
 
 	public static int SSH_DEFAULT_PORT = 22;
 

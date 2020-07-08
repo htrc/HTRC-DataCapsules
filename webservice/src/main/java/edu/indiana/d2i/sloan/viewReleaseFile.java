@@ -5,8 +5,8 @@ import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.exception.NoResultFileFoundException;
 import edu.indiana.d2i.sloan.utils.ResultUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -33,7 +33,7 @@ import java.text.ParseException;
 @Path("/viewreleasefile")
 public class viewReleaseFile {
 
-    private static Logger logger = Logger.getLogger(viewReleaseFile.class);
+    private static Logger logger = LoggerFactory.getLogger(viewReleaseFile.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

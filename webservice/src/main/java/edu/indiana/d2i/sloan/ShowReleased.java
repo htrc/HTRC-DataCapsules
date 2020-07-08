@@ -8,8 +8,8 @@ import edu.indiana.d2i.sloan.bean.*;
 import edu.indiana.d2i.sloan.db.*;
 import edu.indiana.d2i.sloan.exception.*;
 import edu.indiana.d2i.sloan.exception.ResultExpireException;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -31,7 +31,7 @@ import java.util.List;
 @Path("/showreleased")
 public class ShowReleased {
 
-    private static Logger logger = Logger.getLogger(ShowReleased.class);
+    private static Logger logger = LoggerFactory.getLogger(ShowReleased.class);
 
 
     @GET

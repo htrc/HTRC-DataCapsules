@@ -19,14 +19,14 @@ package edu.indiana.d2i.sloan.utils;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.exception.NoResultFileFoundException;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.*;
 
 public class ResultUtils {
-    private static Logger logger = Logger.getLogger(ResultUtils.class);
+    private static Logger logger = LoggerFactory.getLogger(ResultUtils.class);
     private static String result_file_dir = Configuration.getInstance().getString(
             Configuration.PropertyName.RESULT_FILES_DIR, "/tmp");
     private static String backup_file_dir = Configuration.getInstance().getString(

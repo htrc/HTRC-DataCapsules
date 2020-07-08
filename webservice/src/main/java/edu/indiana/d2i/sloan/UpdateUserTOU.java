@@ -22,7 +22,8 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.hyper.HypervisorProxy;
 import edu.indiana.d2i.sloan.hyper.UpdatePublicKeyCommand;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.codehaus.jettison.json.JSONObject;
 
 import javax.servlet.http.HttpServletRequest;
@@ -34,7 +35,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/updateusertou")
 public class UpdateUserTOU {
-	private static Logger logger = Logger.getLogger(UpdateUserTOU.class);
+	private static Logger logger = LoggerFactory.getLogger(UpdateUserTOU.class);
 
 	@POST
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)

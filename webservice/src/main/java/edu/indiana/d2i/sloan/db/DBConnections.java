@@ -19,14 +19,14 @@ import java.beans.PropertyVetoException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import edu.indiana.d2i.sloan.Configuration;
 
 public class DBConnections {
-	private static Logger logger = Logger.getLogger(DBConnections.class);
+	private static Logger logger = LoggerFactory.getLogger(DBConnections.class);
 	private static DBConnections instance = null;
 	private static ComboPooledDataSource dataSource = null; 
 	

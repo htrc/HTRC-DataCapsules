@@ -4,7 +4,7 @@
 	<groupId>edu.indiana.d2i.sloan</groupId>
 	<artifactId>sloan-ws</artifactId>
 	<packaging>war</packaging>
-	<version>1.4</version>
+	<version>1.6</version>
 	<name>sloan-ws</name>
 	<url>http://maven.apache.org</url>
 
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
-			<version>5.1.26</version>
+			<version>8.0.16</version>
 		</dependency>
 
 		<!-- ssh lib -->
@@ -128,11 +128,28 @@
 			<version>1.9</version>
 		</dependency>
 
-		<dependency>
+		<!--<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.16</version>
+		</dependency>-->
+
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<version>2.13.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>2.13.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>2.13.2</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

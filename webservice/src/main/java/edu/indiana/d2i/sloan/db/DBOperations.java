@@ -26,8 +26,8 @@ import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public class DBOperations {
-	private static Logger logger = Logger.getLogger(DBOperations.class);
+	private static Logger logger = LoggerFactory.getLogger(DBOperations.class);
 	private static DBOperations instance = null;
 	
 	private final java.text.SimpleDateFormat DATE_FORMATOR = 

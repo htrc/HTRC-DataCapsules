@@ -9,8 +9,8 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.EmailUtil;
 import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -28,7 +28,7 @@ import java.util.List;
 
 @Path("/deleteresult")
 public class DeleteResult {
-    private static Logger logger = Logger.getLogger(DeleteResult.class);
+    private static Logger logger = LoggerFactory.getLogger(DeleteResult.class);
 
     @DELETE
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

@@ -26,8 +26,8 @@ import edu.indiana.d2i.sloan.vm.VMMode;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
 import edu.indiana.d2i.sloan.vm.VMType;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 
 @Path("/updatevm")
 public class UpdateVm {
-	private static Logger logger = Logger.getLogger(UpdateVm.class);
+	private static Logger logger = LoggerFactory.getLogger(UpdateVm.class);
 	private static final String DELETE = "DELETE";
 
 	@POST

@@ -25,8 +25,8 @@ import edu.indiana.d2i.sloan.exception.ResultExpireException;
 import edu.indiana.d2i.sloan.utils.ResultUtils;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -47,7 +47,7 @@ import javax.ws.rs.core.Response;
 
 @Path("/download")
 public class DownloadResult {
-	private static Logger logger = Logger.getLogger(DownloadResult.class);
+	private static Logger logger = LoggerFactory.getLogger(DownloadResult.class);
 
 	@GET
 	@Produces(MediaType.APPLICATION_OCTET_STREAM)

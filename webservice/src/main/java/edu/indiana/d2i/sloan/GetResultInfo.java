@@ -6,8 +6,8 @@ import edu.indiana.d2i.sloan.bean.ResultInfoResponseBean;
 import edu.indiana.d2i.sloan.bean.VmUserRole;
 import edu.indiana.d2i.sloan.db.DBOperations;
 import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -31,7 +31,7 @@ import java.util.List;
 
 @Path("/getresultinfo")
 public class GetResultInfo{
-    private static Logger logger = Logger.getLogger(GetResultInfo.class);
+    private static Logger logger = LoggerFactory.getLogger(GetResultInfo.class);
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

@@ -23,8 +23,8 @@ import edu.indiana.d2i.sloan.exception.NoItemIsFoundInDBException;
 import edu.indiana.d2i.sloan.utils.RolePermissionUtils;
 import edu.indiana.d2i.sloan.vm.VMRole;
 import edu.indiana.d2i.sloan.vm.VMState;
-import org.apache.log4j.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
@@ -35,7 +35,7 @@ import java.util.Map;
 
 @Path("/managecontroller")
 public class ManageController {
-	private static Logger logger = Logger.getLogger(ManageController.class);
+	private static Logger logger = LoggerFactory.getLogger(ManageController.class);
 	private static final String DELETE = "DELETE";
 
 	@POST
