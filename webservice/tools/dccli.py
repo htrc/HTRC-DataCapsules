@@ -10,7 +10,7 @@ import time
 from datetime import datetime, date, timedelta
 
 # DC
-DC_API = 'htc2.carbonate.uits.iu.edu'
+DC_API = 'htc3.carbonate.uits.iu.edu'
 PORT = '8087'
 
 
@@ -411,7 +411,40 @@ def delete_expired_results():
                     print('Notified time is null resultID: {} result status: {} notified on: {} capsuleID: {}'.format(result["resultid"] , result["status"], result["notifiedtime"], result["vmid"]))
 
 
+def add_sharee(vm,guid, useremail, sharee_guid, sharee_email, sharee_desc):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': guid,
+               'htrc-remote-user-email': useremail}
 
+    sharees = "[{guid:'" + sharee_guid + "', email : '" + sharee_email + "'}]"
+
+    params = urllib.parse.urlencode(
+        {'vmId': vm,'sharees': sharees, 'desc_shared': sharee_desc})
+
+    # POST the request
+    conn = http.client.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/addsharees', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+    parsed = json.loads(data)
+    print(json.dumps(parsed, indent=4, sort_keys=True))
+
+
+def delete_sharee(vm,guid, sharee_guid):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': guid}
+
+    params = urllib.parse.urlencode(
+        {'vmId': vm,'sharees': sharee_guid})
+
+    # POST the request
+    conn = http.client.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/deletesharees', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+    print(data)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -502,6 +535,19 @@ if __name__ == '__main__':
 
     deleteexpiredresults = subparsers.add_parser('deleteexpiredresults', description='Delete expired results.')
 
+    addsharee = subparsers.add_parser('addsharee', description='Add a sharee.')
+    addsharee.add_argument('vm')
+    addsharee.add_argument('owner_guid')
+    addsharee.add_argument('owner_email')
+    addsharee.add_argument('sharee_guid')
+    addsharee.add_argument('sharee_email')
+    addsharee.add_argument('sharee_description')
+
+    deletesharee = subparsers.add_parser('deletesharee', description='Delete a sharee.')
+    deletesharee.add_argument('vm')
+    deletesharee.add_argument('owner_guid')
+    deletesharee.add_argument('sharee_guid')
+    deletesharee.add_argument('sharee_email')
 
     parsed = parser.parse_args()
 
@@ -618,3 +664,15 @@ if __name__ == '__main__':
 
     if parsed.sub_commands == 'deleteexpiredresults':
         delete_expired_results()
+
+    if parsed.sub_commands == 'addsharee':
+        confirmation = query_yes_no('Are you sure you want to add sharee ' + parsed.sharee_email + '?')
+        if confirmation:
+            print('Adding Sharee ' + parsed.sharee_email + '....')
+            add_sharee(parsed.vm,parsed.owner_guid,parsed.owner_email,parsed.sharee_guid,parsed.sharee_email,parsed.sharee_description)
+
+    if parsed.sub_commands == 'deletesharee':
+        confirmation = query_yes_no('Are you sure you want to delete sharee ' + parsed.sharee_email + '?')
+        if confirmation:
+            print('Deleting Sharee ' + parsed.sharee_email + '....')
+            delete_sharee(parsed.vm,parsed.owner_guid,parsed.sharee_guid)
