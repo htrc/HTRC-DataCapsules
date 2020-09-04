@@ -446,6 +446,43 @@ def delete_sharee(vm,guid, sharee_guid):
     data = response.read()
     print(data)
 
+def update_tou(vm,guid):
+    headers = {'Content-Type': 'application/x-www-form-urlencoded',
+               'htrc-remote-user': guid}
+
+    params = urllib.parse.urlencode(
+        {'vmId': vm,'tou': True})
+
+    # POST the request
+    conn = http.client.HTTPConnection(DC_API, PORT)
+    conn.request("POST", '/sloan-ws/updateusertou', params, headers)
+    response = conn.getresponse()
+
+    data = response.read()
+    print(data)
+
+def add_htrc_help_user(sharee_guid, sharee_email):
+    conn = http.client.HTTPConnection(DC_API, PORT)
+    conn.request("GET", '/sloan-ws/listvms')
+    response = conn.getresponse()
+
+    if response.status == 200:
+        vms = json.loads(response.read())['vmsInfo']
+
+        for vm in vms:
+            if vm["vmState"] == "SHUTDOWN":
+                roles = vm["roles"]
+                for role in roles:
+                    if role["role"] == "OWNER_CONTROLLER" or role["role"] == "OWNER":
+                        print("Add HTRC help user to capsule ID: " + vm["vmid"])
+                        add_sharee(vm["vmid"], role["guid"], role["email"], sharee_guid, sharee_email, "HTRC help user.")
+                        update_tou(vm["vmid"],sharee_guid)
+                        if vm["type"] == "RESEARCH-FULL":
+                            update_vmtype(vm["vmid"],sharee_guid,True)
+
+
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='sub_commands')
@@ -549,6 +586,14 @@ if __name__ == '__main__':
     deletesharee.add_argument('sharee_guid')
     deletesharee.add_argument('sharee_email')
 
+    updatetou = subparsers.add_parser('updatetou', description='Update capsule TOU.')
+    updatetou.add_argument('vm')
+    updatetou.add_argument('owner_guid')
+
+    addhelpuser = subparsers.add_parser('addhelpuser', description='Add HTRC help user to all capsules.')
+    addhelpuser.add_argument('sharee_guid')
+    addhelpuser.add_argument('sharee_email')
+
     parsed = parser.parse_args()
 
     if parsed.sub_commands == 'delete':
@@ -626,10 +671,8 @@ if __name__ == '__main__':
         stop_running_vms()
 
     if parsed.sub_commands == 'approvefullaccess':
-        confirmation = query_yes_no('Are you sure you want to give approval for full access to VM ' + parsed.vm + '?')
-        if confirmation:
-            print('Giving full access for  VM ' + parsed.vm + '....')
-            update_vmtype(parsed.vm, parsed.guid, 'true')
+        print('Giving full access for  VM ' + parsed.vm + '....')
+        update_vmtype(parsed.vm, parsed.guid, 'true')
 
     if parsed.sub_commands == 'rejectfullaccess':
         confirmation = query_yes_no('Are you sure you want to reject full access to VM ' + parsed.vm + '?')
@@ -666,13 +709,19 @@ if __name__ == '__main__':
         delete_expired_results()
 
     if parsed.sub_commands == 'addsharee':
-        confirmation = query_yes_no('Are you sure you want to add sharee ' + parsed.sharee_email + '?')
-        if confirmation:
-            print('Adding Sharee ' + parsed.sharee_email + '....')
-            add_sharee(parsed.vm,parsed.owner_guid,parsed.owner_email,parsed.sharee_guid,parsed.sharee_email,parsed.sharee_description)
+        print('Adding Sharee ' + parsed.sharee_email + '....')
+        add_sharee(parsed.vm,parsed.owner_guid,parsed.owner_email,parsed.sharee_guid,parsed.sharee_email,parsed.sharee_description)
 
     if parsed.sub_commands == 'deletesharee':
         confirmation = query_yes_no('Are you sure you want to delete sharee ' + parsed.sharee_email + '?')
         if confirmation:
             print('Deleting Sharee ' + parsed.sharee_email + '....')
             delete_sharee(parsed.vm,parsed.owner_guid,parsed.sharee_guid)
+
+    if parsed.sub_commands == 'updatetou':
+        print('Update TOU for ' + parsed.owner_guid + '....')
+        update_tou(parsed.vm,parsed.owner_guid)
+
+    if parsed.sub_commands == 'addhelpuser':
+        print('Add HTRC help user ' + parsed.sharee_email + ' to all capsules.')
+        add_htrc_help_user(parsed.sharee_guid,parsed.sharee_email)
