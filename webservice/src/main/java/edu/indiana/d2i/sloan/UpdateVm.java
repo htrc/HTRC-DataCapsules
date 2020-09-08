@@ -208,11 +208,13 @@ public class UpdateVm {
 								VMType.RESEARCH_FULL.getName() + " capsule!"))
 						.build();
 			} else if(!(vmInfo.getVmstate().equals(VMState.SHUTDOWN)) &&
-					!(vmInfo.getVmstate().equals(VMState.RUNNING) && vmInfo.getVmmode().equals(VMMode.MAINTENANCE))) {
+					!(vmInfo.getVmstate().equals(VMState.RUNNING) && vmInfo.getVmmode().equals(VMMode.MAINTENANCE)) &&
+					!(vmInfo.getVmstate().equals(VMState.CREATE_PENDING))){
 				return Response.status(Response.Status.BAD_REQUEST)
 						.entity(new ErrorBean(400, "A Capsule can be converted to a " +
 								VMType.RESEARCH_FULL.getName() + " Capsule " +
 								"only when in \"" + VMState.SHUTDOWN + "\" state or in " +
+								VMState.CREATE_PENDING + "\" state or in " +
 								" \"" + VMState.RUNNING + "\" state and \"" + VMMode.MAINTENANCE + "\" mode. " +
 								"Please make sure that the Capsule is in the " +
 								"right mode/state before trying to convert to a " +
