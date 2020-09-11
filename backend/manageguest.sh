@@ -132,13 +132,14 @@ elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; 
 #    fi
 
     # This is to revert result review holiday message. And to add any revisions of releaseresults script
-    if [[ -e $VM_DIR/releaseresults_message || ! -e $VM_DIR/releaseresults_revision_08142019 ]]; then
+    #releaseresults_revision_07162020 - this was set to `releaseresults_revision_08142019`. But found an error on 07-16-2020. So decided to copy revised release result script in all capsules.
+    if [[ -e $VM_DIR/releaseresults_message || ! -e $VM_DIR/releaseresults_revision_07162020 ]]; then
         scp -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY $GUEST_UPLOADS/releaseresults root@$VM_IP_ADDR:/usr/local/bin/releaseresults > $VM_DIR/releaseresults_copy_out 2>&1
         logger "$VM_DIR Copied releaseresults script."
         ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
         echo "Enabled" > $VM_DIR/release_results
         rm -f $VM_DIR/releaseresults_message
-        echo "Added error message for results files which exceeds the size limit of 100MB" > $VM_DIR/releaseresults_revision_08142019
+        echo "Added error message for results files which exceeds the size limit of 100MB" > $VM_DIR/releaseresults_revision_07162020
     fi
 
     if [[ `cat $VM_DIR/release_results` == "Disabled" ]]; then
