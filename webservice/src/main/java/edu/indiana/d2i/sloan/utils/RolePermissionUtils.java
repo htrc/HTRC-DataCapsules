@@ -22,7 +22,7 @@ public class RolePermissionUtils {
 
     public enum API_CMD {
         DELETE_VM, LAUNCH_VM, QUERY_VM, MIGRATE_VM, SWITCH_VM, STOP_VM, UPDATE_VM, ADD_SHAREES, UPDATE_SSH_KEY,
-        DELETE_SHAREES, OBTAIN_CONTROLLER, VIEW_RESULT
+        DELETE_SHAREES, OBTAIN_CONTROLLER, VIEW_RESULT, EXIT_SHAREE
     }
 
     public enum CNTR_ACTION {
@@ -99,7 +99,8 @@ public class RolePermissionUtils {
                 if (api_cmd == API_CMD.QUERY_VM
                         || api_cmd == API_CMD.UPDATE_SSH_KEY
                         || api_cmd == API_CMD.OBTAIN_CONTROLLER
-                        || api_cmd == API_CMD.VIEW_RESULT) {
+                        || api_cmd == API_CMD.VIEW_RESULT
+                        || api_cmd == API_CMD.EXIT_SHAREE) {
                     isPermitted = true;
                 }
                 break;
