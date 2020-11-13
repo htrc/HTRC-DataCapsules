@@ -27,6 +27,6 @@ public class TestEmailUtil {
 		String emailAddr = "jiaazeng@indiana.edu";
 		String subject = "Testing subject";
 		String content = "Hello! This is a test message.";
-		emailUtil.sendEMail(emailAddr, subject, content);
+		emailUtil.sendEMail(null,emailAddr, subject, content);
 	}
 }

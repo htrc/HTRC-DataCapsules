@@ -91,7 +91,7 @@ public class ExitSharee {
                     + "HTRC user with email " + shareeEmail + " has left the Data Capusle(" + vmId + ") owned by you." +
                     "\nBest" +
                     "\nHTRC Team";
-            email_util.sendEMail(ownerEmail, "HTRC Data Capsule Collaborator has exited from your Capsule",
+            email_util.sendEMail(null, ownerEmail, "HTRC Data Capsule Collaborator has exited from your Capsule",
                     email_body);
             logger.info("Email notification on sharee("+shareeEmail+") exit is sent to " + ownerEmail);
 

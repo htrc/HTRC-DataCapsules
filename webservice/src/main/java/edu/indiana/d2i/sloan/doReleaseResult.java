@@ -150,7 +150,7 @@ public Response releaseResult(@FormParam("resultId") String resultid,
 
         //construct email content
         String content = String.format("Please download result from the following URL: \n", download_addr);
-        send_email.sendEMail(userEmail, "HTRC Data Capsule Result Download URL", content);
+        send_email.sendEMail(null, userEmail, "HTRC Data Capsule Result Download URL", content);
 
 
         /*4. mark this result as released (change notified to 1)*/
