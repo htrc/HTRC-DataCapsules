@@ -49,7 +49,7 @@ public class EmailUtil {
 		System.out.println(props.toString());
 	}
 
-	public void sendEMail(String emailAddr, String subject, String content) {
+	public void sendEMail(String senderEmail, String recipientEmail, String subject, String content) {
 		// TODO: create a session per request, may change this in the future
 		Session session = Session.getDefaultInstance(props,
 			new javax.mail.Authenticator() {
@@ -60,9 +60,13 @@ public class EmailUtil {
 		
 		try {			 
 			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(senderAddr));
+			if(senderEmail != null){
+				message.setFrom(new InternetAddress(senderEmail));
+			}else {
+				message.setFrom(new InternetAddress(senderAddr));
+			}
 			message.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(emailAddr));
+					InternetAddress.parse(recipientEmail));
 			message.setSubject(subject);
 			message.setText(content);
  
