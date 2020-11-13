@@ -4,7 +4,7 @@
 	<groupId>edu.indiana.d2i.sloan</groupId>
 	<artifactId>sloan-ws</artifactId>
 	<packaging>war</packaging>
-	<version>1.7</version>
+	<version>1.9-SNAPSHOT</version>
 	<name>sloan-ws</name>
 	<url>http://maven.apache.org</url>
 
@@ -41,7 +41,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
+			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
 

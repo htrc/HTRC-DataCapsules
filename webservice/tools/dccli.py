@@ -10,8 +10,8 @@ import time
 from datetime import datetime, date, timedelta
 
 # DC
-DC_API = 'htc3.carbonate.uits.iu.edu'
-PORT = '8087'
+DC_API = 'localhost'
+PORT = '8081'
 
 
 def query_yes_no(question, default="yes"):
