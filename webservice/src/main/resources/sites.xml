@@ -212,4 +212,16 @@
 		<name>ssh.proxy.thread.sleep.duration</name>
 		<value>1000</value>
 	</property>
+	<property>
+		<name>support.user.email</name>
+		<value>SUPPORT_EMAIL</value>
+	</property>
+	<property>
+		<name>support.user.guid</name>
+		<value>SUPPORT_GUID</value>
+	</property>
+	<property>
+		<name>max.no.of.sharees</name>
+		<value>6</value>
+	</property>
 </configuration>

@@ -149,6 +149,13 @@ public final class Configuration {
 		public static final String RESULT_BACKUP_FILES_DIR = "result.backup.file.dir";
 
 		public static final String THREAD_SLEEP_DURATION = "ssh.proxy.thread.sleep.duration";
+		
+		/*support user email and guid*/
+		public static final String SUPPORT_USER_EMAIL = "support.user.email";
+		public static final String SUPPORT_USER_GUID = "support.user.guid";
+		
+		/*No of sharees*/
+		public static final String MAX_NO_OF_SHAREES = "max.no.of.sharees";
 
 	}
 	
@@ -169,27 +176,27 @@ public final class Configuration {
 	}
 	
 	public int getInt(String name) {
-		return Integer.valueOf(getString(name));
+		return Integer.parseInt(getString(name));
 	}
 	
 	public int getInt(String name, int defaultVal) {
-		return Integer.valueOf(getString(name, String.valueOf(defaultVal)));
+		return Integer.parseInt(getString(name, String.valueOf(defaultVal)));
 	}
 	
 	public long getLong(String name) {
-		return Long.valueOf(getString(name));
+		return Long.parseLong(getString(name));
 	}
 	
 	public long getLong(String name, long defaultVal) {
-		return Long.valueOf(getString(name, String.valueOf(defaultVal)));
+		return Long.parseLong(getString(name, String.valueOf(defaultVal)));
 	}
 	
 	public boolean getBoolean(String name) {
-		return Boolean.valueOf(getString(name));
+		return Boolean.parseBoolean(getString(name));
 	}
 	
 	public boolean getBoolean(String name, boolean defaultVal) {
-		return Boolean.valueOf(getString(name, String.valueOf(defaultVal)));
+		return Boolean.parseBoolean(getString(name, String.valueOf(defaultVal)));
 	}
 	
 	/** unit test purpose */

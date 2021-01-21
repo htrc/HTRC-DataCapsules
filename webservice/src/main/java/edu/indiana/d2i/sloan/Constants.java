@@ -45,6 +45,6 @@ public class Constants {
 
 	public static final String DEFAULT_HYPERVISOR_FULL_CLASS_NAME = "edu.indiana.d2i.sloan.hyper.CapsuleHypervisor";
 
-	public static final int MAX_NO_OF_SHAREES = 6;
+	public static final int DEFAULT_MAX_NO_OF_SHAREES = 6;
 
 }

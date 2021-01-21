@@ -40,8 +40,6 @@ import javax.ws.rs.core.Response;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static edu.indiana.d2i.sloan.Constants.MAX_NO_OF_SHAREES;
-
 @Path("/deletesharees")
 public class DeleteVmSharees {
 	private static Logger logger = LoggerFactory.getLogger(DeleteVmSharees.class);
