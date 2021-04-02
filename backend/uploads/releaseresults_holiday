@@ -56,11 +56,13 @@ if [[ "$ACTION" = "add" ]]; then
   fi
 
   zip -r /media/release_spool/results.zip "$@"
-#  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
-#  if [ $size -ge 104857600 ]; then
-#    echo "The size of the result released is " $size " bytes which is large. You may expect delay in getting the result back."
-#    echo "If you want to start over your result release, please delete the results.zip under /media/release_spool"
-#  fi
+
+  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
+  if [ $size -ge 1073741274 ]; then
+    echo "Warning: this results file exceeds the 1GB maximum. (It is $size bytes). It cannot be released and will be deleted from the release_spool. Please revise your request and resubmit."
+    rm -f /media/release_spool/results.zip
+    exit 1
+  fi
 
   exit 0
 
@@ -82,13 +84,6 @@ if [[ "$ACTION" = "done" ]]; then
     fi
    fi
 
-  size=`ls -l /media/release_spool/results.zip | awk '{print $5}'`
-  if [ $size -ge 104857600 ]; then
-    echo "Warning: this results file exceeds the 100 MB maximum. (It is $size bytes). It cannot be released and will be deleted from the release_spool. Please revise your request and resubmit."
-    rm -f /media/release_spool/results.zip
-    exit 1
-  fi
-
   echo "results.zip" >> /dev/ttyS0
 
   for time in $(seq 1 $TIMEOUT); do
@@ -107,9 +102,9 @@ if [[ "$ACTION" = "done" ]]; then
   rm -rf /media/release_spool/results.zip
   rm -rf /media/release_spool/done
 
-  echo "Your results are under review. We will get back to you in two business days by email.
+  echo "Your results are under review. We will get back to you by email.
 
-Please note that if you are releasing results from December 22 through January 1, the review process will be delayed until after the winter holiday. HTRC staff will review your request within two business days starting January 2."
+        If you are releasing results from December 23 through January 3, the review process will be delayed until after the winter holiday. HTRC staff will review your request within two business days starting January 4."
   exit 0
 
 fi
