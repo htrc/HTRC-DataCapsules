@@ -123,9 +123,7 @@ if [[ "$DC_TYPE" = "$DEMO_TYPE" ]]; then
 # Add release_results script if capsule type is RESEARCH and disabled
 elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
     rsync -Pav -e "ssh -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY" $GUEST_UPLOADS/releaseresults root@$VM_IP_ADDR:/usr/local/bin/releaseresults > $VM_DIR/releaseresults_rsync_out 2>&1
-    if [[ ! -e $VM_DIR/release_results || `cat $VM_DIR/release_results` == "Disabled" ]]; then
-      ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
-    fi
+    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
     echo "Enabled" > $VM_DIR/release_results
 
     # Start release daemon if not already running
