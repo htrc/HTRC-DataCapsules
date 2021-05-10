@@ -122,30 +122,9 @@ if [[ "$DC_TYPE" = "$DEMO_TYPE" ]]; then
     fi
 # Add release_results script if capsule type is RESEARCH and disabled
 elif [[ "$DC_TYPE" = "$RESEARCH_TYPE" || "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
-    # This is to edit result review message. To inform users that HTRC staff is not available during Dec 22-Jan 1. This is added on Dec 9th 2018 maintenance day.
-#    if [[ ! -e $VM_DIR/releaseresults_message ]]; then
-#        scp -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY $GUEST_UPLOADS/releaseresults_holiday root@$VM_IP_ADDR:/usr/local/bin/releaseresults > $VM_DIR/releaseresults_copy_out 2>&1
-#        logger "$VM_DIR Copied releaseresults script with holiday message."
-#        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
-#        echo "Enabled" > $VM_DIR/release_results
-#        echo "Added holiday message" > $VM_DIR/releaseresults_message
-#    fi
-
-    # This is to revert result review holiday message. And to add any revisions of releaseresults script
-    #releaseresults_revision_07162020 - this was set to `releaseresults_revision_08142019`. But found an error on 07-16-2020. So decided to copy revised release result script in all capsules.
-    if [[ -e $VM_DIR/releaseresults_message || ! -e $VM_DIR/releaseresults_revision_07162020 ]]; then
-        scp -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY $GUEST_UPLOADS/releaseresults root@$VM_IP_ADDR:/usr/local/bin/releaseresults > $VM_DIR/releaseresults_copy_out 2>&1
-        logger "$VM_DIR Copied releaseresults script."
-        ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
-        echo "Enabled" > $VM_DIR/release_results
-        rm -f $VM_DIR/releaseresults_message
-        echo "Added error message for results files which exceeds the size limit of 100MB" > $VM_DIR/releaseresults_revision_07162020
-    fi
-
-    if [[ `cat $VM_DIR/release_results` == "Disabled" ]]; then
-      ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
-      echo "Enabled" > $VM_DIR/release_results
-    fi
+    rsync -Pav -e "ssh -o StrictHostKeyChecking=no -i $ROOT_PRIVATE_KEY" $GUEST_UPLOADS/releaseresults root@$VM_IP_ADDR:/usr/local/bin/releaseresults > $VM_DIR/releaseresults_rsync_out 2>&1
+    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chmod 755 /usr/local/bin/releaseresults && chown root:root /usr/local/bin/releaseresults"
+    echo "Enabled" > $VM_DIR/release_results
 
     # Start release daemon if not already running
     if [[ ! -e $VM_DIR/release_pid ]]; then
