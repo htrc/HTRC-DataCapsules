@@ -82,7 +82,7 @@ public class EmailUtil {
 				throw new RuntimeException(e);
 			}
 		} else {
-			logger.debug("Recipient email is HTRC support user email - " + recipientEmail);
+			logger.debug("Email was not sent since the recipient email is HTRC support user email - " + recipientEmail);
 		}
 
 	}
