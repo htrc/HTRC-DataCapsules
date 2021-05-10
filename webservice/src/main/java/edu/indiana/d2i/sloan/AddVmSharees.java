@@ -142,7 +142,7 @@ public class AddVmSharees {
 					String email_body = "Dear Data Capsule user,\n"
 							+ "HTRC user with email " + userEmail + " has shared their Data Capusle(" + vmId + ") with you." +
 							"\nYou will be able to access this Data Capsule once you accept the TOU agreement.";
-					email_util.sendEMail(userEmail,sharees_map.get(guid), "A HTRC Data Capsule Has Been Shared With You",
+					email_util.sendEMail(null,sharees_map.get(guid), "A HTRC Data Capsule Has Been Shared With You",
 							email_body);
 					logger.info("Email notification on shared capsule sent to " + sharees_map.get(guid));
 				}
