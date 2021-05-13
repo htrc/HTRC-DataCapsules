@@ -71,7 +71,7 @@ public class AddSupportUser {
 
             // set full_access of the support user as null if not requested for full access already
             // set this to false if VM has requested full access
-            Boolean full_access = vmInfo.isFull_access() == null ? null : false;
+            Boolean full_access = vmInfo.isFull_access();
 
             List<VmUserRole> current_roles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
 
