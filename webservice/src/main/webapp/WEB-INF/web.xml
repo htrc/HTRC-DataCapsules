@@ -59,6 +59,10 @@
 		<url-pattern>/managecontroller</url-pattern>
 		<url-pattern>/download</url-pattern>
 		<url-pattern>/getvmresults</url-pattern>
+		<url-pattern>/updatecustoscreds</url-pattern>
+		<url-pattern>/exitsharee</url-pattern>
+		<url-pattern>/addsupportuser</url-pattern>
+		<url-pattern>/checkdownloadability</url-pattern>
 	</filter-mapping>
 
 	<servlet-mapping>

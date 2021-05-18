@@ -4,7 +4,7 @@
 	<groupId>edu.indiana.d2i.sloan</groupId>
 	<artifactId>sloan-ws</artifactId>
 	<packaging>war</packaging>
-	<version>1.10-SNAPSHOT</version>
+	<version>1.11-SNAPSHOT</version>
 	<name>sloan-ws</name>
 	<url>http://maven.apache.org</url>
 

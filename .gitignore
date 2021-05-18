@@ -26,3 +26,4 @@ webservice/.idea/
 /tightvnc-tls/.gradle/
 /notes
 webservice/src/main/resources/dc-migration/mysql-dumps
+notes
