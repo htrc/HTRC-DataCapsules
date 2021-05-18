@@ -56,18 +56,17 @@ public class AddSupportUser {
 
             VmInfoBean vmInfo = DBOperations.getInstance().getVmInfo(userName, vmId);
 
-            // don't allow to add support user if capsule is in delete* or error state
-            if (vmInfo.getVmstate() == VMState.ERROR
-                    || vmInfo.getVmstate().name().contains(DELETE)){
+            // don't allow to add support user if capsule is in delete* state
+            if (vmInfo.getVmstate().name().contains(DELETE)){
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity(new ErrorBean(400, "Cannot add support user when capsule is in "
-                                + VMState.ERROR + " or " + DELETE + "* state!")).build();
+                                + DELETE + "* state!")).build();
             }
 
-            if(vmInfo.getType().equals(VMType.DEMO.getName())) {
-                return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
-                        "Cannot add support user to a " + VMType.DEMO.getName() +" capsule!")).build();
-            }
+//            if(vmInfo.getType().equals(VMType.DEMO.getName())) {
+//                return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorBean(400,
+//                        "Cannot add support user to a " + VMType.DEMO.getName() +" capsule!")).build();
+//            }
 
             // set full_access of the support user as null if not requested for full access already
             // set this to false if VM has requested full access
