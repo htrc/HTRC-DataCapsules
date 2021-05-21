@@ -25,3 +25,4 @@ webservice/.idea/
 /sloan-ws-1.2-SNAPSHOT/
 /tightvnc-tls/.gradle/
 /notes
+webservice/src/main/resources/dc-migration/mysql-dumps
