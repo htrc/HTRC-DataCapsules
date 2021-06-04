@@ -1,7 +1,7 @@
 apply plugin: "java"
 repositories {
     maven {
-        url "http://nexus.htrc.illinois.edu/content/groups/public/"
+        url "https://nexus.htrc.illinois.edu/repository/maven-public/"
     }
 }
 
