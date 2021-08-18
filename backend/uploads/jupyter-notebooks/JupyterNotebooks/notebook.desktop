@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=HTRC-JupyterNoteBooks
+Comment=HTRC-JupyterNoteBooks
+Exec=/opt/applications/JupyterNotebooks/run.sh
+Icon=/opt/applications/JupyterNotebooks/jupyter_icon.png
+Terminal=true
+Type=Application
+Categories=Utility;Application;Bash;
