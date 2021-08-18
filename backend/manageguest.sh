@@ -141,17 +141,19 @@ fi
 # # copy .htrc file.
 if [[ "$DC_TYPE" = "$DEMO_TYPE" || "$DC_TYPE" = "$RESEARCH_TYPE" ]]; then
     logger "$VM_DIR - Add $HTRC_CONFIG_PD file. this is for HTRC WorksetToolkit"
-    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG_PD root@$VM_IP_ADDR:/home/dcuser/.htrc
-    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
+    cp $HTRC_CONFIG_PD $VM_DIR/.htrc
 elif [[ "$DC_TYPE" = "$RESEARCH_FULL_TYPE" ]]; then
     logger "$VM_DIR - Add $HTRC_CONFIG_FULL file. this is for HTRC WorksetToolkit"
-    scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $HTRC_CONFIG_FULL root@$VM_IP_ADDR:/home/dcuser/.htrc
-    ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
+    cp $HTRC_CONFIG_FULL $VM_DIR/.htrc
 else
      logger "Invalid DC Type - $DC_TYPE. VM Directory - $VM_DIR "
      echo "Error: Invalid DC Type - $DC_TYPE. Please select $DEMO_TYPE or $RESEARCH_TYPE or $RESEARCH_FULL_TYPE."
      exit 5
 fi
+
+echo "capsule_id = $(basename $VM_DIR)" >> $VM_DIR/.htrc
+scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY $VM_DIR/.htrc root@$VM_IP_ADDR:/home/dcuser/.htrc
+ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "chown -R dcuser:dcuser /home/dcuser/.htrc"
 
 
 exit 0

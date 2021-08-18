@@ -76,6 +76,11 @@ public class AlwaysSuccessHypervisor implements IHypervisor {
 	}
 
 	@Override
+	public HypervisorResponse updateCustosCreds(VmInfoBean vminfo, String custos_client_id, String custos_client_secret) throws Exception {
+		return genFakeResponse(VMState.SHUTDOWN);
+	}
+
+	@Override
 	public HypervisorResponse migrateVM(VmInfoBean vminfo, VMPorts vmports) throws Exception {
 		return genFakeResponse(VMState.SHUTDOWN);
 	}

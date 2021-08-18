@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static edu.indiana.d2i.sloan.Constants.MAX_NO_OF_SHAREES;
-
 @Path("/addsharees")
 public class AddVmSharees {
 	private static Logger logger = LoggerFactory.getLogger(AddVmSharees.class);
@@ -122,9 +120,10 @@ public class AddVmSharees {
 
 			// do not allow to add more than MAX_NO_OF_SHAREES=5 sharees
 			List<VmUserRole> current_roles = DBOperations.getInstance().getRolesWithVmid(vmId, true);
-			if(current_roles.size() + sharees_map.size() > MAX_NO_OF_SHAREES) {
+			int maxNoOfSharees = Configuration.getInstance().getInt(Configuration.PropertyName.MAX_NO_OF_SHAREES,Constants.DEFAULT_MAX_NO_OF_SHAREES);
+			if(current_roles.size() + sharees_map.size() > maxNoOfSharees) {
 				return Response.status(400).entity(new ErrorBean(400,
-						"A Data Capsule cannot have more than " + MAX_NO_OF_SHAREES + " collaborators!")).build();
+						"A Data Capsule cannot have more than " + maxNoOfSharees + " collaborators!")).build();
 			}
 
 			for(String guid : sharees_map.keySet()) { // for each user
@@ -143,7 +142,7 @@ public class AddVmSharees {
 					String email_body = "Dear Data Capsule user,\n"
 							+ "HTRC user with email " + userEmail + " has shared their Data Capusle(" + vmId + ") with you." +
 							"\nYou will be able to access this Data Capsule once you accept the TOU agreement.";
-					email_util.sendEMail(sharees_map.get(guid), "A HTRC Data Capsule Has Been Shared With You",
+					email_util.sendEMail(null,sharees_map.get(guid), "A HTRC Data Capsule Has Been Shared With You",
 							email_body);
 					logger.info("Email notification on shared capsule sent to " + sharees_map.get(guid));
 				}

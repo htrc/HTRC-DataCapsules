@@ -155,3 +155,12 @@ ALTER TABLE results ADD state ENUM('CREATED', 'DELETED') NOT NULL DEFAULT 'CREAT
 
 
 ===================================================================================
+
+Add Custos agent username and password to vms table
+--------------------------------
+
+ALTER TABLE vms ADD custos_client_id VARCHAR(32) DEFAULT NULL;
+ALTER TABLE vms ADD custos_client_secret VARCHAR(32) DEFAULT NULL;
+
+===================================================================================
+

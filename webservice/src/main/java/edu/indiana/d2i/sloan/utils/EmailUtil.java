@@ -22,10 +22,14 @@ import java.util.stream.Collectors;
 import javax.mail.*;
 import javax.mail.internet.*;
 
+import edu.indiana.d2i.sloan.AddVmSharees;
 import edu.indiana.d2i.sloan.Configuration;
 import edu.indiana.d2i.sloan.bean.VmUserRole;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class EmailUtil {
+	private static Logger logger = LoggerFactory.getLogger(EmailUtil.class);
 	private final String sendername;
 	private final String senderAddr;
 	private final String password;
@@ -49,28 +53,38 @@ public class EmailUtil {
 		System.out.println(props.toString());
 	}
 
-	public void sendEMail(String emailAddr, String subject, String content) {
-		// TODO: create a session per request, may change this in the future
-		Session session = Session.getDefaultInstance(props,
-			new javax.mail.Authenticator() {
-				protected PasswordAuthentication getPasswordAuthentication() {
-					return new PasswordAuthentication(sendername, password);
+	public void sendEMail(String senderEmail, String recipientEmail, String subject, String content) {
+		//This is to avoid sending emails to HTRC help user
+		if(!recipientEmail.equals(Configuration.getInstance().getString(Configuration.PropertyName.SUPPORT_USER_EMAIL))){
+			// TODO: create a session per request, may change this in the future
+			Session session = Session.getDefaultInstance(props,
+					new javax.mail.Authenticator() {
+						protected PasswordAuthentication getPasswordAuthentication() {
+							return new PasswordAuthentication(sendername, password);
+						}
+					});
+
+			try {
+				Message message = new MimeMessage(session);
+				if(senderEmail != null){
+					message.setFrom(new InternetAddress(senderEmail));
+				}else {
+					message.setFrom(new InternetAddress(senderAddr));
 				}
-			});
-		
-		try {			 
-			Message message = new MimeMessage(session);
-			message.setFrom(new InternetAddress(senderAddr));
-			message.setRecipients(Message.RecipientType.TO,
-					InternetAddress.parse(emailAddr));
-			message.setSubject(subject);
-			message.setText(content);
- 
-			Transport.send(message);
-		} catch (Exception e) {		
-			e.printStackTrace();
-			throw new RuntimeException(e);
+				message.setRecipients(Message.RecipientType.TO,
+						InternetAddress.parse(recipientEmail));
+				message.setSubject(subject);
+				message.setText(content);
+
+				Transport.send(message);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new RuntimeException(e);
+			}
+		} else {
+			logger.debug("Email was not sent since the recipient email is HTRC support user email - " + recipientEmail);
 		}
+
 	}
 
 	public String userListToString(List<VmUserRole> vmUserRoles, List<VmUserRole> allowedVmUserRoles) {

@@ -116,14 +116,14 @@ public class UpdateResult {
                                 "Thank you for using the HTRC Data Capsule! You can download your result from the link below.\n" +
                                 download_addr + "\n\n" +
                                 "Please note this link is active for " + result_expiration_days + " day(s).";
-                        send_email.sendEMail(role.getEmail(), "HTRC Data Capsule Result Download URL", contentUser);
+                        send_email.sendEMail(null,role.getEmail(), "HTRC Data Capsule Result Download URL", contentUser);
                     }
                     logger.info("Download result email sent to users " + allowedVmUserRoles + " - download URL : " + download_addr);
 
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" has been released to users: %s",
                             resultid, send_email.userListToString(vmUserRoles, allowedVmUserRoles));
-                    send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
+                    send_email.sendEMail(null, reviewer_email, "HTRC Data Capsule Result Has Been Successfully Released", contentReviewer);
 
                 }else{
                     EmailUtil send_email = new EmailUtil();
@@ -136,7 +136,7 @@ public class UpdateResult {
                     //construct email content for reviewer
                     String contentReviewer = String.format("Result \"%s\" has been rejected from users: %s",
                             resultid, send_email.userListToString(vmUserRoles, allowedVmUserRoles));
-                    send_email.sendEMail(reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
+                    send_email.sendEMail(null, reviewer_email, "HTRC Data Capsule Result Has Been Rejected", contentReviewer);
                 }
 
                 //release and reject are both legal operations

@@ -61,7 +61,7 @@ public class UploadPostprocess {
 					new Callable<Void>() {
 						@Override
 						public Void call() throws Exception {
-							emailUtil.sendEMail(role.getEmail(), EMAIL_SUBJECT, content);
+							emailUtil.sendEMail(null,role.getEmail(), EMAIL_SUBJECT, content);
 							return null;
 						}
 					},  2000, 3);
