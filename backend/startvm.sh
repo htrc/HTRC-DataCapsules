@@ -362,5 +362,21 @@ ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/opt/an
 
 ssh -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY dcuser@$VM_IP_ADDR "/bin/rm -r /tmp/guest_scripts" >> $VM_DIR/install_python_packages_out 2>&1
 
+# Set Google Chrome as the default browser
+if [[ -z "$SET_CHROME_DEFAULT" ]]; then
+  scp -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY $GUEST_UPLOADS/mimeapps.list dcuser@$VM_IP_ADDR:/home/dcuser/.config/mimeapps.list > $VM_DIR/set_chrome_default_out 2>&1
+  echo "SET_CHROME_DEFAULT="$(date +%m-%d-%Y) >> $VM_DIR/config
+  logger "$VM_DIR set chrome as the default browser"
+fi
+
+# Install HTRC-JupyterNotebooks
+if [[ -z "$INSTALL_JUPYTER_NOTE_BOOKS" ]]; then
+  scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY -r $GUEST_UPLOADS/jupyter-notebooks root@$VM_IP_ADDR:/tmp > $VM_DIR/install_jupyter_notebooks_out 2>&1
+  ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/tmp/jupyter-notebooks/install.sh" >> $VM_DIR/install_jupyter_notebooks_out 2>&1
+  echo "INSTALL_JUPYTER_NOTE_BOOKS="$(date +%m-%d-%Y) >> $VM_DIR/config
+  logger "$VM_DIR installed HTRC-JupyterNotebooks"
+fi
+
+
 # Return successfully (only reaches here if no errors occur)
 exit 0
