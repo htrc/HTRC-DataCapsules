@@ -374,7 +374,15 @@ if [[ -z "$INSTALL_JUPYTER_NOTE_BOOKS" ]]; then
   scp -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY -r $GUEST_UPLOADS/jupyter-notebooks root@$VM_IP_ADDR:/tmp > $VM_DIR/install_jupyter_notebooks_out 2>&1
   ssh -o StrictHostKeyChecking=no  -i $ROOT_PRIVATE_KEY root@$VM_IP_ADDR "/tmp/jupyter-notebooks/install.sh" >> $VM_DIR/install_jupyter_notebooks_out 2>&1
   echo "INSTALL_JUPYTER_NOTE_BOOKS="$(date +%m-%d-%Y) >> $VM_DIR/config
+  echo "CHANGE_ICON_NAME_JNB="$(date +%m-%d-%Y) >> $VM_DIR/config
   logger "$VM_DIR installed HTRC-JupyterNotebooks"
+fi
+
+#Change JupyterNotebook icon name
+if [[ -z "$CHANGE_ICON_NAME_JNB" ]]; then
+  scp -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY $GUEST_UPLOADS/jupyter-notebooks/JupyterNotebooks/notebook.desktop dcuser@$VM_IP_ADDR:/home/dcuser/Desktop > $VM_DIR/change_icon_name_jnb_out 2>&1
+  echo "CHANGE_ICON_NAME_JNB="$(date +%m-%d-%Y) >> $VM_DIR/config
+  logger "$VM_DIR change icon name of HTRC-JupyterNotebooks"
 fi
 
 
