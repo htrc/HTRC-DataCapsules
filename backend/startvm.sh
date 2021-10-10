@@ -378,6 +378,9 @@ if [[ -z "$INSTALL_JUPYTER_NOTE_BOOKS" ]]; then
   logger "$VM_DIR installed HTRC-JupyterNotebooks"
 fi
 
+# Load config file to get CHANGE_ICON_NAME_JNB config value
+. $VM_DIR/config
+
 #Change JupyterNotebook icon name
 if [[ -z "$CHANGE_ICON_NAME_JNB" ]]; then
   scp -o StrictHostKeyChecking=no  -i $GMC_PRIVATE_KEY $GUEST_UPLOADS/jupyter-notebooks/JupyterNotebooks/notebook.desktop dcuser@$VM_IP_ADDR:/home/dcuser/Desktop > $VM_DIR/change_icon_name_jnb_out 2>&1
