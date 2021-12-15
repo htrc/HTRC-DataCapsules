@@ -26,3 +26,8 @@ webservice/.idea/
 /tightvnc-tls/.gradle/
 /notes
 webservice/src/main/resources/dc-migration/mysql-dumps
+/webservice/DC-API-Image-table-migration.png
+/.DS_Store
+/webservice/.DS_Store
+
+

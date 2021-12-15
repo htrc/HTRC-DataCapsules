@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Name=HTRC-JupyterNoteBooks
+Name=Launch-LSA-JupyterNotebook
 Comment=HTRC-JupyterNoteBooks
 Exec=/opt/applications/JupyterNotebooks/run.sh
 Icon=/opt/applications/JupyterNotebooks/jupyter_icon.png

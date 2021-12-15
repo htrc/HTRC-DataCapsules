@@ -104,7 +104,7 @@ if [[ "$ACTION" = "done" ]]; then
 
   echo "Your results are under review. We will get back to you by email.
 
-        If you are releasing results from December 23 through January 3, the review process will be delayed until after the winter holiday. HTRC staff will review your request within two business days starting January 4."
+        If you are releasing results from December 22 through January 2, the review process will be delayed until after the winter holiday. HTRC staff will review your request within two business days starting January 3."
   exit 0
 
 fi

@@ -64,11 +64,13 @@ public class UpdateCustosCreds {
 			VmInfoBean vminfo = DBOperations.getInstance().getVmInfo(userName, vmid); // check if user had VM with vmid
 			DBOperations.getInstance().updateCustosCredentials(vmid, custos_client_id, custos_client_secret);
 			logger.info("Custos credentials of VM '" + vmid + "' was updated in database successfully!");
-			if (RolePermissionUtils.isPermittedToUpdateKey(
-					userName, vminfo, RolePermissionUtils.API_CMD.UPDATE_CUSTOS_CREDS)) {
-				HypervisorProxy.getInstance().addCommand(
-						new UpdateCustosCredsCommand(vminfo, userName, custos_client_id, custos_client_secret));
-			}
+			HypervisorProxy.getInstance().addCommand(
+					new UpdateCustosCredsCommand(vminfo, userName, custos_client_id, custos_client_secret));
+//			if (RolePermissionUtils.isPermittedToUpdateKey(
+//					userName, vminfo, RolePermissionUtils.API_CMD.UPDATE_CUSTOS_CREDS)) {
+//				HypervisorProxy.getInstance().addCommand(
+//						new UpdateCustosCredsCommand(vminfo, userName, custos_client_id, custos_client_secret));
+//			}
 			return Response.status(200).build();
 		} catch (NoItemIsFoundInDBException e) {
 			logger.error(e.getMessage(), e);
