@@ -24,11 +24,11 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>nexus</id>
-			<name>HTRC Nexus Repository</name>
-			<url>http://nexus.htrc.illinois.edu/content/groups/public/</url>
-		</repository>
+<!--		<repository>-->
+<!--			<id>nexus</id>-->
+<!--			<name>HTRC Nexus Repository</name>-->
+<!--			<url>http://nexus.htrc.illinois.edu/content/groups/public/</url>-->
+<!--		</repository>-->
 	</repositories>
 
 
@@ -157,18 +157,18 @@
 		</plugins>
 	</build>
 
-	<distributionManagement>
-		<repository>
-			<id>htrc.nexus.releases</id>
-			<name>HTRC Release Repository</name>
-			<url>https://nexus.htrc.illinois.edu/content/repositories/releases/</url>
-		</repository>
+<!--	<distributionManagement>-->
+<!--		<repository>-->
+<!--			<id>htrc.nexus.releases</id>-->
+<!--			<name>HTRC Release Repository</name>-->
+<!--			<url>https://nexus.htrc.illinois.edu/content/repositories/releases/</url>-->
+<!--		</repository>-->
 
-		<snapshotRepository>
-			<id>htrc.nexus.snapshots</id>
-			<name>HTRC Snapshot Repository</name>
-			<url>https://nexus.htrc.illinois.edu/content/repositories/snapshots/</url>
-		</snapshotRepository>
-	</distributionManagement>
+<!--		<snapshotRepository>-->
+<!--			<id>htrc.nexus.snapshots</id>-->
+<!--			<name>HTRC Snapshot Repository</name>-->
+<!--			<url>https://nexus.htrc.illinois.edu/content/repositories/snapshots/</url>-->
+<!--		</snapshotRepository>-->
+<!--	</distributionManagement>-->
 
 </project>
